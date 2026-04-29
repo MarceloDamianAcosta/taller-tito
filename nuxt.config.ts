@@ -10,14 +10,14 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
-  routeRules: {
-    '/api/**': { cors: false }
-  },
-
   runtimeConfig: {
     session: {
       password: process.env.NUXT_SECRET || 'change-me-in-production-min-32-chars!!'
     }
+  },
+
+  routeRules: {
+    '/api/**': { cors: false }
   },
 
   compatibilityDate: '2025-01-15',

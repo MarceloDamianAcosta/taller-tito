@@ -117,8 +117,14 @@ function roleLabel(role: string) {
 <template>
   <div class="space-y-6">
     <div class="flex items-center justify-between gap-2">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Usuarios</h1>
-      <UButton label="Nuevo usuario" icon="i-lucide-user-plus" @click="openCreate" />
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+        Usuarios
+      </h1>
+      <UButton
+        label="Nuevo usuario"
+        icon="i-lucide-user-plus"
+        @click="openCreate"
+      />
     </div>
 
     <div class="hidden md:block">
@@ -126,10 +132,18 @@ function roleLabel(role: string) {
         <table class="w-full text-sm">
           <thead>
             <tr class="text-left text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800">
-              <th class="pb-3 font-medium">Nombre</th>
-              <th class="pb-3 font-medium">Usuario</th>
-              <th class="pb-3 font-medium">Rol</th>
-              <th class="pb-3 font-medium">Estado</th>
+              <th class="pb-3 font-medium">
+                Nombre
+              </th>
+              <th class="pb-3 font-medium">
+                Usuario
+              </th>
+              <th class="pb-3 font-medium">
+                Rol
+              </th>
+              <th class="pb-3 font-medium">
+                Estado
+              </th>
               <th class="pb-3" />
             </tr>
           </thead>
@@ -139,18 +153,38 @@ function roleLabel(role: string) {
               :key="u.id"
               :class="!u.active ? 'opacity-60' : ''"
             >
-              <td class="py-3 font-medium text-gray-900 dark:text-white">{{ u.name }}</td>
-              <td class="py-3 text-gray-500">{{ u.username }}</td>
-              <td class="py-3">
-                <UBadge :color="roleColor(u.role)" variant="subtle" size="sm">{{ roleLabel(u.role) }}</UBadge>
+              <td class="py-3 font-medium text-gray-900 dark:text-white">
+                {{ u.name }}
+              </td>
+              <td class="py-3 text-gray-500">
+                {{ u.username }}
               </td>
               <td class="py-3">
-                <UBadge :color="u.active ? 'success' : 'neutral'" variant="subtle" size="sm">
+                <UBadge
+                  :color="roleColor(u.role)"
+                  variant="subtle"
+                  size="sm"
+                >
+                  {{ roleLabel(u.role) }}
+                </UBadge>
+              </td>
+              <td class="py-3">
+                <UBadge
+                  :color="u.active ? 'success' : 'neutral'"
+                  variant="subtle"
+                  size="sm"
+                >
                   {{ u.active ? 'Activo' : 'Inactivo' }}
                 </UBadge>
               </td>
               <td class="py-3 text-right">
-                <UButton label="Editar" size="xs" color="neutral" variant="subtle" @click="openEdit(u)" />
+                <UButton
+                  label="Editar"
+                  size="xs"
+                  color="neutral"
+                  variant="subtle"
+                  @click="openEdit(u)"
+                />
               </td>
             </tr>
           </tbody>
@@ -166,16 +200,36 @@ function roleLabel(role: string) {
       >
         <div class="flex items-start justify-between gap-2">
           <div>
-            <p class="font-medium text-gray-900 dark:text-white">{{ u.name }}</p>
-            <p class="text-sm text-gray-500">@{{ u.username }}</p>
+            <p class="font-medium text-gray-900 dark:text-white">
+              {{ u.name }}
+            </p>
+            <p class="text-sm text-gray-500">
+              @{{ u.username }}
+            </p>
             <div class="flex gap-2 mt-2">
-              <UBadge :color="roleColor(u.role)" variant="subtle" size="sm">{{ roleLabel(u.role) }}</UBadge>
-              <UBadge :color="u.active ? 'success' : 'neutral'" variant="subtle" size="sm">
+              <UBadge
+                :color="roleColor(u.role)"
+                variant="subtle"
+                size="sm"
+              >
+                {{ roleLabel(u.role) }}
+              </UBadge>
+              <UBadge
+                :color="u.active ? 'success' : 'neutral'"
+                variant="subtle"
+                size="sm"
+              >
                 {{ u.active ? 'Activo' : 'Inactivo' }}
               </UBadge>
             </div>
           </div>
-          <UButton label="Editar" size="sm" color="neutral" variant="subtle" @click="openEdit(u)" />
+          <UButton
+            label="Editar"
+            size="sm"
+            color="neutral"
+            variant="subtle"
+            @click="openEdit(u)"
+          />
         </div>
       </UCard>
     </div>
@@ -184,55 +238,147 @@ function roleLabel(role: string) {
       <template #content>
         <div class="p-6 space-y-4">
           <template v-if="!editingUser">
-            <h3 class="text-base font-semibold">Nuevo usuario</h3>
-            <UFormField label="Nombre" required>
-              <UInput v-model="createForm.nombre" class="w-full" placeholder="Nombre completo" />
+            <h3 class="text-base font-semibold">
+              Nuevo usuario
+            </h3>
+            <UFormField
+              label="Nombre"
+              required
+            >
+              <UInput
+                v-model="createForm.nombre"
+                class="w-full"
+                placeholder="Nombre completo"
+              />
             </UFormField>
-            <UFormField label="Usuario" required>
-              <UInput v-model="createForm.username" class="w-full" placeholder="usuario (sin espacios)" />
+            <UFormField
+              label="Usuario"
+              required
+            >
+              <UInput
+                v-model="createForm.username"
+                class="w-full"
+                placeholder="usuario (sin espacios)"
+              />
             </UFormField>
-            <UFormField label="Contraseña" required>
-              <UInput v-model="createForm.password" type="password" class="w-full" placeholder="Mínimo 8 caracteres" />
+            <UFormField
+              label="Contraseña"
+              required
+            >
+              <UInput
+                v-model="createForm.password"
+                type="password"
+                class="w-full"
+                placeholder="Mínimo 8 caracteres"
+              />
             </UFormField>
             <UFormField label="Rol">
-              <USelect v-model="createForm.rol" :items="rolOptions" value-key="value" label-key="label" class="w-full" />
+              <USelect
+                v-model="createForm.rol"
+                :items="rolOptions"
+                value-key="value"
+                label-key="label"
+                class="w-full"
+              />
             </UFormField>
-            <UAlert v-if="error" color="error" :description="error" />
+            <UAlert
+              v-if="error"
+              color="error"
+              :description="error"
+            />
             <div class="flex gap-2 justify-end">
-              <UButton label="Cancelar" color="neutral" variant="subtle" @click="showModal = false" />
-              <UButton label="Crear usuario" :loading="saving" @click="saveCreate" />
+              <UButton
+                label="Cancelar"
+                color="neutral"
+                variant="subtle"
+                @click="showModal = false"
+              />
+              <UButton
+                label="Crear usuario"
+                :loading="saving"
+                @click="saveCreate"
+              />
             </div>
           </template>
 
           <template v-else>
-            <h3 class="text-base font-semibold">Editar usuario</h3>
-            <UFormField label="Nombre" required>
-              <UInput v-model="editForm.nombre" class="w-full" />
+            <h3 class="text-base font-semibold">
+              Editar usuario
+            </h3>
+            <UFormField
+              label="Nombre"
+              required
+            >
+              <UInput
+                v-model="editForm.nombre"
+                class="w-full"
+              />
             </UFormField>
             <UFormField label="Rol">
-              <USelect v-model="editForm.rol" :items="rolOptions" value-key="value" label-key="label" class="w-full" />
+              <USelect
+                v-model="editForm.rol"
+                :items="rolOptions"
+                value-key="value"
+                label-key="label"
+                class="w-full"
+              />
             </UFormField>
             <div class="flex items-center gap-3">
               <UToggle v-model="editForm.activo" />
               <span class="text-sm text-gray-700 dark:text-gray-300">Activo</span>
             </div>
-            <UAlert v-if="error" color="error" :description="error" />
+            <UAlert
+              v-if="error"
+              color="error"
+              :description="error"
+            />
             <div class="flex gap-2 justify-end">
-              <UButton label="Cancelar" color="neutral" variant="subtle" @click="showModal = false" />
-              <UButton label="Guardar" :loading="saving" @click="saveEdit" />
+              <UButton
+                label="Cancelar"
+                color="neutral"
+                variant="subtle"
+                @click="showModal = false"
+              />
+              <UButton
+                label="Guardar"
+                :loading="saving"
+                @click="saveEdit"
+              />
             </div>
 
-            <hr class="border-gray-200 dark:border-gray-700 my-2" />
+            <hr class="border-gray-200 dark:border-gray-700 my-2">
 
-            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Cambiar contraseña</h4>
+            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Cambiar contraseña
+            </h4>
             <UFormField label="Nueva contraseña">
-              <UInput v-model="passwordForm.newPassword" type="password" class="w-full" placeholder="Mínimo 8 caracteres" />
+              <UInput
+                v-model="passwordForm.newPassword"
+                type="password"
+                class="w-full"
+                placeholder="Mínimo 8 caracteres"
+              />
             </UFormField>
             <UFormField label="Confirmar contraseña">
-              <UInput v-model="passwordForm.confirm" type="password" class="w-full" />
+              <UInput
+                v-model="passwordForm.confirm"
+                type="password"
+                class="w-full"
+              />
             </UFormField>
-            <UAlert v-if="passwordError" color="error" :description="passwordError" />
-            <UButton label="Cambiar contraseña" size="sm" color="neutral" variant="subtle" :loading="saving" @click="changePassword" />
+            <UAlert
+              v-if="passwordError"
+              color="error"
+              :description="passwordError"
+            />
+            <UButton
+              label="Cambiar contraseña"
+              size="sm"
+              color="neutral"
+              variant="subtle"
+              :loading="saving"
+              @click="changePassword"
+            />
           </template>
         </div>
       </template>

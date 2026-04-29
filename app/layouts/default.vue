@@ -6,7 +6,11 @@ const isOpen = ref(false)
   <div class="min-h-screen bg-gray-50 dark:bg-gray-950">
     <AppNavbar :on-open="() => (isOpen = true)" />
 
-    <USlideover v-model:open="isOpen" side="left" class="lg:hidden">
+    <USlideover
+      v-model:open="isOpen"
+      side="left"
+      class="lg:hidden"
+    >
       <template #content>
         <AppSidebar />
       </template>

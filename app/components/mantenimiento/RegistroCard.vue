@@ -38,7 +38,10 @@ const proximaVencida = computed(() =>
             size="sm"
           />
           <span class="text-sm text-gray-500 dark:text-gray-400">{{ formatDate(record.fecha) }}</span>
-          <span v-if="record.maquinaNombre || record.maquina?.nombre" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <span
+            v-if="record.maquinaNombre || record.maquina?.nombre"
+            class="text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             {{ record.maquinaNombre ?? record.maquina?.nombre }}
           </span>
         </div>
@@ -51,17 +54,35 @@ const proximaVencida = computed(() =>
         />
       </div>
 
-      <p class="text-sm text-gray-800 dark:text-gray-200">{{ record.descripcion }}</p>
+      <p class="text-sm text-gray-800 dark:text-gray-200">
+        {{ record.descripcion }}
+      </p>
 
-      <div v-if="record.responsable" class="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
-        <UIcon name="i-lucide-user" class="size-3.5 shrink-0" />
+      <div
+        v-if="record.responsable"
+        class="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400"
+      >
+        <UIcon
+          name="i-lucide-user"
+          class="size-3.5 shrink-0"
+        />
         {{ record.responsable }}
       </div>
 
-      <div v-if="record.proximaFecha" class="flex items-center gap-1 text-sm" :class="proximaVencida ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-500 dark:text-gray-400'">
-        <UIcon name="i-lucide-calendar-clock" class="size-3.5 shrink-0" />
+      <div
+        v-if="record.proximaFecha"
+        class="flex items-center gap-1 text-sm"
+        :class="proximaVencida ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-500 dark:text-gray-400'"
+      >
+        <UIcon
+          name="i-lucide-calendar-clock"
+          class="size-3.5 shrink-0"
+        />
         Próxima revisión: {{ formatDate(record.proximaFecha) }}
-        <span v-if="proximaVencida" class="ml-1">(vencida)</span>
+        <span
+          v-if="proximaVencida"
+          class="ml-1"
+        >(vencida)</span>
       </div>
     </div>
   </UCard>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const emit = defineEmits<{
-  created: [payload: { id: number; nombre: string; unidad: string }]
+  created: [payload: { id: number, nombre: string, unidad: string }]
 }>()
 
 const modalOpen = ref(false)
@@ -41,7 +41,7 @@ async function save() {
   }
   saving.value = true
   try {
-    const result = await $fetch<{ id: number; nombre: string; unidad: string }>('/api/materiales', {
+    const result = await $fetch<{ id: number, nombre: string, unidad: string }>('/api/materiales', {
       method: 'POST',
       body: {
         nombre: form.nombre.trim(),
@@ -73,14 +73,26 @@ async function save() {
     <UModal v-model:open="modalOpen">
       <template #content>
         <div class="p-4 space-y-4">
-          <h2 class="text-base font-semibold text-gray-900 dark:text-white">Agregar material</h2>
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+            Agregar material
+          </h2>
 
           <div class="space-y-3">
-            <UFormField label="Nombre" required>
-              <UInput v-model="form.nombre" placeholder="Ej: Chapa 2mm" class="w-full" />
+            <UFormField
+              label="Nombre"
+              required
+            >
+              <UInput
+                v-model="form.nombre"
+                placeholder="Ej: Chapa 2mm"
+                class="w-full"
+              />
             </UFormField>
 
-            <UFormField label="Unidad" required>
+            <UFormField
+              label="Unidad"
+              required
+            >
               <USelect
                 v-model="form.unidad"
                 :items="unidadOptions"
@@ -92,11 +104,19 @@ async function save() {
             </UFormField>
 
             <UFormField label="Categoría">
-              <UInput v-model="form.tipo" placeholder="Ej: Metal, Lubricante" class="w-full" />
+              <UInput
+                v-model="form.tipo"
+                placeholder="Ej: Metal, Lubricante"
+                class="w-full"
+              />
             </UFormField>
           </div>
 
-          <UAlert v-if="errorMsg" color="error" :description="errorMsg" />
+          <UAlert
+            v-if="errorMsg"
+            color="error"
+            :description="errorMsg"
+          />
 
           <div class="flex justify-end gap-2 pt-2">
             <UButton

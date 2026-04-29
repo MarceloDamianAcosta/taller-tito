@@ -66,12 +66,30 @@ async function save() {
 
 <template>
   <div class="space-y-4">
-    <UFormField v-if="!maquinaId" label="Máquina" required>
-      <USelect v-model="form.maquina_id" :items="maquinaOptions" value-key="value" label-key="label" placeholder="Seleccioná una máquina" class="w-full" />
+    <UFormField
+      v-if="!maquinaId"
+      label="Máquina"
+      required
+    >
+      <USelect
+        v-model="form.maquina_id"
+        :items="maquinaOptions"
+        value-key="value"
+        label-key="label"
+        placeholder="Seleccioná una máquina"
+        class="w-full"
+      />
     </UFormField>
 
-    <UFormField label="Fecha" required>
-      <UInput v-model="form.fecha" type="date" class="w-full" />
+    <UFormField
+      label="Fecha"
+      required
+    >
+      <UInput
+        v-model="form.fecha"
+        type="date"
+        class="w-full"
+      />
     </UFormField>
 
     <div>
@@ -94,22 +112,46 @@ async function save() {
       </div>
     </div>
 
-    <UFormField label="Descripción" required>
-      <UTextarea v-model="form.descripcion" :rows="3" class="w-full" placeholder="Describir el mantenimiento realizado o a realizar" />
+    <UFormField
+      label="Descripción"
+      required
+    >
+      <UTextarea
+        v-model="form.descripcion"
+        :rows="3"
+        class="w-full"
+        placeholder="Describir el mantenimiento realizado o a realizar"
+      />
     </UFormField>
 
     <UFormField label="Responsable">
-      <UInput v-model="form.responsable" class="w-full" placeholder="Nombre del responsable" />
+      <UInput
+        v-model="form.responsable"
+        class="w-full"
+        placeholder="Nombre del responsable"
+      />
     </UFormField>
 
     <UFormField label="Próxima revisión">
-      <UInput v-model="form.proxima_fecha" type="date" class="w-full" />
+      <UInput
+        v-model="form.proxima_fecha"
+        type="date"
+        class="w-full"
+      />
     </UFormField>
 
-    <UAlert v-if="error" color="error" :description="error" />
+    <UAlert
+      v-if="error"
+      color="error"
+      :description="error"
+    />
 
     <div class="flex gap-2 justify-end pt-2">
-      <UButton label="Guardar" :loading="saving" @click="save" />
+      <UButton
+        label="Guardar"
+        :loading="saving"
+        @click="save"
+      />
     </div>
   </div>
 </template>

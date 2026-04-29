@@ -32,24 +32,56 @@ async function submit() {
   <div class="max-w-md mx-auto">
     <UCard>
       <template #header>
-        <h1 class="text-xl font-semibold">Cambiar contraseña</h1>
-        <p class="mt-1 text-sm text-gray-500">Por seguridad, cambiá tu contraseña antes de continuar.</p>
+        <h1 class="text-xl font-semibold">
+          Cambiar contraseña
+        </h1>
+        <p class="mt-1 text-sm text-gray-500">
+          Por seguridad, cambiá tu contraseña antes de continuar.
+        </p>
       </template>
 
-      <form class="space-y-4" @submit.prevent="submit">
-        <UFormField label="Contraseña actual" name="current">
-          <UInput v-model="form.currentPassword" type="password" class="w-full" />
+      <form
+        class="space-y-4"
+        @submit.prevent="submit"
+      >
+        <UFormField
+          label="Contraseña actual"
+          name="current"
+        >
+          <UInput
+            v-model="form.currentPassword"
+            type="password"
+            class="w-full"
+          />
         </UFormField>
 
-        <UFormField label="Nueva contraseña" name="new">
-          <UInput v-model="form.newPassword" type="password" class="w-full" />
+        <UFormField
+          label="Nueva contraseña"
+          name="new"
+        >
+          <UInput
+            v-model="form.newPassword"
+            type="password"
+            class="w-full"
+          />
         </UFormField>
 
-        <UFormField label="Confirmar nueva contraseña" name="confirm">
-          <UInput v-model="form.confirm" type="password" class="w-full" />
+        <UFormField
+          label="Confirmar nueva contraseña"
+          name="confirm"
+        >
+          <UInput
+            v-model="form.confirm"
+            type="password"
+            class="w-full"
+          />
         </UFormField>
 
-        <UAlert v-if="error" color="error" :description="error" />
+        <UAlert
+          v-if="error"
+          color="error"
+          :description="error"
+        />
 
         <UButton
           type="submit"

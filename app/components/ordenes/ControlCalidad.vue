@@ -111,7 +111,9 @@ const borderClass = computed(() => {
   >
     <div class="flex items-center justify-between flex-wrap gap-2">
       <div class="flex items-center gap-2">
-        <h2 class="text-base font-semibold text-gray-900 dark:text-white">Control de Calidad</h2>
+        <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+          Control de Calidad
+        </h2>
         <UBadge
           v-if="calidad"
           :color="calidad.resultado === 'OK' ? 'success' : 'error'"
@@ -120,7 +122,10 @@ const borderClass = computed(() => {
           {{ calidad.resultado }}
         </UBadge>
       </div>
-      <div v-if="!isEditing && calidad" class="flex gap-2">
+      <div
+        v-if="!isEditing && calidad"
+        class="flex gap-2"
+      >
         <UButton
           label="Editar"
           icon="i-lucide-pencil"
@@ -130,58 +135,116 @@ const borderClass = computed(() => {
           @click="startEdit"
         />
       </div>
-      <div v-else-if="isEditing && calidad" class="flex gap-2">
-        <UButton label="Cancelar" size="sm" color="neutral" variant="subtle" @click="cancelEdit" />
-        <UButton label="Guardar" size="sm" icon="i-lucide-save" :loading="saving" @click="save" />
+      <div
+        v-else-if="isEditing && calidad"
+        class="flex gap-2"
+      >
+        <UButton
+          label="Cancelar"
+          size="sm"
+          color="neutral"
+          variant="subtle"
+          @click="cancelEdit"
+        />
+        <UButton
+          label="Guardar"
+          size="sm"
+          icon="i-lucide-save"
+          :loading="saving"
+          @click="save"
+        />
       </div>
     </div>
 
-    <div v-if="!isEditing && calidad" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+    <div
+      v-if="!isEditing && calidad"
+      class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm"
+    >
       <div class="sm:col-span-2">
         <span class="text-gray-500 dark:text-gray-400">¿Qué se controló?</span>
-        <p class="font-medium text-gray-900 dark:text-white mt-0.5">{{ calidad.queSeControla }}</p>
+        <p class="font-medium text-gray-900 dark:text-white mt-0.5">
+          {{ calidad.queSeControla }}
+        </p>
       </div>
       <div v-if="calidad.instrumento">
         <span class="text-gray-500 dark:text-gray-400">Instrumento</span>
-        <p class="font-medium text-gray-900 dark:text-white mt-0.5">{{ calidad.instrumento }}</p>
+        <p class="font-medium text-gray-900 dark:text-white mt-0.5">
+          {{ calidad.instrumento }}
+        </p>
       </div>
       <div>
         <span class="text-gray-500 dark:text-gray-400">Fecha de control</span>
-        <p class="font-medium text-gray-900 dark:text-white mt-0.5">{{ formatDate(calidad.fechaControl) }}</p>
+        <p class="font-medium text-gray-900 dark:text-white mt-0.5">
+          {{ formatDate(calidad.fechaControl) }}
+        </p>
       </div>
       <div>
         <span class="text-gray-500 dark:text-gray-400">¿Cumple función?</span>
-        <p class="font-medium mt-0.5" :class="calidad.cumpleFuncion ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+        <p
+          class="font-medium mt-0.5"
+          :class="calidad.cumpleFuncion ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
+        >
           {{ calidad.cumpleFuncion ? 'Sí' : 'No' }}
         </p>
       </div>
       <div>
         <span class="text-gray-500 dark:text-gray-400">¿Hubo reproceso?</span>
-        <p class="font-medium mt-0.5" :class="calidad.huboReproceso ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'">
+        <p
+          class="font-medium mt-0.5"
+          :class="calidad.huboReproceso ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'"
+        >
           {{ calidad.huboReproceso ? 'Sí' : 'No' }}
         </p>
       </div>
-      <div v-if="calidad.accion" class="sm:col-span-2">
+      <div
+        v-if="calidad.accion"
+        class="sm:col-span-2"
+      >
         <span class="text-gray-500 dark:text-gray-400">Acción correctiva</span>
-        <p class="font-medium text-gray-900 dark:text-white mt-0.5">{{ calidad.accion }}</p>
+        <p class="font-medium text-gray-900 dark:text-white mt-0.5">
+          {{ calidad.accion }}
+        </p>
       </div>
-      <div v-if="calidad.obsCalidad" class="sm:col-span-2">
+      <div
+        v-if="calidad.obsCalidad"
+        class="sm:col-span-2"
+      >
         <span class="text-gray-500 dark:text-gray-400">Observaciones</span>
-        <p class="font-medium text-gray-900 dark:text-white mt-0.5">{{ calidad.obsCalidad }}</p>
+        <p class="font-medium text-gray-900 dark:text-white mt-0.5">
+          {{ calidad.obsCalidad }}
+        </p>
       </div>
     </div>
 
-    <p v-else-if="!isEditing && !calidad" class="text-sm text-gray-500 dark:text-gray-400">
+    <p
+      v-else-if="!isEditing && !calidad"
+      class="text-sm text-gray-500 dark:text-gray-400"
+    >
       Sin control de calidad registrado.
     </p>
 
-    <div v-if="isEditing" class="space-y-3">
-      <UFormField label="¿Qué se controló?" required>
-        <UTextarea v-model="form.que_se_controla" class="w-full" :rows="2" placeholder="Descripción del control realizado" />
+    <div
+      v-if="isEditing"
+      class="space-y-3"
+    >
+      <UFormField
+        label="¿Qué se controló?"
+        required
+      >
+        <UTextarea
+          v-model="form.que_se_controla"
+          class="w-full"
+          :rows="2"
+          placeholder="Descripción del control realizado"
+        />
       </UFormField>
 
       <UFormField label="Instrumento">
-        <UInput v-model="form.instrumento" class="w-full" placeholder="Ej: Calibre, pie de rey..." />
+        <UInput
+          v-model="form.instrumento"
+          class="w-full"
+          placeholder="Ej: Calibre, pie de rey..."
+        />
       </UFormField>
 
       <div>
@@ -209,7 +272,12 @@ const borderClass = computed(() => {
         class="border border-red-300 dark:border-red-700 rounded-lg p-3 bg-red-50 dark:bg-red-950/20"
       >
         <UFormField label="Acción correctiva">
-          <UTextarea v-model="form.accion" class="w-full" :rows="2" placeholder="Describir la acción tomada" />
+          <UTextarea
+            v-model="form.accion"
+            class="w-full"
+            :rows="2"
+            placeholder="Describir la acción tomada"
+          />
         </UFormField>
       </div>
 
@@ -225,18 +293,47 @@ const borderClass = computed(() => {
       </div>
 
       <UFormField label="Observaciones">
-        <UTextarea v-model="form.obs_calidad" class="w-full" :rows="2" placeholder="Observaciones adicionales" />
+        <UTextarea
+          v-model="form.obs_calidad"
+          class="w-full"
+          :rows="2"
+          placeholder="Observaciones adicionales"
+        />
       </UFormField>
 
-      <UFormField label="Fecha de control" required>
-        <UInput v-model="form.fecha_control" type="date" class="w-full" />
+      <UFormField
+        label="Fecha de control"
+        required
+      >
+        <UInput
+          v-model="form.fecha_control"
+          type="date"
+          class="w-full"
+        />
       </UFormField>
 
-      <UAlert v-if="saveError" color="error" :description="saveError" />
+      <UAlert
+        v-if="saveError"
+        color="error"
+        :description="saveError"
+      />
 
       <div class="flex gap-2 justify-end">
-        <UButton v-if="calidad" label="Cancelar" size="sm" color="neutral" variant="subtle" @click="cancelEdit" />
-        <UButton label="Guardar" size="sm" icon="i-lucide-save" :loading="saving" @click="save" />
+        <UButton
+          v-if="calidad"
+          label="Cancelar"
+          size="sm"
+          color="neutral"
+          variant="subtle"
+          @click="cancelEdit"
+        />
+        <UButton
+          label="Guardar"
+          size="sm"
+          icon="i-lucide-save"
+          :loading="saving"
+          @click="save"
+        />
       </div>
     </div>
   </div>

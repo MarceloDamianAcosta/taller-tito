@@ -1,8 +1,8 @@
 <script setup lang="ts">
 definePageMeta({ title: 'Nueva OT' })
 
-interface Cliente { id: number; nombre: string }
-interface Maquina { id: number; nombre: string }
+interface Cliente { id: number, nombre: string }
+interface Maquina { id: number, nombre: string }
 
 const router = useRouter()
 const saving = ref(false)
@@ -37,7 +37,7 @@ const maquinaOptions = computed(() => [
   ...(maquinasData.value ?? []).map(m => ({ label: m.nombre, value: m.id }))
 ])
 
-function onClienteCreated(payload: { id: number; nombre: string }) {
+function onClienteCreated(payload: { id: number, nombre: string }) {
   clientesData.value = [...(clientesData.value ?? []), payload]
   form.cliente_id = payload.id as number | undefined
 }
@@ -84,12 +84,25 @@ async function submit() {
 <template>
   <div class="max-w-2xl space-y-6">
     <div class="flex items-center gap-3">
-      <UButton icon="i-lucide-arrow-left" color="neutral" variant="ghost" to="/ordenes" />
-      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Nueva Orden de Trabajo</h1>
+      <UButton
+        icon="i-lucide-arrow-left"
+        color="neutral"
+        variant="ghost"
+        to="/ordenes"
+      />
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+        Nueva Orden de Trabajo
+      </h1>
     </div>
 
-    <form class="space-y-4" @submit.prevent="submit">
-      <UFormField label="Cliente" required>
+    <form
+      class="space-y-4"
+      @submit.prevent="submit"
+    >
+      <UFormField
+        label="Cliente"
+        required
+      >
         <div class="flex items-center gap-2">
           <USelect
             v-model="form.cliente_id"
@@ -103,7 +116,10 @@ async function submit() {
         </div>
       </UFormField>
 
-      <UFormField label="Descripción" required>
+      <UFormField
+        label="Descripción"
+        required
+      >
         <UTextarea
           v-model="form.descripcion"
           placeholder="Descripción del trabajo a realizar"
@@ -114,11 +130,21 @@ async function submit() {
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <UFormField label="Material">
-          <UInput v-model="form.material" placeholder="Ej: Chapa 2mm" class="w-full" />
+          <UInput
+            v-model="form.material"
+            placeholder="Ej: Chapa 2mm"
+            class="w-full"
+          />
         </UFormField>
 
         <UFormField label="Cantidad">
-          <UInput v-model="form.cantidad" type="number" min="0" placeholder="Ej: 10" class="w-full" />
+          <UInput
+            v-model="form.cantidad"
+            type="number"
+            min="0"
+            placeholder="Ej: 10"
+            class="w-full"
+          />
         </UFormField>
       </div>
 
@@ -134,12 +160,26 @@ async function submit() {
       </UFormField>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <UFormField label="Fecha de ingreso" required>
-          <UInput v-model="form.fecha_ingreso" type="date" class="w-full" />
+        <UFormField
+          label="Fecha de ingreso"
+          required
+        >
+          <UInput
+            v-model="form.fecha_ingreso"
+            type="date"
+            class="w-full"
+          />
         </UFormField>
 
-        <UFormField label="Fecha prometida" required>
-          <UInput v-model="form.fecha_prometida" type="date" class="w-full" />
+        <UFormField
+          label="Fecha prometida"
+          required
+        >
+          <UInput
+            v-model="form.fecha_prometida"
+            type="date"
+            class="w-full"
+          />
         </UFormField>
       </div>
 
@@ -155,14 +195,33 @@ async function submit() {
       </UFormField>
 
       <UFormField label="Observaciones">
-        <UTextarea v-model="form.observaciones" placeholder="Observaciones opcionales" class="w-full" :rows="3" />
+        <UTextarea
+          v-model="form.observaciones"
+          placeholder="Observaciones opcionales"
+          class="w-full"
+          :rows="3"
+        />
       </UFormField>
 
-      <UAlert v-if="errorMsg" color="error" :description="errorMsg" />
+      <UAlert
+        v-if="errorMsg"
+        color="error"
+        :description="errorMsg"
+      />
 
       <div class="flex justify-end gap-3 pt-2">
-        <UButton label="Cancelar" color="neutral" variant="subtle" to="/ordenes" />
-        <UButton type="submit" label="Crear OT" icon="i-lucide-save" :loading="saving" />
+        <UButton
+          label="Cancelar"
+          color="neutral"
+          variant="subtle"
+          to="/ordenes"
+        />
+        <UButton
+          type="submit"
+          label="Crear OT"
+          icon="i-lucide-save"
+          :loading="saving"
+        />
       </div>
     </form>
   </div>

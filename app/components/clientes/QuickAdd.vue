@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const emit = defineEmits<{
-  created: [payload: { id: number; nombre: string }]
+  created: [payload: { id: number, nombre: string }]
 }>()
 
 const modalOpen = ref(false)
@@ -22,7 +22,7 @@ async function save() {
   }
   saving.value = true
   try {
-    const created = await $fetch<{ id: number; nombre: string }>('/api/clientes', {
+    const created = await $fetch<{ id: number, nombre: string }>('/api/clientes', {
       method: 'POST',
       body: { nombre: nombre.value.trim() }
     })
@@ -47,10 +47,20 @@ async function save() {
       @click="open"
     />
 
-    <UModal v-model:open="modalOpen" title="Nuevo cliente rápido">
+    <UModal
+      v-model:open="modalOpen"
+      title="Nuevo cliente rápido"
+    >
       <template #body>
-        <form class="space-y-4" @submit.prevent="save">
-          <UFormField label="Nombre" name="nombre" required>
+        <form
+          class="space-y-4"
+          @submit.prevent="save"
+        >
+          <UFormField
+            label="Nombre"
+            name="nombre"
+            required
+          >
             <UInput
               v-model="nombre"
               placeholder="Nombre del cliente"
@@ -59,11 +69,24 @@ async function save() {
             />
           </UFormField>
 
-          <UAlert v-if="error" color="error" :description="error" />
+          <UAlert
+            v-if="error"
+            color="error"
+            :description="error"
+          />
 
           <div class="flex justify-end gap-2 pt-2">
-            <UButton label="Cancelar" color="neutral" variant="outline" @click="modalOpen = false" />
-            <UButton type="submit" label="Crear" :loading="saving" />
+            <UButton
+              label="Cancelar"
+              color="neutral"
+              variant="outline"
+              @click="modalOpen = false"
+            />
+            <UButton
+              type="submit"
+              label="Crear"
+              :loading="saving"
+            />
           </div>
         </form>
       </template>

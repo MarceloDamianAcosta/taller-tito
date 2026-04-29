@@ -34,7 +34,7 @@ const fetchQuery = computed(() => {
   return q
 })
 
-const { data: ordenes, refresh } = await useFetch<OT[]>('/api/workorders', {
+const { data: ordenes } = await useFetch<OT[]>('/api/workorders', {
   query: fetchQuery
 })
 
@@ -56,7 +56,9 @@ const tableColumns = [
 <template>
   <div class="space-y-4">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Órdenes de Trabajo</h1>
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+        Órdenes de Trabajo
+      </h1>
       <UButton
         label="Nueva OT"
         icon="i-lucide-plus"
@@ -126,7 +128,10 @@ const tableColumns = [
         </template>
       </UTable>
 
-      <p v-if="(ordenes ?? []).length === 0" class="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+      <p
+        v-if="(ordenes ?? []).length === 0"
+        class="py-8 text-center text-sm text-gray-500 dark:text-gray-400"
+      >
         No hay órdenes de trabajo que coincidan con los filtros.
       </p>
     </div>
@@ -157,7 +162,10 @@ const tableColumns = [
         </div>
       </NuxtLink>
 
-      <p v-if="(ordenes ?? []).length === 0" class="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+      <p
+        v-if="(ordenes ?? []).length === 0"
+        class="py-8 text-center text-sm text-gray-500 dark:text-gray-400"
+      >
         No hay órdenes de trabajo que coincidan con los filtros.
       </p>
     </div>

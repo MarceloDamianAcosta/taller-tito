@@ -106,11 +106,17 @@ function formatDate(iso: string | null | undefined) {
       />
     </div>
 
-    <div v-if="!ncs?.length" class="text-sm text-gray-500 dark:text-gray-400">
+    <div
+      v-if="!ncs?.length"
+      class="text-sm text-gray-500 dark:text-gray-400"
+    >
       Sin no conformidades registradas.
     </div>
 
-    <div v-else class="space-y-2">
+    <div
+      v-else
+      class="space-y-2"
+    >
       <div
         v-for="nc in ncs"
         :key="nc.id"
@@ -132,26 +138,44 @@ function formatDate(iso: string | null | undefined) {
           />
         </button>
 
-        <div v-if="expandedId === nc.id" class="px-4 pb-4 space-y-3 border-t border-gray-100 dark:border-gray-700">
+        <div
+          v-if="expandedId === nc.id"
+          class="px-4 pb-4 space-y-3 border-t border-gray-100 dark:border-gray-700"
+        >
           <div class="pt-3 space-y-2 text-sm">
             <div>
               <span class="text-gray-500 dark:text-gray-400">Problema</span>
-              <p class="font-medium text-gray-900 dark:text-white mt-0.5">{{ nc.problema }}</p>
+              <p class="font-medium text-gray-900 dark:text-white mt-0.5">
+                {{ nc.problema }}
+              </p>
             </div>
             <div v-if="nc.causa">
               <span class="text-gray-500 dark:text-gray-400">Causa raíz</span>
-              <p class="text-gray-900 dark:text-white mt-0.5">{{ nc.causa }}</p>
+              <p class="text-gray-900 dark:text-white mt-0.5">
+                {{ nc.causa }}
+              </p>
             </div>
             <div v-if="nc.solucion">
               <span class="text-gray-500 dark:text-gray-400">Solución</span>
-              <p class="text-gray-900 dark:text-white mt-0.5">{{ nc.solucion }}</p>
+              <p class="text-gray-900 dark:text-white mt-0.5">
+                {{ nc.solucion }}
+              </p>
             </div>
             <div v-if="nc.accionPreventiva">
               <span class="text-gray-500 dark:text-gray-400">Acción preventiva</span>
-              <p class="text-gray-900 dark:text-white mt-0.5">{{ nc.accionPreventiva }}</p>
+              <p class="text-gray-900 dark:text-white mt-0.5">
+                {{ nc.accionPreventiva }}
+              </p>
             </div>
           </div>
-          <UButton label="Editar" icon="i-lucide-pencil" size="sm" color="neutral" variant="subtle" @click="openEdit(nc)" />
+          <UButton
+            label="Editar"
+            icon="i-lucide-pencil"
+            size="sm"
+            color="neutral"
+            variant="subtle"
+            @click="openEdit(nc)"
+          />
         </div>
       </div>
     </div>
@@ -159,33 +183,78 @@ function formatDate(iso: string | null | undefined) {
     <UModal v-model:open="showModal">
       <template #content>
         <div class="p-6 space-y-4">
-          <h3 class="text-base font-semibold">{{ editingNc ? 'Editar No Conformidad' : 'Registrar No Conformidad' }}</h3>
+          <h3 class="text-base font-semibold">
+            {{ editingNc ? 'Editar No Conformidad' : 'Registrar No Conformidad' }}
+          </h3>
 
-          <UFormField label="Fecha" required>
-            <UInput v-model="form.fecha" type="date" class="w-full" />
+          <UFormField
+            label="Fecha"
+            required
+          >
+            <UInput
+              v-model="form.fecha"
+              type="date"
+              class="w-full"
+            />
           </UFormField>
 
-          <UFormField label="Problema detectado" required>
-            <UTextarea v-model="form.problema" :rows="3" class="w-full" placeholder="Describir el problema encontrado" />
+          <UFormField
+            label="Problema detectado"
+            required
+          >
+            <UTextarea
+              v-model="form.problema"
+              :rows="3"
+              class="w-full"
+              placeholder="Describir el problema encontrado"
+            />
           </UFormField>
 
           <UFormField label="Causa raíz">
-            <UTextarea v-model="form.causa" :rows="2" class="w-full" placeholder="¿Por qué ocurrió?" />
+            <UTextarea
+              v-model="form.causa"
+              :rows="2"
+              class="w-full"
+              placeholder="¿Por qué ocurrió?"
+            />
           </UFormField>
 
           <UFormField label="Solución aplicada">
-            <UTextarea v-model="form.solucion" :rows="2" class="w-full" placeholder="¿Cómo se resolvió?" />
+            <UTextarea
+              v-model="form.solucion"
+              :rows="2"
+              class="w-full"
+              placeholder="¿Cómo se resolvió?"
+            />
           </UFormField>
 
           <UFormField label="Acción preventiva">
-            <UTextarea v-model="form.accion_preventiva" :rows="2" class="w-full" placeholder="¿Qué se hace para que no se repita?" />
+            <UTextarea
+              v-model="form.accion_preventiva"
+              :rows="2"
+              class="w-full"
+              placeholder="¿Qué se hace para que no se repita?"
+            />
           </UFormField>
 
-          <UAlert v-if="saveError" color="error" :description="saveError" />
+          <UAlert
+            v-if="saveError"
+            color="error"
+            :description="saveError"
+          />
 
           <div class="flex gap-2 justify-end">
-            <UButton label="Cancelar" color="neutral" variant="subtle" @click="showModal = false" />
-            <UButton label="Guardar" :loading="saving" @click="save" />
+            <UButton
+              label="Cancelar"
+              color="neutral"
+              variant="subtle"
+              @click="showModal = false"
+            />
+            <UButton
+              label="Guardar"
+              :loading="saving"
+              @click="save"
+            />
           </div>
         </div>
       </template>

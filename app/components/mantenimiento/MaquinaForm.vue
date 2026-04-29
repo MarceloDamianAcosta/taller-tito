@@ -45,23 +45,46 @@ async function save() {
 
 <template>
   <div class="space-y-4">
-    <UFormField label="Nombre" required>
-      <UInput v-model="form.nombre" class="w-full" placeholder="Ej: Torno CNC #1" />
+    <UFormField
+      label="Nombre"
+      required
+    >
+      <UInput
+        v-model="form.nombre"
+        class="w-full"
+        placeholder="Ej: Torno CNC #1"
+      />
     </UFormField>
 
     <UFormField label="Descripción">
-      <UTextarea v-model="form.descripcion" :rows="2" class="w-full" placeholder="Descripción opcional" />
+      <UTextarea
+        v-model="form.descripcion"
+        :rows="2"
+        class="w-full"
+        placeholder="Descripción opcional"
+      />
     </UFormField>
 
-    <div v-if="machine" class="flex items-center gap-3">
+    <div
+      v-if="machine"
+      class="flex items-center gap-3"
+    >
       <UToggle v-model="form.activo" />
       <span class="text-sm text-gray-700 dark:text-gray-300">Activa</span>
     </div>
 
-    <UAlert v-if="error" color="error" :description="error" />
+    <UAlert
+      v-if="error"
+      color="error"
+      :description="error"
+    />
 
     <div class="flex gap-2 justify-end pt-2">
-      <UButton label="Guardar" :loading="saving" @click="save" />
+      <UButton
+        label="Guardar"
+        :loading="saving"
+        @click="save"
+      />
     </div>
   </div>
 </template>

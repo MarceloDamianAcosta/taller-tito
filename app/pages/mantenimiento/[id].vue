@@ -1,6 +1,5 @@
 <script setup lang="ts">
 const route = useRoute()
-const today = new Date().toISOString().slice(0, 10)
 
 const { data: machine, refresh: refreshMachine } = await useFetch<any>(() => `/api/machines/${route.params.id}`)
 const { data: registros, refresh: refreshRegistros } = await useFetch<any[]>(() => `/api/mantenimiento?maquina_id=${route.params.id}`)
@@ -43,16 +42,29 @@ function onRegistroSaved() {
 </script>
 
 <template>
-  <div v-if="machine" class="space-y-6">
+  <div
+    v-if="machine"
+    class="space-y-6"
+  >
     <div class="flex items-start justify-between gap-4 flex-wrap">
       <div>
         <div class="flex items-center gap-3">
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ machine.nombre }}</h1>
-          <UBadge :color="machine.activo ? 'success' : 'neutral'" variant="subtle">
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+            {{ machine.nombre }}
+          </h1>
+          <UBadge
+            :color="machine.activo ? 'success' : 'neutral'"
+            variant="subtle"
+          >
             {{ machine.activo ? 'Activa' : 'Inactiva' }}
           </UBadge>
         </div>
-        <p v-if="machine.descripcion" class="text-gray-500 mt-1">{{ machine.descripcion }}</p>
+        <p
+          v-if="machine.descripcion"
+          class="text-gray-500 mt-1"
+        >
+          {{ machine.descripcion }}
+        </p>
       </div>
       <div class="flex gap-2 flex-wrap">
         <UButton
@@ -91,7 +103,10 @@ function onRegistroSaved() {
       />
     </div>
 
-    <div v-if="!registrosFiltrados.length" class="text-sm text-gray-500">
+    <div
+      v-if="!registrosFiltrados.length"
+      class="text-sm text-gray-500"
+    >
       No hay registros para esta máquina.
     </div>
 
@@ -107,8 +122,13 @@ function onRegistroSaved() {
     <UModal v-model:open="showEditModal">
       <template #content>
         <div class="p-6 space-y-4">
-          <h3 class="text-base font-semibold">Editar máquina</h3>
-          <MantenimientoMaquinaForm :machine="machine" @saved="onMaquinaSaved" />
+          <h3 class="text-base font-semibold">
+            Editar máquina
+          </h3>
+          <MantenimientoMaquinaForm
+            :machine="machine"
+            @saved="onMaquinaSaved"
+          />
         </div>
       </template>
     </UModal>
@@ -116,7 +136,9 @@ function onRegistroSaved() {
     <UModal v-model:open="showRegistroModal">
       <template #content>
         <div class="p-6 space-y-4">
-          <h3 class="text-base font-semibold">{{ editingRegistro ? 'Editar registro' : 'Nuevo registro' }}</h3>
+          <h3 class="text-base font-semibold">
+            {{ editingRegistro ? 'Editar registro' : 'Nuevo registro' }}
+          </h3>
           <MantenimientoRegistroForm
             :maquina-id="machine.id"
             :record="editingRegistro"

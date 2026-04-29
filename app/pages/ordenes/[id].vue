@@ -49,9 +49,9 @@ interface OT {
   archivos: OTArchivo[]
 }
 
-interface Cliente { id: number; nombre: string }
-interface Maquina { id: number; nombre: string }
-interface CatMaterial { id: number; nombre: string; unidad: string }
+interface Cliente { id: number, nombre: string }
+interface Maquina { id: number, nombre: string }
+interface CatMaterial { id: number, nombre: string, unidad: string }
 
 const route = useRoute()
 const id = computed(() => route.params.id as string)
@@ -150,7 +150,7 @@ const showForceModal = ref(false)
 const pendingEstado = ref('')
 const clienteConformeEntrega = ref<boolean | null>(null)
 
-const estadoTransitions: Record<string, { label: string; next: string }> = {
+const estadoTransitions: Record<string, { label: string, next: string }> = {
   'Recepcionado': { label: 'Marcar En proceso', next: 'En proceso' },
   'En proceso': { label: 'Marcar Finalizado en stock', next: 'Finalizado en stock' },
   'Finalizado en stock': { label: 'Marcar Entregado', next: 'Entregado' }
@@ -207,7 +207,7 @@ const catMatOptions = computed(() =>
   (catMateriales.value ?? []).map(m => ({ label: `${m.nombre} (${m.unidad})`, value: m.id }))
 )
 
-function onMaterialCreated(payload: { id: number; nombre: string; unidad: string }) {
+function onMaterialCreated(payload: { id: number, nombre: string, unidad: string }) {
   catMateriales.value = [...(catMateriales.value ?? []), { id: payload.id, nombre: payload.nombre, unidad: payload.unidad }]
   matForm.material_id = payload.id
 }
@@ -273,7 +273,7 @@ const maquinaOptions = computed(() => [
   ...(maquinasData.value ?? []).map(m => ({ label: m.nombre, value: m.id }))
 ])
 
-function onClienteCreatedEdit(payload: { id: number; nombre: string }) {
+function onClienteCreatedEdit(payload: { id: number, nombre: string }) {
   clientesData.value = [...(clientesData.value ?? []), payload]
   editForm.cliente_id = payload.id
 }
@@ -289,9 +289,17 @@ const estadoTransiciones = estadoTransitions
 </script>
 
 <template>
-  <div v-if="ot" class="space-y-6 max-w-4xl">
+  <div
+    v-if="ot"
+    class="space-y-6 max-w-4xl"
+  >
     <div class="flex items-center gap-3 flex-wrap">
-      <UButton icon="i-lucide-arrow-left" color="neutral" variant="ghost" to="/ordenes" />
+      <UButton
+        icon="i-lucide-arrow-left"
+        color="neutral"
+        variant="ghost"
+        to="/ordenes"
+      />
       <h1 class="text-xl font-semibold text-gray-900 dark:text-white flex-1">
         OT #{{ ot.nroOt }} — <span class="font-normal">{{ ot.descripcion }}</span>
       </h1>
@@ -300,77 +308,143 @@ const estadoTransiciones = estadoTransitions
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="lg:col-span-2 space-y-6">
-
         <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 space-y-4">
           <div class="flex items-center justify-between">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Información</h2>
-            <div v-if="!isEditing" class="flex gap-2">
-              <UButton label="Editar" icon="i-lucide-pencil" size="sm" color="neutral" variant="subtle" @click="startEdit" />
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+              Información
+            </h2>
+            <div
+              v-if="!isEditing"
+              class="flex gap-2"
+            >
+              <UButton
+                label="Editar"
+                icon="i-lucide-pencil"
+                size="sm"
+                color="neutral"
+                variant="subtle"
+                @click="startEdit"
+              />
             </div>
-            <div v-else class="flex gap-2">
-              <UButton label="Cancelar" size="sm" color="neutral" variant="subtle" @click="cancelEdit" />
-              <UButton label="Guardar" size="sm" icon="i-lucide-save" :loading="savingEdit" @click="saveEdit" />
+            <div
+              v-else
+              class="flex gap-2"
+            >
+              <UButton
+                label="Cancelar"
+                size="sm"
+                color="neutral"
+                variant="subtle"
+                @click="cancelEdit"
+              />
+              <UButton
+                label="Guardar"
+                size="sm"
+                icon="i-lucide-save"
+                :loading="savingEdit"
+                @click="saveEdit"
+              />
             </div>
           </div>
 
-          <div v-if="!isEditing" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <div
+            v-if="!isEditing"
+            class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm"
+          >
             <div>
               <span class="text-gray-500 dark:text-gray-400">Cliente</span>
-              <p class="font-medium text-gray-900 dark:text-white">{{ ot.clienteNombre || '—' }}</p>
+              <p class="font-medium text-gray-900 dark:text-white">
+                {{ ot.clienteNombre || '—' }}
+              </p>
             </div>
             <div>
               <span class="text-gray-500 dark:text-gray-400">Máquina</span>
-              <p class="font-medium text-gray-900 dark:text-white">{{ ot.maquinaNombre || '—' }}</p>
+              <p class="font-medium text-gray-900 dark:text-white">
+                {{ ot.maquinaNombre || '—' }}
+              </p>
             </div>
             <div class="sm:col-span-2">
               <span class="text-gray-500 dark:text-gray-400">Descripción</span>
-              <p class="font-medium text-gray-900 dark:text-white">{{ ot.descripcion }}</p>
+              <p class="font-medium text-gray-900 dark:text-white">
+                {{ ot.descripcion }}
+              </p>
             </div>
             <div>
               <span class="text-gray-500 dark:text-gray-400">Material</span>
-              <p class="font-medium text-gray-900 dark:text-white">{{ ot.material || '—' }}</p>
+              <p class="font-medium text-gray-900 dark:text-white">
+                {{ ot.material || '—' }}
+              </p>
             </div>
             <div>
               <span class="text-gray-500 dark:text-gray-400">Cantidad</span>
-              <p class="font-medium text-gray-900 dark:text-white">{{ ot.cantidad ?? '—' }}</p>
+              <p class="font-medium text-gray-900 dark:text-white">
+                {{ ot.cantidad ?? '—' }}
+              </p>
             </div>
             <div>
               <span class="text-gray-500 dark:text-gray-400">Fecha ingreso</span>
-              <p class="font-medium text-gray-900 dark:text-white">{{ formatDate(ot.fechaIngreso) }}</p>
+              <p class="font-medium text-gray-900 dark:text-white">
+                {{ formatDate(ot.fechaIngreso) }}
+              </p>
             </div>
             <div>
               <span class="text-gray-500 dark:text-gray-400">Fecha prometida</span>
-              <p class="font-medium text-gray-900 dark:text-white">{{ formatDate(ot.fechaPrometida) }}</p>
+              <p class="font-medium text-gray-900 dark:text-white">
+                {{ formatDate(ot.fechaPrometida) }}
+              </p>
             </div>
             <div>
               <span class="text-gray-500 dark:text-gray-400">Fecha inicio</span>
-              <p class="font-medium text-gray-900 dark:text-white">{{ formatDate(ot.fechaInicio) }}</p>
+              <p class="font-medium text-gray-900 dark:text-white">
+                {{ formatDate(ot.fechaInicio) }}
+              </p>
             </div>
             <div>
               <span class="text-gray-500 dark:text-gray-400">Fecha finalización</span>
-              <p class="font-medium text-gray-900 dark:text-white">{{ formatDate(ot.fechaFinalizacion) }}</p>
+              <p class="font-medium text-gray-900 dark:text-white">
+                {{ formatDate(ot.fechaFinalizacion) }}
+              </p>
             </div>
             <div>
               <span class="text-gray-500 dark:text-gray-400">Fecha entrega</span>
-              <p class="font-medium text-gray-900 dark:text-white">{{ formatDate(ot.fechaEntrega) }}</p>
+              <p class="font-medium text-gray-900 dark:text-white">
+                {{ formatDate(ot.fechaEntrega) }}
+              </p>
             </div>
             <div>
               <span class="text-gray-500 dark:text-gray-400">Tiempo estimado (hs)</span>
-              <p class="font-medium text-gray-900 dark:text-white">{{ ot.tiempoEstimadoHs ?? '—' }}</p>
+              <p class="font-medium text-gray-900 dark:text-white">
+                {{ ot.tiempoEstimadoHs ?? '—' }}
+              </p>
             </div>
             <div>
               <span class="text-gray-500 dark:text-gray-400">Tiempo real (hs)</span>
-              <p class="font-medium text-gray-900 dark:text-white">{{ ot.tiempoRealHs ?? '—' }}</p>
+              <p class="font-medium text-gray-900 dark:text-white">
+                {{ ot.tiempoRealHs ?? '—' }}
+              </p>
             </div>
-            <div v-if="ot.motivoRetraso" class="sm:col-span-2">
+            <div
+              v-if="ot.motivoRetraso"
+              class="sm:col-span-2"
+            >
               <span class="text-gray-500 dark:text-gray-400">Motivo de retraso</span>
-              <p class="font-medium text-gray-900 dark:text-white">{{ ot.motivoRetraso }}</p>
+              <p class="font-medium text-gray-900 dark:text-white">
+                {{ ot.motivoRetraso }}
+              </p>
             </div>
-            <div v-if="ot.observaciones" class="sm:col-span-2">
+            <div
+              v-if="ot.observaciones"
+              class="sm:col-span-2"
+            >
               <span class="text-gray-500 dark:text-gray-400">Observaciones</span>
-              <p class="font-medium text-gray-900 dark:text-white">{{ ot.observaciones }}</p>
+              <p class="font-medium text-gray-900 dark:text-white">
+                {{ ot.observaciones }}
+              </p>
             </div>
-            <div v-if="ot.estado === 'Entregado'" class="sm:col-span-2">
+            <div
+              v-if="ot.estado === 'Entregado'"
+              class="sm:col-span-2"
+            >
               <span class="text-gray-500 dark:text-gray-400">Cliente conforme</span>
               <p class="font-medium text-gray-900 dark:text-white">
                 {{ ot.clienteConforme === true ? '👍 Sí' : ot.clienteConforme === false ? '👎 No' : '—' }}
@@ -378,8 +452,14 @@ const estadoTransiciones = estadoTransitions
             </div>
           </div>
 
-          <div v-else class="space-y-3">
-            <UFormField label="Cliente" required>
+          <div
+            v-else
+            class="space-y-3"
+          >
+            <UFormField
+              label="Cliente"
+              required
+            >
               <div class="flex items-center gap-2">
                 <USelect
                   v-model="editForm.cliente_id"
@@ -393,16 +473,30 @@ const estadoTransiciones = estadoTransitions
               </div>
             </UFormField>
 
-            <UFormField label="Descripción" required>
-              <UTextarea v-model="editForm.descripcion" class="w-full" :rows="2" />
+            <UFormField
+              label="Descripción"
+              required
+            >
+              <UTextarea
+                v-model="editForm.descripcion"
+                class="w-full"
+                :rows="2"
+              />
             </UFormField>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <UFormField label="Material">
-                <UInput v-model="editForm.material" class="w-full" />
+                <UInput
+                  v-model="editForm.material"
+                  class="w-full"
+                />
               </UFormField>
               <UFormField label="Cantidad">
-                <UInput v-model="editForm.cantidad" type="number" class="w-full" />
+                <UInput
+                  v-model="editForm.cantidad"
+                  type="number"
+                  class="w-full"
+                />
               </UFormField>
             </div>
 
@@ -418,37 +512,74 @@ const estadoTransiciones = estadoTransitions
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <UFormField label="Fecha ingreso">
-                <UInput v-model="editForm.fecha_ingreso" type="date" class="w-full" />
+                <UInput
+                  v-model="editForm.fecha_ingreso"
+                  type="date"
+                  class="w-full"
+                />
               </UFormField>
               <UFormField label="Fecha prometida">
-                <UInput v-model="editForm.fecha_prometida" type="date" class="w-full" />
+                <UInput
+                  v-model="editForm.fecha_prometida"
+                  type="date"
+                  class="w-full"
+                />
               </UFormField>
               <UFormField label="Fecha inicio">
-                <UInput v-model="editForm.fecha_inicio" type="date" class="w-full" />
+                <UInput
+                  v-model="editForm.fecha_inicio"
+                  type="date"
+                  class="w-full"
+                />
               </UFormField>
               <UFormField label="Fecha finalización">
-                <UInput v-model="editForm.fecha_finalizacion" type="date" class="w-full" />
+                <UInput
+                  v-model="editForm.fecha_finalizacion"
+                  type="date"
+                  class="w-full"
+                />
               </UFormField>
               <UFormField label="Fecha entrega">
-                <UInput v-model="editForm.fecha_entrega" type="date" class="w-full" />
+                <UInput
+                  v-model="editForm.fecha_entrega"
+                  type="date"
+                  class="w-full"
+                />
               </UFormField>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <UFormField label="Tiempo estimado (hs)">
-                <UInput v-model="editForm.tiempo_estimado_hs" type="number" step="0.5" class="w-full" />
+                <UInput
+                  v-model="editForm.tiempo_estimado_hs"
+                  type="number"
+                  step="0.5"
+                  class="w-full"
+                />
               </UFormField>
               <UFormField label="Tiempo real (hs)">
-                <UInput v-model="editForm.tiempo_real_hs" type="number" step="0.5" class="w-full" />
+                <UInput
+                  v-model="editForm.tiempo_real_hs"
+                  type="number"
+                  step="0.5"
+                  class="w-full"
+                />
               </UFormField>
             </div>
 
             <UFormField label="Motivo de retraso">
-              <UInput v-model="editForm.motivo_retraso" class="w-full" />
+              <UInput
+                v-model="editForm.motivo_retraso"
+                class="w-full"
+              />
             </UFormField>
 
             <UFormField label="Observaciones">
-              <UTextarea v-model="editForm.observaciones" class="w-full" :rows="2" />
+              <UTextarea
+                v-model="editForm.observaciones"
+                class="w-full"
+                :rows="2"
+              />
             </UFormField>
 
             <div v-if="ot.estado === 'Entregado'">
@@ -471,13 +602,19 @@ const estadoTransiciones = estadoTransitions
               </div>
             </div>
 
-            <UAlert v-if="editError" color="error" :description="editError" />
+            <UAlert
+              v-if="editError"
+              color="error"
+              :description="editError"
+            />
           </div>
         </div>
 
         <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 space-y-4">
           <div class="flex items-center justify-between">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Materiales utilizados</h2>
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+              Materiales utilizados
+            </h2>
             <UButton
               v-if="!addingMaterial"
               label="Agregar material"
@@ -489,7 +626,10 @@ const estadoTransiciones = estadoTransitions
             />
           </div>
 
-          <div v-if="ot.materiales.length > 0" class="space-y-2">
+          <div
+            v-if="ot.materiales.length > 0"
+            class="space-y-2"
+          >
             <div
               v-for="mat in ot.materiales"
               :key="mat.id"
@@ -501,14 +641,30 @@ const estadoTransiciones = estadoTransitions
               </div>
               <div class="text-right text-gray-600 dark:text-gray-300">
                 <span>{{ mat.cantidad }} · {{ mat.proveedor }} · {{ formatDate(mat.fecha) }}</span>
-                <p v-if="mat.problemas" class="text-xs text-red-500">{{ mat.problemas }}</p>
+                <p
+                  v-if="mat.problemas"
+                  class="text-xs text-red-500"
+                >
+                  {{ mat.problemas }}
+                </p>
               </div>
             </div>
           </div>
-          <p v-else-if="!addingMaterial" class="text-sm text-gray-500 dark:text-gray-400">Sin materiales registrados.</p>
+          <p
+            v-else-if="!addingMaterial"
+            class="text-sm text-gray-500 dark:text-gray-400"
+          >
+            Sin materiales registrados.
+          </p>
 
-          <div v-if="addingMaterial" class="border border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-3 space-y-3">
-            <UFormField label="Material" required>
+          <div
+            v-if="addingMaterial"
+            class="border border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-3 space-y-3"
+          >
+            <UFormField
+              label="Material"
+              required
+            >
               <div class="flex items-center gap-2">
                 <USelect
                   v-model="matForm.material_id"
@@ -523,11 +679,24 @@ const estadoTransiciones = estadoTransitions
             </UFormField>
 
             <div class="grid grid-cols-2 gap-3">
-              <UFormField label="Cantidad" required>
-                <UInput v-model="matForm.cantidad" type="number" min="0" step="0.01" class="w-full" />
+              <UFormField
+                label="Cantidad"
+                required
+              >
+                <UInput
+                  v-model="matForm.cantidad"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  class="w-full"
+                />
               </UFormField>
               <UFormField label="Fecha">
-                <UInput v-model="matForm.fecha" type="date" class="w-full" />
+                <UInput
+                  v-model="matForm.fecha"
+                  type="date"
+                  class="w-full"
+                />
               </UFormField>
             </div>
 
@@ -540,36 +709,71 @@ const estadoTransiciones = estadoTransitions
                 class="w-full"
               />
             </UFormField>
-            <UFormField v-if="matForm.proveedor === 'Otro'" label="Nombre del proveedor">
-              <UInput v-model="matForm.proveedorOtro" placeholder="Nombre del proveedor" class="w-full" />
+            <UFormField
+              v-if="matForm.proveedor === 'Otro'"
+              label="Nombre del proveedor"
+            >
+              <UInput
+                v-model="matForm.proveedorOtro"
+                placeholder="Nombre del proveedor"
+                class="w-full"
+              />
             </UFormField>
 
             <UFormField label="Problemas">
-              <UInput v-model="matForm.problemas" placeholder="Opcional" class="w-full" />
+              <UInput
+                v-model="matForm.problemas"
+                placeholder="Opcional"
+                class="w-full"
+              />
             </UFormField>
 
-            <UAlert v-if="materialError" color="error" :description="materialError" />
+            <UAlert
+              v-if="materialError"
+              color="error"
+              :description="materialError"
+            />
 
             <div class="flex gap-2 justify-end">
-              <UButton label="Cancelar" size="sm" color="neutral" variant="subtle" @click="addingMaterial = false" />
-              <UButton label="Agregar" size="sm" :loading="savingMaterial" @click="addMaterial" />
+              <UButton
+                label="Cancelar"
+                size="sm"
+                color="neutral"
+                variant="subtle"
+                @click="addingMaterial = false"
+              />
+              <UButton
+                label="Agregar"
+                size="sm"
+                :loading="savingMaterial"
+                @click="addMaterial"
+              />
             </div>
           </div>
         </div>
 
         <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 space-y-4">
           <div class="flex items-center justify-between">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">Archivos adjuntos</h2>
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+              Archivos adjuntos
+            </h2>
           </div>
 
-          <div v-if="ot.archivos.length > 0" class="space-y-2">
+          <div
+            v-if="ot.archivos.length > 0"
+            class="space-y-2"
+          >
             <div
               v-for="arch in ot.archivos"
               :key="arch.id"
               class="flex items-center justify-between text-sm py-2 border-b border-gray-100 dark:border-gray-800 last:border-0"
             >
               <div class="flex items-center gap-2">
-                <UBadge :color="arch.tipo === 'pdf' ? 'error' : 'info'" variant="subtle" class="shrink-0">
+                <UBadge
+                  :color="arch.tipo === 'pdf' ? 'error' : 'info'"
+                  variant="subtle"
+                  class="shrink-0"
+                >
                   {{ arch.tipo || '—' }}
                 </UBadge>
                 <a
@@ -592,7 +796,24 @@ const estadoTransiciones = estadoTransitions
               />
             </div>
           </div>
-          <p v-else class="text-sm text-gray-500 dark:text-gray-400">Sin archivos adjuntos.</p>
+          <p
+            v-else
+            class="text-sm text-gray-500 dark:text-gray-400"
+          >
+            Sin archivos adjuntos.
+          </p>
+
+          <div class="pt-2 border-t border-gray-100 dark:border-gray-800 space-y-2">
+            <BibliotecaFilePicker v-model="selectedArchivoIds" />
+            <UButton
+              v-if="selectedArchivoIds.length > 0"
+              size="sm"
+              class="w-full"
+              @click="onArchivosSelected(selectedArchivoIds)"
+            >
+              Vincular {{ selectedArchivoIds.length }} archivo(s) seleccionado(s)
+            </UButton>
+          </div>
         </div>
 
         <OrdenesControlCalidad :ot-id="ot.nroOt" />
@@ -601,11 +822,16 @@ const estadoTransiciones = estadoTransitions
 
       <div class="space-y-4">
         <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 space-y-4">
-          <h2 class="text-base font-semibold text-gray-900 dark:text-white">Estado</h2>
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+            Estado
+          </h2>
           <OrdenesStatusBadge :estado="ot.estado" />
 
           <div v-if="transition">
-            <div v-if="transition.next === 'Entregado'" class="space-y-3">
+            <div
+              v-if="transition.next === 'Entregado'"
+              class="space-y-3"
+            >
               <div>
                 <span class="text-sm text-gray-700 dark:text-gray-300 block mb-1">¿Cliente conforme?</span>
                 <div class="flex gap-2">
@@ -643,11 +869,17 @@ const estadoTransiciones = estadoTransitions
             />
           </div>
 
-          <UAlert v-if="estadoError" color="error" :description="estadoError" />
+          <UAlert
+            v-if="estadoError"
+            color="error"
+            :description="estadoError"
+          />
         </div>
 
         <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 text-sm space-y-2">
-          <h2 class="text-base font-semibold text-gray-900 dark:text-white">Resumen</h2>
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+            Resumen
+          </h2>
           <div class="flex justify-between">
             <span class="text-gray-500 dark:text-gray-400">Creada</span>
             <span>{{ formatDate(ot.createdAt?.slice(0, 10)) }}</span>
@@ -656,11 +888,17 @@ const estadoTransiciones = estadoTransitions
             <span class="text-gray-500 dark:text-gray-400">Prometida</span>
             <span>{{ formatDate(ot.fechaPrometida) }}</span>
           </div>
-          <div v-if="ot.tiempoEstimadoHs" class="flex justify-between">
+          <div
+            v-if="ot.tiempoEstimadoHs"
+            class="flex justify-between"
+          >
             <span class="text-gray-500 dark:text-gray-400">Tiempo est.</span>
             <span>{{ ot.tiempoEstimadoHs }} hs</span>
           </div>
-          <div v-if="ot.tiempoRealHs" class="flex justify-between">
+          <div
+            v-if="ot.tiempoRealHs"
+            class="flex justify-between"
+          >
             <span class="text-gray-500 dark:text-gray-400">Tiempo real</span>
             <span>{{ ot.tiempoRealHs }} hs</span>
           </div>
@@ -672,24 +910,44 @@ const estadoTransiciones = estadoTransitions
       <template #content>
         <div class="p-5 space-y-4">
           <div class="flex items-start gap-3">
-            <UIcon name="i-lucide-alert-triangle" class="size-6 text-yellow-500 shrink-0 mt-0.5" />
+            <UIcon
+              name="i-lucide-alert-triangle"
+              class="size-6 text-yellow-500 shrink-0 mt-0.5"
+            />
             <div>
-              <h3 class="text-base font-semibold text-gray-900 dark:text-white">Sin Control de Calidad</h3>
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+                Sin Control de Calidad
+              </h3>
               <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 ¿Seguro que querés marcar como Entregado? Todavía no completaste el Control de Calidad.
               </p>
             </div>
           </div>
           <div class="flex justify-end gap-2">
-            <UButton label="Cancelar" color="neutral" variant="subtle" @click="showForceModal = false" />
-            <UButton label="Marcar igual" color="warning" :loading="savingEstado" @click="confirmarEntregaForzada" />
+            <UButton
+              label="Cancelar"
+              color="neutral"
+              variant="subtle"
+              @click="showForceModal = false"
+            />
+            <UButton
+              label="Marcar igual"
+              color="warning"
+              :loading="savingEstado"
+              @click="confirmarEntregaForzada"
+            />
           </div>
         </div>
       </template>
     </UModal>
   </div>
 
-  <div v-else class="flex items-center justify-center py-20">
-    <p class="text-gray-500 dark:text-gray-400">Orden de trabajo no encontrada.</p>
+  <div
+    v-else
+    class="flex items-center justify-center py-20"
+  >
+    <p class="text-gray-500 dark:text-gray-400">
+      Orden de trabajo no encontrada.
+    </p>
   </div>
 </template>

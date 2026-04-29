@@ -1,6 +1,6 @@
 import { db } from '../../db/index'
 import { ordenTrabajo, controlCalidad, noConformidades, materiales, catalogoMateriales, clientes, registroMantenimiento } from '../../db/schema'
-import { eq, ne, and, isNotNull, count, gte } from 'drizzle-orm'
+import { eq, and, isNotNull, count, gte } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
@@ -11,9 +11,19 @@ export default defineEventHandler(async (event) => {
 
   const today = new Date()
   let desde: string | undefined
-  if (periodo === '30d') { const d = new Date(today); d.setDate(d.getDate() - 30); desde = d.toISOString().slice(0, 10) }
-  else if (periodo === '90d') { const d = new Date(today); d.setDate(d.getDate() - 90); desde = d.toISOString().slice(0, 10) }
-  else if (periodo === '12m') { const d = new Date(today); d.setFullYear(d.getFullYear() - 1); desde = d.toISOString().slice(0, 10) }
+  if (periodo === '30d') {
+    const d = new Date(today)
+    d.setDate(d.getDate() - 30)
+    desde = d.toISOString().slice(0, 10)
+  } else if (periodo === '90d') {
+    const d = new Date(today)
+    d.setDate(d.getDate() - 90)
+    desde = d.toISOString().slice(0, 10)
+  } else if (periodo === '12m') {
+    const d = new Date(today)
+    d.setFullYear(d.getFullYear() - 1)
+    desde = d.toISOString().slice(0, 10)
+  }
 
   const allOts = db.select({
     nroOt: ordenTrabajo.nroOt,

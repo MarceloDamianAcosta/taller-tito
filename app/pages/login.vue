@@ -9,7 +9,7 @@ async function submit() {
   error.value = ''
   loading.value = true
   try {
-    const res = await $fetch<{ ok: boolean; mustChangePassword: boolean }>('/api/auth/login', {
+    const res = await $fetch<{ ok: boolean, mustChangePassword: boolean }>('/api/auth/login', {
       method: 'POST',
       body: form
     })
@@ -29,11 +29,19 @@ async function submit() {
 <template>
   <UCard>
     <template #header>
-      <h1 class="text-xl font-semibold text-center">Iniciar sesión</h1>
+      <h1 class="text-xl font-semibold text-center">
+        Iniciar sesión
+      </h1>
     </template>
 
-    <form class="space-y-4" @submit.prevent="submit">
-      <UFormField label="Usuario" name="username">
+    <form
+      class="space-y-4"
+      @submit.prevent="submit"
+    >
+      <UFormField
+        label="Usuario"
+        name="username"
+      >
         <UInput
           v-model="form.username"
           placeholder="usuario"
@@ -42,7 +50,10 @@ async function submit() {
         />
       </UFormField>
 
-      <UFormField label="Contraseña" name="password">
+      <UFormField
+        label="Contraseña"
+        name="password"
+      >
         <UInput
           v-model="form.password"
           type="password"
@@ -52,7 +63,11 @@ async function submit() {
         />
       </UFormField>
 
-      <UAlert v-if="error" color="error" :description="error" />
+      <UAlert
+        v-if="error"
+        color="error"
+        :description="error"
+      />
 
       <UButton
         type="submit"

@@ -48,8 +48,8 @@ const filtered = computed(() => {
   const q = search.value.trim().toLowerCase()
   if (!q) return list
   return list.filter(m =>
-    m.nombre.toLowerCase().includes(q) ||
-    (m.tipo?.toLowerCase().includes(q) ?? false)
+    m.nombre.toLowerCase().includes(q)
+    || (m.tipo?.toLowerCase().includes(q) ?? false)
   )
 })
 
@@ -138,7 +138,9 @@ const tableColumns = [
 <template>
   <div class="space-y-4">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Catálogo de Materiales</h1>
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+        Catálogo de Materiales
+      </h1>
       <UButton
         label="Nuevo material"
         icon="i-lucide-plus"
@@ -166,7 +168,10 @@ const tableColumns = [
         class="w-full"
       >
         <template #unidad-cell="{ row }">
-          <UBadge color="neutral" variant="subtle">
+          <UBadge
+            color="neutral"
+            variant="subtle"
+          >
             {{ unidadLabel[row.original.unidad as Unidad] }}
           </UBadge>
         </template>
@@ -178,7 +183,10 @@ const tableColumns = [
         </template>
 
         <template #activo-cell="{ row }">
-          <UBadge :color="row.original.activo ? 'success' : 'neutral'" variant="subtle">
+          <UBadge
+            :color="row.original.activo ? 'success' : 'neutral'"
+            variant="subtle"
+          >
             {{ row.original.activo ? 'Activo' : 'Inactivo' }}
           </UBadge>
         </template>
@@ -194,7 +202,10 @@ const tableColumns = [
         </template>
       </UTable>
 
-      <p v-if="filtered.length === 0" class="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+      <p
+        v-if="filtered.length === 0"
+        class="py-8 text-center text-sm text-gray-500 dark:text-gray-400"
+      >
         No hay materiales que coincidan con la búsqueda.
       </p>
     </div>
@@ -216,16 +227,35 @@ const tableColumns = [
           />
         </div>
         <div class="flex flex-wrap gap-2 items-center">
-          <UBadge color="neutral" variant="subtle">{{ unidadLabel[m.unidad] }}</UBadge>
-          <UBadge :color="m.activo ? 'success' : 'neutral'" variant="subtle">
+          <UBadge
+            color="neutral"
+            variant="subtle"
+          >
+            {{ unidadLabel[m.unidad] }}
+          </UBadge>
+          <UBadge
+            :color="m.activo ? 'success' : 'neutral'"
+            variant="subtle"
+          >
             {{ m.activo ? 'Activo' : 'Inactivo' }}
           </UBadge>
-          <span v-if="m.tipo" class="text-xs text-gray-500 dark:text-gray-400">{{ m.tipo }}</span>
+          <span
+            v-if="m.tipo"
+            class="text-xs text-gray-500 dark:text-gray-400"
+          >{{ m.tipo }}</span>
         </div>
-        <p v-if="m.notas" class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{{ m.notas }}</p>
+        <p
+          v-if="m.notas"
+          class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2"
+        >
+          {{ m.notas }}
+        </p>
       </div>
 
-      <p v-if="filtered.length === 0" class="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+      <p
+        v-if="filtered.length === 0"
+        class="py-8 text-center text-sm text-gray-500 dark:text-gray-400"
+      >
         No hay materiales que coincidan con la búsqueda.
       </p>
     </div>
@@ -238,11 +268,21 @@ const tableColumns = [
           </h2>
 
           <div class="space-y-3">
-            <UFormField label="Nombre" required>
-              <UInput v-model="form.nombre" placeholder="Ej: Chapa 2mm" class="w-full" />
+            <UFormField
+              label="Nombre"
+              required
+            >
+              <UInput
+                v-model="form.nombre"
+                placeholder="Ej: Chapa 2mm"
+                class="w-full"
+              />
             </UFormField>
 
-            <UFormField label="Unidad" required>
+            <UFormField
+              label="Unidad"
+              required
+            >
               <USelect
                 v-model="form.unidad"
                 :items="unidadOptions"
@@ -254,19 +294,34 @@ const tableColumns = [
             </UFormField>
 
             <UFormField label="Categoría">
-              <UInput v-model="form.tipo" placeholder="Ej: Metal, Lubricante" class="w-full" />
+              <UInput
+                v-model="form.tipo"
+                placeholder="Ej: Metal, Lubricante"
+                class="w-full"
+              />
             </UFormField>
 
             <UFormField label="Notas">
-              <UTextarea v-model="form.notas" placeholder="Observaciones opcionales" class="w-full" />
+              <UTextarea
+                v-model="form.notas"
+                placeholder="Observaciones opcionales"
+                class="w-full"
+              />
             </UFormField>
 
-            <UFormField v-if="editingMaterial" label="Activo">
+            <UFormField
+              v-if="editingMaterial"
+              label="Activo"
+            >
               <UToggle v-model="form.activo" />
             </UFormField>
           </div>
 
-          <UAlert v-if="errorMsg" color="error" :description="errorMsg" />
+          <UAlert
+            v-if="errorMsg"
+            color="error"
+            :description="errorMsg"
+          />
 
           <div class="flex justify-end gap-2 pt-2">
             <UButton

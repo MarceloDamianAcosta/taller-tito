@@ -34,7 +34,10 @@ async function logout() {
     </div>
 
     <ul class="flex-1 overflow-y-auto py-4 px-2 space-y-1">
-      <li v-for="item in navItems" :key="item.to">
+      <li
+        v-for="item in navItems"
+        :key="item.to"
+      >
         <NuxtLink
           :to="item.to"
           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
@@ -42,15 +45,24 @@ async function logout() {
             ? 'bg-primary/10 text-primary'
             : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'"
         >
-          <UIcon :name="item.icon" class="size-5 shrink-0" />
+          <UIcon
+            :name="item.icon"
+            class="size-5 shrink-0"
+          />
           {{ item.label }}
         </NuxtLink>
       </li>
     </ul>
 
     <div class="px-4 py-4 border-t border-gray-200 dark:border-gray-800 space-y-3">
-      <div v-if="user" class="flex items-center gap-2 px-1">
-        <UIcon name="i-lucide-circle-user" class="size-5 text-gray-500 shrink-0" />
+      <div
+        v-if="user"
+        class="flex items-center gap-2 px-1"
+      >
+        <UIcon
+          name="i-lucide-circle-user"
+          class="size-5 text-gray-500 shrink-0"
+        />
         <span class="text-sm text-gray-700 dark:text-gray-300 truncate">{{ user.name || user.username }}</span>
       </div>
       <UButton

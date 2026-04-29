@@ -101,7 +101,10 @@ const tabs = [
 
 <template>
   <div class="space-y-2">
-    <div v-if="modelValue.length > 0" class="flex flex-wrap gap-2">
+    <div
+      v-if="modelValue.length > 0"
+      class="flex flex-wrap gap-2"
+    >
       <span
         v-for="id in modelValue"
         :key="id"
@@ -112,8 +115,16 @@ const tabs = [
           class="size-3"
         />
         {{ getArchivo(id)?.nombre ?? `Archivo #${id}` }}
-        <button type="button" class="hover:opacity-70 ml-1" aria-label="Quitar" @click="removeId(id)">
-          <UIcon name="i-lucide-x" class="size-3" />
+        <button
+          type="button"
+          class="hover:opacity-70 ml-1"
+          aria-label="Quitar"
+          @click="removeId(id)"
+        >
+          <UIcon
+            name="i-lucide-x"
+            class="size-3"
+          />
         </button>
       </span>
     </div>
@@ -127,7 +138,11 @@ const tabs = [
       @click="openModal"
     />
 
-    <UModal v-model:open="modalOpen" title="Adjuntar archivos" class="max-w-2xl">
+    <UModal
+      v-model:open="modalOpen"
+      title="Adjuntar archivos"
+      class="max-w-2xl"
+    >
       <template #body>
         <div class="space-y-4">
           <div class="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-2">
@@ -146,7 +161,10 @@ const tabs = [
           </div>
 
           <div v-if="activeTab === 'biblioteca'">
-            <div v-if="archivos && archivos.length > 0" class="grid grid-cols-2 gap-2 sm:grid-cols-3 max-h-80 overflow-y-auto pr-1">
+            <div
+              v-if="archivos && archivos.length > 0"
+              class="grid grid-cols-2 gap-2 sm:grid-cols-3 max-h-80 overflow-y-auto pr-1"
+            >
               <button
                 v-for="archivo in archivos"
                 :key="archivo.id"
@@ -163,54 +181,107 @@ const tabs = [
                     :src="`/api/archivos/${archivo.archivo}`"
                     :alt="archivo.nombre"
                     class="w-full h-full object-cover"
+                  >
+                  <UIcon
+                    v-else
+                    name="i-lucide-file-text"
+                    class="size-10 text-red-500"
                   />
-                  <UIcon v-else name="i-lucide-file-text" class="size-10 text-red-500" />
                 </div>
                 <div class="p-1.5">
-                  <p class="text-xs font-medium truncate text-gray-900 dark:text-white" :title="archivo.nombre">
+                  <p
+                    class="text-xs font-medium truncate text-gray-900 dark:text-white"
+                    :title="archivo.nombre"
+                  >
                     {{ archivo.nombre }}
                   </p>
-                  <p class="text-xs text-gray-400">{{ formatDate(archivo.createdAt) }}</p>
+                  <p class="text-xs text-gray-400">
+                    {{ formatDate(archivo.createdAt) }}
+                  </p>
                 </div>
                 <div
                   v-if="localSelected.includes(archivo.id)"
                   class="absolute top-1 right-1 size-5 rounded-full bg-primary flex items-center justify-center"
                 >
-                  <UIcon name="i-lucide-check" class="size-3 text-white" />
+                  <UIcon
+                    name="i-lucide-check"
+                    class="size-3 text-white"
+                  />
                 </div>
               </button>
             </div>
-            <div v-else class="text-center py-8 text-gray-500 text-sm">
+            <div
+              v-else
+              class="text-center py-8 text-gray-500 text-sm"
+            >
               No hay archivos en la biblioteca
             </div>
           </div>
 
-          <div v-if="activeTab === 'subir'" class="space-y-4">
+          <div
+            v-if="activeTab === 'subir'"
+            class="space-y-4"
+          >
             <form @submit.prevent="submitUpload">
               <div class="space-y-3">
-                <UFormField label="Nombre" name="nombre" required>
-                  <UInput v-model="uploadForm.nombre" placeholder="Nombre descriptivo" class="w-full" />
+                <UFormField
+                  label="Nombre"
+                  name="nombre"
+                  required
+                >
+                  <UInput
+                    v-model="uploadForm.nombre"
+                    placeholder="Nombre descriptivo"
+                    class="w-full"
+                  />
                 </UFormField>
 
-                <UFormField label="Archivo" name="archivo" required>
+                <UFormField
+                  label="Archivo"
+                  name="archivo"
+                  required
+                >
                   <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                    <UIcon name="i-lucide-upload-cloud" class="size-7 text-gray-400 mb-1" />
+                    <UIcon
+                      name="i-lucide-upload-cloud"
+                      class="size-7 text-gray-400 mb-1"
+                    />
                     <span class="text-xs text-gray-500">
                       {{ uploadForm.file ? uploadForm.file.name : 'JPG, PNG o PDF — máx 10MB' }}
                     </span>
-                    <input type="file" accept=".jpg,.jpeg,.png,.pdf" class="sr-only" @change="onFileChange" />
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.pdf"
+                      class="sr-only"
+                      @change="onFileChange"
+                    >
                   </label>
                 </UFormField>
 
-                <UAlert v-if="uploadError" color="error" :description="uploadError" />
+                <UAlert
+                  v-if="uploadError"
+                  color="error"
+                  :description="uploadError"
+                />
 
-                <UButton type="submit" label="Subir y seleccionar" icon="i-lucide-upload" class="w-full justify-center" :loading="uploading" />
+                <UButton
+                  type="submit"
+                  label="Subir y seleccionar"
+                  icon="i-lucide-upload"
+                  class="w-full justify-center"
+                  :loading="uploading"
+                />
               </div>
             </form>
           </div>
 
           <div class="flex justify-end gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-            <UButton label="Cancelar" color="neutral" variant="outline" @click="modalOpen = false" />
+            <UButton
+              label="Cancelar"
+              color="neutral"
+              variant="outline"
+              @click="modalOpen = false"
+            />
             <UButton
               :label="`Confirmar (${localSelected.length})`"
               icon="i-lucide-check"

@@ -13,5 +13,10 @@ const color = computed<BadgeColor>(() => (colorMap[props.estado] ?? 'neutral') a
 </script>
 
 <template>
-  <UBadge :color="color" variant="subtle">{{ estado }}</UBadge>
+  <UBadge
+    :color="color"
+    variant="subtle"
+  >
+    {{ estado }}
+  </UBadge>
 </template>

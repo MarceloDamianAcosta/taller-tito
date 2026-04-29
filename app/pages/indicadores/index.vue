@@ -35,7 +35,9 @@ function pctWidth(val: number, total: number) {
 <template>
   <div class="space-y-8">
     <div class="flex items-center justify-between gap-4 flex-wrap">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Indicadores de Calidad ISO 9001</h1>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+        Indicadores de Calidad ISO 9001
+      </h1>
       <div class="flex gap-1">
         <UButton
           v-for="p in periodos"
@@ -51,45 +53,77 @@ function pctWidth(val: number, total: number) {
 
     <template v-if="pending">
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <USkeleton v-for="i in 4" :key="i" class="h-28 rounded-xl" />
+        <USkeleton
+          v-for="i in 4"
+          :key="i"
+          class="h-28 rounded-xl"
+        />
       </div>
     </template>
 
     <template v-else-if="data">
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <UCard>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Entregas a tiempo</p>
-          <p class="text-3xl font-bold mt-1" :class="entregasColor(data.entregas.porcentaje)">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Entregas a tiempo
+          </p>
+          <p
+            class="text-3xl font-bold mt-1"
+            :class="entregasColor(data.entregas.porcentaje)"
+          >
             {{ data.entregas.porcentaje }}%
           </p>
-          <p class="text-xs text-gray-400 mt-1">{{ data.entregas.aTiempo }} de {{ data.entregas.total }} entregas</p>
+          <p class="text-xs text-gray-400 mt-1">
+            {{ data.entregas.aTiempo }} de {{ data.entregas.total }} entregas
+          </p>
         </UCard>
 
         <UCard>
-          <p class="text-sm text-gray-500 dark:text-gray-400">No Conformidades</p>
-          <p class="text-3xl font-bold mt-1 text-gray-900 dark:text-white">{{ data.noConformidades.porcentaje }}%</p>
-          <p class="text-xs text-gray-400 mt-1">{{ data.noConformidades.conNc }} OTs con NC de {{ data.noConformidades.totalOts }}</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            No Conformidades
+          </p>
+          <p class="text-3xl font-bold mt-1 text-gray-900 dark:text-white">
+            {{ data.noConformidades.porcentaje }}%
+          </p>
+          <p class="text-xs text-gray-400 mt-1">
+            {{ data.noConformidades.conNc }} OTs con NC de {{ data.noConformidades.totalOts }}
+          </p>
         </UCard>
 
         <UCard>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Reprocesos</p>
-          <p class="text-3xl font-bold mt-1 text-gray-900 dark:text-white">{{ data.reprocesos }}</p>
-          <p class="text-xs text-gray-400 mt-1">trabajos con reproceso</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Reprocesos
+          </p>
+          <p class="text-3xl font-bold mt-1 text-gray-900 dark:text-white">
+            {{ data.reprocesos }}
+          </p>
+          <p class="text-xs text-gray-400 mt-1">
+            trabajos con reproceso
+          </p>
         </UCard>
 
         <UCard>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Desviación de tiempo</p>
-          <p class="text-3xl font-bold mt-1" :class="desviacionColor(data.desviacionHoras)">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Desviación de tiempo
+          </p>
+          <p
+            class="text-3xl font-bold mt-1"
+            :class="desviacionColor(data.desviacionHoras)"
+          >
             {{ data.desviacionHoras !== null ? (data.desviacionHoras >= 0 ? '+' : '') + data.desviacionHoras + ' hs' : '—' }}
           </p>
-          <p class="text-xs text-gray-400 mt-1">promedio vs estimado</p>
+          <p class="text-xs text-gray-400 mt-1">
+            promedio vs estimado
+          </p>
         </UCard>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <UCard>
           <template #header>
-            <h2 class="font-semibold text-gray-900 dark:text-white">OTs por Estado</h2>
+            <h2 class="font-semibold text-gray-900 dark:text-white">
+              OTs por Estado
+            </h2>
           </template>
           <div class="space-y-3">
             <div
@@ -111,10 +145,20 @@ function pctWidth(val: number, total: number) {
 
         <UCard>
           <template #header>
-            <h2 class="font-semibold text-gray-900 dark:text-white">Top Clientes</h2>
+            <h2 class="font-semibold text-gray-900 dark:text-white">
+              Top Clientes
+            </h2>
           </template>
-          <div v-if="!data.topClientes.length" class="text-sm text-gray-500">Sin datos.</div>
-          <ol v-else class="space-y-2">
+          <div
+            v-if="!data.topClientes.length"
+            class="text-sm text-gray-500"
+          >
+            Sin datos.
+          </div>
+          <ol
+            v-else
+            class="space-y-2"
+          >
             <li
               v-for="(c, i) in data.topClientes"
               :key="c.nombre"
@@ -124,33 +168,59 @@ function pctWidth(val: number, total: number) {
                 <span class="text-xs text-gray-400 w-4">{{ i + 1 }}.</span>
                 <span class="text-sm truncate text-gray-900 dark:text-white">{{ c.nombre }}</span>
               </div>
-              <UBadge color="neutral" variant="subtle" size="sm">{{ c.cantidad }} OTs</UBadge>
+              <UBadge
+                color="neutral"
+                variant="subtle"
+                size="sm"
+              >
+                {{ c.cantidad }} OTs
+              </UBadge>
             </li>
           </ol>
         </UCard>
 
         <UCard>
           <template #header>
-            <h2 class="font-semibold text-gray-900 dark:text-white">Mantenimiento</h2>
+            <h2 class="font-semibold text-gray-900 dark:text-white">
+              Mantenimiento
+            </h2>
           </template>
           <div class="flex gap-6 justify-center py-2">
             <div class="text-center">
-              <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ data.mantenimiento.preventivo }}</p>
-              <p class="text-sm text-gray-500 mt-1">Preventivos</p>
+              <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                {{ data.mantenimiento.preventivo }}
+              </p>
+              <p class="text-sm text-gray-500 mt-1">
+                Preventivos
+              </p>
             </div>
             <div class="text-center">
-              <p class="text-3xl font-bold text-amber-600 dark:text-amber-400">{{ data.mantenimiento.correctivo }}</p>
-              <p class="text-sm text-gray-500 mt-1">Correctivos</p>
+              <p class="text-3xl font-bold text-amber-600 dark:text-amber-400">
+                {{ data.mantenimiento.correctivo }}
+              </p>
+              <p class="text-sm text-gray-500 mt-1">
+                Correctivos
+              </p>
             </div>
           </div>
         </UCard>
 
         <UCard>
           <template #header>
-            <h2 class="font-semibold text-gray-900 dark:text-white">Materiales más usados</h2>
+            <h2 class="font-semibold text-gray-900 dark:text-white">
+              Materiales más usados
+            </h2>
           </template>
-          <div v-if="!data.topMateriales.length" class="text-sm text-gray-500">Sin datos.</div>
-          <ol v-else class="space-y-2">
+          <div
+            v-if="!data.topMateriales.length"
+            class="text-sm text-gray-500"
+          >
+            Sin datos.
+          </div>
+          <ol
+            v-else
+            class="space-y-2"
+          >
             <li
               v-for="(m, i) in data.topMateriales"
               :key="m.nombre"
@@ -160,7 +230,13 @@ function pctWidth(val: number, total: number) {
                 <span class="text-xs text-gray-400 w-4">{{ i + 1 }}.</span>
                 <span class="text-sm truncate text-gray-900 dark:text-white">{{ m.nombre }}</span>
               </div>
-              <UBadge color="neutral" variant="subtle" size="sm">{{ m.usos }} usos</UBadge>
+              <UBadge
+                color="neutral"
+                variant="subtle"
+                size="sm"
+              >
+                {{ m.usos }} usos
+              </UBadge>
             </li>
           </ol>
         </UCard>

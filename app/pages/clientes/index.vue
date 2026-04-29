@@ -103,7 +103,9 @@ async function save() {
 <template>
   <div class="space-y-4">
     <div class="flex items-center justify-between gap-3 flex-wrap">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Clientes</h1>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+        Clientes
+      </h1>
       <UButton
         label="Nuevo cliente"
         icon="i-lucide-plus"
@@ -124,7 +126,10 @@ async function save() {
       </label>
     </div>
 
-    <div v-if="filteredClientes.length === 0" class="text-center py-12 text-gray-400">
+    <div
+      v-if="filteredClientes.length === 0"
+      class="text-center py-12 text-gray-400"
+    >
       No hay clientes para mostrar.
     </div>
 
@@ -134,10 +139,18 @@ async function save() {
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b border-gray-200 dark:border-gray-700">
-                <th class="text-left py-2 px-3 font-semibold text-gray-700 dark:text-gray-300">Nombre</th>
-                <th class="text-left py-2 px-3 font-semibold text-gray-700 dark:text-gray-300">Teléfono</th>
-                <th class="text-left py-2 px-3 font-semibold text-gray-700 dark:text-gray-300">Email</th>
-                <th class="text-left py-2 px-3 font-semibold text-gray-700 dark:text-gray-300">Estado</th>
+                <th class="text-left py-2 px-3 font-semibold text-gray-700 dark:text-gray-300">
+                  Nombre
+                </th>
+                <th class="text-left py-2 px-3 font-semibold text-gray-700 dark:text-gray-300">
+                  Teléfono
+                </th>
+                <th class="text-left py-2 px-3 font-semibold text-gray-700 dark:text-gray-300">
+                  Email
+                </th>
+                <th class="text-left py-2 px-3 font-semibold text-gray-700 dark:text-gray-300">
+                  Estado
+                </th>
                 <th class="py-2 px-3" />
               </tr>
             </thead>
@@ -148,9 +161,15 @@ async function save() {
                 class="border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                 :class="{ 'opacity-60': !cliente.activo }"
               >
-                <td class="py-3 px-3 font-medium text-gray-900 dark:text-white">{{ cliente.nombre }}</td>
-                <td class="py-3 px-3 text-gray-600 dark:text-gray-400">{{ cliente.telefono ?? '—' }}</td>
-                <td class="py-3 px-3 text-gray-600 dark:text-gray-400">{{ cliente.email ?? '—' }}</td>
+                <td class="py-3 px-3 font-medium text-gray-900 dark:text-white">
+                  {{ cliente.nombre }}
+                </td>
+                <td class="py-3 px-3 text-gray-600 dark:text-gray-400">
+                  {{ cliente.telefono ?? '—' }}
+                </td>
+                <td class="py-3 px-3 text-gray-600 dark:text-gray-400">
+                  {{ cliente.email ?? '—' }}
+                </td>
                 <td class="py-3 px-3">
                   <UBadge
                     :label="cliente.activo ? 'Activo' : 'Inactivo'"
@@ -191,12 +210,24 @@ async function save() {
                   size="sm"
                 />
               </div>
-              <div v-if="cliente.telefono" class="text-sm text-gray-500 flex items-center gap-1">
-                <UIcon name="i-lucide-phone" class="size-3.5 shrink-0" />
+              <div
+                v-if="cliente.telefono"
+                class="text-sm text-gray-500 flex items-center gap-1"
+              >
+                <UIcon
+                  name="i-lucide-phone"
+                  class="size-3.5 shrink-0"
+                />
                 {{ cliente.telefono }}
               </div>
-              <div v-if="cliente.email" class="text-sm text-gray-500 flex items-center gap-1">
-                <UIcon name="i-lucide-mail" class="size-3.5 shrink-0" />
+              <div
+                v-if="cliente.email"
+                class="text-sm text-gray-500 flex items-center gap-1"
+              >
+                <UIcon
+                  name="i-lucide-mail"
+                  class="size-3.5 shrink-0"
+                />
                 {{ cliente.email }}
               </div>
             </div>
@@ -212,34 +243,89 @@ async function save() {
       </div>
     </div>
 
-    <UModal v-model:open="modalOpen" :title="editingCliente ? 'Editar cliente' : 'Nuevo cliente'">
+    <UModal
+      v-model:open="modalOpen"
+      :title="editingCliente ? 'Editar cliente' : 'Nuevo cliente'"
+    >
       <template #body>
-        <form class="space-y-4" @submit.prevent="save">
-          <UFormField label="Nombre" name="nombre" required>
-            <UInput v-model="form.nombre" placeholder="Nombre del cliente" class="w-full" />
+        <form
+          class="space-y-4"
+          @submit.prevent="save"
+        >
+          <UFormField
+            label="Nombre"
+            name="nombre"
+            required
+          >
+            <UInput
+              v-model="form.nombre"
+              placeholder="Nombre del cliente"
+              class="w-full"
+            />
           </UFormField>
 
-          <UFormField label="Teléfono" name="telefono">
-            <UInput v-model="form.telefono" placeholder="+54 9 11 1234-5678" type="tel" class="w-full" />
+          <UFormField
+            label="Teléfono"
+            name="telefono"
+          >
+            <UInput
+              v-model="form.telefono"
+              placeholder="+54 9 11 1234-5678"
+              type="tel"
+              class="w-full"
+            />
           </UFormField>
 
-          <UFormField label="Email" name="email">
-            <UInput v-model="form.email" placeholder="cliente@email.com" type="email" class="w-full" />
+          <UFormField
+            label="Email"
+            name="email"
+          >
+            <UInput
+              v-model="form.email"
+              placeholder="cliente@email.com"
+              type="email"
+              class="w-full"
+            />
           </UFormField>
 
-          <UFormField label="Notas" name="notas">
-            <UTextarea v-model="form.notas" placeholder="Observaciones opcionales..." :rows="3" class="w-full" />
+          <UFormField
+            label="Notas"
+            name="notas"
+          >
+            <UTextarea
+              v-model="form.notas"
+              placeholder="Observaciones opcionales..."
+              :rows="3"
+              class="w-full"
+            />
           </UFormField>
 
-          <UFormField v-if="editingCliente" label="Activo" name="activo">
+          <UFormField
+            v-if="editingCliente"
+            label="Activo"
+            name="activo"
+          >
             <UToggle v-model="form.activo" />
           </UFormField>
 
-          <UAlert v-if="saveError" color="error" :description="saveError" />
+          <UAlert
+            v-if="saveError"
+            color="error"
+            :description="saveError"
+          />
 
           <div class="flex justify-end gap-2 pt-2">
-            <UButton label="Cancelar" color="neutral" variant="outline" @click="modalOpen = false" />
-            <UButton type="submit" :label="editingCliente ? 'Guardar cambios' : 'Crear cliente'" :loading="saving" />
+            <UButton
+              label="Cancelar"
+              color="neutral"
+              variant="outline"
+              @click="modalOpen = false"
+            />
+            <UButton
+              type="submit"
+              :label="editingCliente ? 'Guardar cambios' : 'Crear cliente'"
+              :loading="saving"
+            />
           </div>
         </form>
       </template>
