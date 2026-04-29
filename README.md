@@ -30,7 +30,7 @@ pnpm dev
 # → http://localhost:3000
 ```
 
-Primer login: `admin / admin1234` (se fuerza cambio de contraseña).
+Primer login: `tito / bigboss` (se fuerza cambio de contraseña).
 
 ## Docker
 

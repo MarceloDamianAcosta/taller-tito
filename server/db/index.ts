@@ -20,12 +20,12 @@ export const db = drizzle(sqlite, { schema })
 migrate(db, { migrationsFolder: join(process.cwd(), 'server/db/migrations') })
 
 async function seed() {
-  const existingAdmin = db.select().from(users).where(eq(users.username, 'admin')).get()
+  const existingAdmin = db.select().from(users).where(eq(users.username, 'tito')).get()
   if (!existingAdmin) {
-    const hash = await bcrypt.hash('admin1234', 12)
+    const hash = await bcrypt.hash('bigboss', 12)
     db.insert(users).values({
-      username: 'admin',
-      name: 'Administrador',
+      username: 'tito',
+      name: 'Tito',
       passwordHash: hash,
       role: 'admin',
       mustChangePassword: true
