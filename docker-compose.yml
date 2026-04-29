@@ -1,0 +1,30 @@
+services:
+  # ── Pruebas: hot-reload, puerto 3001 ────────────────────────────────────────
+  dev:
+    build:
+      context: .
+      target: dev
+    ports:
+      - "3001:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules   # evita que el host sobreescriba los módulos del container
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  # ── Producción: imagen compilada, puerto 3000 ────────────────────────────────
+  prod:
+    build:
+      context: .
+      target: prod
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+    env_file:
+      - .env
+    restart: unless-stopped

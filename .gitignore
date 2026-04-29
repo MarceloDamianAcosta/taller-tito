@@ -25,3 +25,9 @@ logs
 
 # Uploads
 uploads/
+
+# Database
+data/
+
+# npm lockfile (using pnpm)
+package-lock.json

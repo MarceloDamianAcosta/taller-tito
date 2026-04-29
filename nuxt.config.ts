@@ -2,17 +2,22 @@
 export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
-    '@nuxt/ui'
+    '@nuxt/ui',
+    'nuxt-auth-utils'
   ],
 
-  devtools: {
-    enabled: true
-  },
+  devtools: { enabled: true },
 
   css: ['~/assets/css/main.css'],
 
   routeRules: {
-    '/': { prerender: true }
+    '/api/**': { cors: false }
+  },
+
+  runtimeConfig: {
+    session: {
+      password: process.env.NUXT_SECRET || 'change-me-in-production-min-32-chars!!'
+    }
   },
 
   compatibilityDate: '2025-01-15',
