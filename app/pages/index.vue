@@ -2,6 +2,7 @@
 definePageMeta({ title: 'Dashboard' })
 
 const { data, pending } = await useFetch('/api/dashboard/resumen')
+const today = new Date().toISOString().slice(0, 10)
 
 function formatDate(iso: string | null | undefined) {
   if (!iso) return '—'
@@ -195,7 +196,7 @@ function entregasColor(pct: number) {
               </div>
               <span
                 class="text-xs font-medium shrink-0"
-                :class="m.proximaFecha && m.proximaFecha < new Date().toISOString().slice(0, 10) ? 'text-red-500' : 'text-gray-500'"
+                :class="m.proximaFecha && m.proximaFecha < today ? 'text-red-500' : 'text-gray-500'"
               >
                 {{ formatDate(m.proximaFecha) }}
               </span>
