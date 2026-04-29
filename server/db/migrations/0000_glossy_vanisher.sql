@@ -1,4 +1,4 @@
-CREATE TABLE `biblioteca_archivos` (
+CREATE TABLE IF NOT EXISTS `biblioteca_archivos` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`nombre` text NOT NULL,
 	`archivo` text NOT NULL,
@@ -6,7 +6,7 @@ CREATE TABLE `biblioteca_archivos` (
 	`created_at` text DEFAULT (datetime('now')) NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE `catalogo_materiales` (
+CREATE TABLE IF NOT EXISTS `catalogo_materiales` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`nombre` text NOT NULL,
 	`unidad` text NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE `catalogo_materiales` (
 	`activo` integer DEFAULT true NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE `clientes` (
+CREATE TABLE IF NOT EXISTS `clientes` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`nombre` text NOT NULL,
 	`telefono` text,
@@ -24,7 +24,7 @@ CREATE TABLE `clientes` (
 	`activo` integer DEFAULT true NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE `control_calidad` (
+CREATE TABLE IF NOT EXISTS `control_calidad` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`ot_id` integer NOT NULL,
 	`que_se_controla` text NOT NULL,
@@ -38,14 +38,14 @@ CREATE TABLE `control_calidad` (
 	FOREIGN KEY (`ot_id`) REFERENCES `orden_trabajo`(`nro_ot`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `maquinas` (
+CREATE TABLE IF NOT EXISTS `maquinas` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`nombre` text NOT NULL,
 	`descripcion` text,
 	`activo` integer DEFAULT true NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE `materiales` (
+CREATE TABLE IF NOT EXISTS `materiales` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`ot_id` integer,
 	`material_id` integer NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE `materiales` (
 	FOREIGN KEY (`material_id`) REFERENCES `catalogo_materiales`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `no_conformidades` (
+CREATE TABLE IF NOT EXISTS `no_conformidades` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`ot_id` integer NOT NULL,
 	`fecha` text NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE `no_conformidades` (
 	FOREIGN KEY (`ot_id`) REFERENCES `orden_trabajo`(`nro_ot`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `orden_trabajo` (
+CREATE TABLE IF NOT EXISTS `orden_trabajo` (
 	`nro_ot` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`cliente_id` integer NOT NULL,
 	`descripcion` text NOT NULL,
@@ -91,7 +91,7 @@ CREATE TABLE `orden_trabajo` (
 	FOREIGN KEY (`maquina_id`) REFERENCES `maquinas`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `ot_archivos` (
+CREATE TABLE IF NOT EXISTS `ot_archivos` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`ot_id` integer NOT NULL,
 	`biblioteca_id` integer NOT NULL,
@@ -100,7 +100,7 @@ CREATE TABLE `ot_archivos` (
 	FOREIGN KEY (`biblioteca_id`) REFERENCES `biblioteca_archivos`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `registro_mantenimiento` (
+CREATE TABLE IF NOT EXISTS `registro_mantenimiento` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`maquina_id` integer NOT NULL,
 	`fecha` text NOT NULL,
@@ -111,7 +111,7 @@ CREATE TABLE `registro_mantenimiento` (
 	FOREIGN KEY (`maquina_id`) REFERENCES `maquinas`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `users` (
+CREATE TABLE IF NOT EXISTS `users` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`username` text NOT NULL,
 	`name` text NOT NULL,
