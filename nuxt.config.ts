@@ -8,11 +8,11 @@ export default defineNuxtConfig({
 
   devtools: { enabled: true },
 
+  css: ['~/assets/css/main.css'],
+
   ui: {
     fonts: false
   },
-
-  css: ['~/assets/css/main.css'],
 
   runtimeConfig: {
     session: {
