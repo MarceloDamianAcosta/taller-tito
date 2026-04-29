@@ -1,5 +1,6 @@
 services:
-  # ── Pruebas: hot-reload, puerto 3001 ────────────────────────────────────────
+  # ── Pruebas: nuxt dev server, puerto 3001 ───────────────────────────────────
+  # Para rebuildar con cambios: docker compose up --build dev
   dev:
     build:
       context: .
@@ -7,15 +8,14 @@ services:
     ports:
       - "3001:3000"
     volumes:
-      - .:/app
-      - /app/node_modules   # evita que el host sobreescriba los módulos del container
-      - ./data:/app/data
-      - ./uploads:/app/uploads
+      - dev-data:/app/data
+      - dev-uploads:/app/uploads
     env_file:
       - .env
     restart: unless-stopped
 
   # ── Producción: imagen compilada, puerto 3000 ────────────────────────────────
+  # Para rebuildar con cambios: docker compose up --build prod
   prod:
     build:
       context: .
@@ -23,8 +23,14 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./data:/app/data
-      - ./uploads:/app/uploads
+      - prod-data:/app/data
+      - prod-uploads:/app/uploads
     env_file:
       - .env
     restart: unless-stopped
+
+volumes:
+  dev-data:
+  dev-uploads:
+  prod-data:
+  prod-uploads:
