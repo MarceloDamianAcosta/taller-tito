@@ -1,64 +1,80 @@
-# Nuxt Starter Template
+# Taller Tito — Sistema de Gestión
 
-[![Nuxt UI](https://img.shields.io/badge/Made%20with-Nuxt%20UI-00DC82?logo=nuxt&labelColor=020420)](https://ui.nuxt.com)
+Aplicación web de gestión para taller metalúrgico/fabricación. Uso exclusivo en red WiFi local.
+Accesible desde celular, tablet y escritorio.
 
-Use this template to get started with [Nuxt UI](https://ui.nuxt.com) quickly.
+## Módulos
 
-- [Live demo](https://starter-template.nuxt.dev/)
-- [Documentation](https://ui.nuxt.com/docs/getting-started/installation/nuxt)
+- **Dashboard** — KPIs, alertas y órdenes en curso
+- **Órdenes de Trabajo** — CRUD completo, estados, materiales, archivos adjuntos, control de calidad y no conformidades
+- **Clientes** — alta y gestión
+- **Catálogo de Materiales** — stock y unidades
+- **Biblioteca de Archivos** — planos, fotos, documentos
+- **Mantenimiento** — máquinas y registro de revisiones
+- **Indicadores** — métricas por período
+- **Admin Usuarios** — roles admin/técnico
 
-<a href="https://starter-template.nuxt.dev/" target="_blank">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png">
-    <img alt="Nuxt Starter Template" src="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png" width="830" height="466">
-  </picture>
-</a>
+## Stack
 
-> The starter template for Vue is on https://github.com/nuxt-ui-templates/starter-vue.
+- **Nuxt 4** + Nuxt UI v4
+- **Drizzle ORM** + SQLite (better-sqlite3)
+- **nuxt-auth-utils** — sesiones encriptadas en cookie
+- **bcryptjs** — hash de contraseñas (cost 12)
+- **pnpm** como package manager
 
-## Quick Start
-
-```bash [Terminal]
-npm create nuxt@latest -- -t ui
-```
-
-## Deploy your own
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-name=starter&repository-url=https%3A%2F%2Fgithub.com%2Fnuxt-ui-templates%2Fstarter&demo-image=https%3A%2F%2Fui.nuxt.com%2Fassets%2Ftemplates%2Fnuxt%2Fstarter-dark.png&demo-url=https%3A%2F%2Fstarter-template.nuxt.dev%2F&demo-title=Nuxt%20Starter%20Template&demo-description=A%20minimal%20template%20to%20get%20started%20with%20Nuxt%20UI.)
-
-## Setup
-
-Make sure to install the dependencies:
+## Desarrollo local
 
 ```bash
 pnpm install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
 pnpm dev
+# → http://localhost:3000
 ```
 
-## Production
+Primer login: `admin / admin1234` (se fuerza cambio de contraseña).
 
-Build the application for production:
+## Docker
 
 ```bash
-pnpm build
+# Pruebas (nuxt dev server, puerto 3001)
+docker compose up --build dev
+
+# Producción (imagen compilada, puerto 3000)
+docker compose up --build prod
 ```
 
-Locally preview production build:
+Los datos (DB y uploads) persisten en volúmenes Docker nombrados separados por ambiente.
+
+## Variables de entorno
+
+Crear `taller/app/.env` con:
+
+```env
+NUXT_SECRET=<string aleatorio seguro>
+YOUTRACK_URL=https://taller.youtrack.cloud
+YOUTRACK_TOKEN=<token>
+YOUTRACK_PROJECT_ID=TITO
+```
+
+## Flujo Git
+
+| Branch | Propósito |
+|---|---|
+| `develop` | Desarrollo activo — se trabaja y prueba acá |
+| `master` | Producción — solo merge desde develop |
 
 ```bash
-pnpm preview
+# Al terminar una sesión de trabajo
+git add -A
+git commit -m "descripción"
+git push
+
+# Pasar a producción
+git checkout master
+git merge develop
+git push
+git checkout develop
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## CI
 
-## Renovate integration
-
-Install [Renovate GitHub app](https://github.com/apps/renovate/installations/select_target) on your repository and you are good to go.
+GitHub Actions corre lint + typecheck en cada push a `develop` y `master`.
