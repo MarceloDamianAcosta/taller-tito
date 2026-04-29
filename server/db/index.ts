@@ -1,5 +1,6 @@
 import Database from 'better-sqlite3'
 import { drizzle } from 'drizzle-orm/better-sqlite3'
+import { migrate } from 'drizzle-orm/better-sqlite3/migrator'
 import * as schema from './schema'
 import bcrypt from 'bcryptjs'
 import { users } from './schema'
@@ -15,6 +16,8 @@ sqlite.pragma('journal_mode = WAL')
 sqlite.pragma('foreign_keys = ON')
 
 export const db = drizzle(sqlite, { schema })
+
+migrate(db, { migrationsFolder: join(process.cwd(), 'server/db/migrations') })
 
 async function seed() {
   const existingAdmin = db.select().from(users).where(eq(users.username, 'admin')).get()
