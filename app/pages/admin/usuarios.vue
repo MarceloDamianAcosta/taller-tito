@@ -47,7 +47,7 @@ async function saveCreate() {
   try {
     await $fetch('/api/admin/usuarios', {
       method: 'POST',
-      body: { nombre: createForm.nombre.trim(), username: createForm.username.trim().toLowerCase(), password: createForm.password, role: createForm.rol }
+      body: { name: createForm.nombre.trim(), username: createForm.username.trim().toLowerCase(), password: createForm.password, role: createForm.rol }
     })
     await refresh()
     showModal.value = false
