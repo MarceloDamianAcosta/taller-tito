@@ -1,5 +1,7 @@
 <script setup lang="ts">
 const isOpen = ref(false)
+const route = useRoute()
+watch(() => route.path, () => { isOpen.value = false })
 </script>
 
 <template>
