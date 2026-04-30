@@ -63,7 +63,8 @@ async function logout() {
           name="i-lucide-circle-user"
           class="size-5 text-gray-500 shrink-0"
         />
-        <span class="text-sm text-gray-700 dark:text-gray-300 truncate">{{ user.name || user.username }}</span>
+        <span class="flex-1 text-sm text-gray-700 dark:text-gray-300 truncate">{{ user.name || user.username }}</span>
+        <UColorModeButton />
       </div>
       <UButton
         label="Salir"
