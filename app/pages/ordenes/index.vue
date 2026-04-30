@@ -45,12 +45,12 @@ function formatDate(iso: string | null | undefined) {
 }
 
 const tableColumns = [
-  { key: 'nroOt', label: '#OT' },
-  { key: 'estado', label: 'Estado' },
-  { key: 'clienteNombre', label: 'Cliente' },
-  { key: 'descripcion', label: 'Descripción' },
-  { key: 'fechaPrometida', label: 'Fecha prometida' }
-] as any
+  { accessorKey: 'nroOt', header: '#OT' },
+  { accessorKey: 'estado', header: 'Estado' },
+  { accessorKey: 'clienteNombre', header: 'Cliente' },
+  { accessorKey: 'descripcion', header: 'Descripción' },
+  { accessorKey: 'fechaPrometida', header: 'Fecha prometida' }
+]
 </script>
 
 <template>
