@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
 
+const { fetch: refreshSession } = useUserSession()
 const form = reactive({ username: '', password: '' })
 const error = ref('')
 const loading = ref(false)
@@ -13,6 +14,7 @@ async function submit() {
       method: 'POST',
       body: form
     })
+    await refreshSession()
     if (res.mustChangePassword) {
       await navigateTo('/cambiar-password')
     } else {
