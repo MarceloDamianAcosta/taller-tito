@@ -69,7 +69,7 @@ async function save() {
       v-if="machine"
       class="flex items-center gap-3"
     >
-      <UToggle v-model="form.activo" />
+      <USwitch v-model="form.activo" />
       <span class="text-sm text-gray-700 dark:text-gray-300">Activa</span>
     </div>
 

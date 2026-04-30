@@ -121,7 +121,7 @@ async function save() {
         class="flex-1"
       />
       <label class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer select-none">
-        <UToggle v-model="showInactive" />
+        <USwitch v-model="showInactive" />
         <span>Ver inactivos</span>
       </label>
     </div>
@@ -305,7 +305,7 @@ async function save() {
             label="Activo"
             name="activo"
           >
-            <UToggle v-model="form.activo" />
+            <USwitch v-model="form.activo" />
           </UFormField>
 
           <UAlert

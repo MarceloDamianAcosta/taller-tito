@@ -127,12 +127,12 @@ async function save() {
 }
 
 const tableColumns = [
-  { key: 'nombre', label: 'Nombre' },
-  { key: 'unidad', label: 'Unidad' },
-  { key: 'tipo', label: 'Categoría' },
-  { key: 'activo', label: 'Estado' },
-  { key: 'acciones', label: '' }
-] as any
+  { accessorKey: 'nombre', header: 'Nombre' },
+  { accessorKey: 'unidad', header: 'Unidad' },
+  { accessorKey: 'tipo', header: 'Categoría' },
+  { accessorKey: 'activo', header: 'Estado' },
+  { id: 'acciones', header: '' }
+]
 </script>
 
 <template>
@@ -156,7 +156,7 @@ const tableColumns = [
         class="w-full sm:max-w-xs"
       />
       <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 select-none">
-        <UToggle v-model="incluirInactivos" />
+        <USwitch v-model="incluirInactivos" />
         Mostrar inactivos
       </label>
     </div>
@@ -313,7 +313,7 @@ const tableColumns = [
               v-if="editingMaterial"
               label="Activo"
             >
-              <UToggle v-model="form.activo" />
+              <USwitch v-model="form.activo" />
             </UFormField>
           </div>
 

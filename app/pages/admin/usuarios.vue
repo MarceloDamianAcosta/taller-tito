@@ -324,7 +324,7 @@ function roleLabel(role: string) {
               />
             </UFormField>
             <div class="flex items-center gap-3">
-              <UToggle v-model="editForm.activo" />
+              <USwitch v-model="editForm.activo" />
               <span class="text-sm text-gray-700 dark:text-gray-300">Activo</span>
             </div>
             <UAlert
