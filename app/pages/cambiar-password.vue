@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const { fetch: refreshSession } = useUserSession()
 const form = reactive({ currentPassword: '', newPassword: '', confirm: '' })
 const error = ref('')
 const loading = ref(false)
@@ -19,6 +20,7 @@ async function submit() {
       method: 'PATCH',
       body: { currentPassword: form.currentPassword, newPassword: form.newPassword }
     })
+    await refreshSession()
     await navigateTo('/')
   } catch (e: any) {
     error.value = e.data?.message || 'Error al cambiar contraseña'
