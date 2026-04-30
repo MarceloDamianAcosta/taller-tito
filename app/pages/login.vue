@@ -14,12 +14,8 @@ async function submit() {
       method: 'POST',
       body: form
     })
-    await refreshSession()
-    if (res.mustChangePassword) {
-      await navigateTo('/cambiar-password')
-    } else {
-      await navigateTo('/')
-    }
+    const dest = res.mustChangePassword ? '/cambiar-password' : '/'
+    await navigateTo(dest, { external: true })
   } catch (e: any) {
     error.value = e.data?.message || 'Usuario o contraseña incorrectos'
   } finally {
