@@ -1,7 +1,6 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
 
-const { fetch: refreshSession } = useUserSession()
 const form = reactive({ username: '', password: '' })
 const error = ref('')
 const loading = ref(false)
