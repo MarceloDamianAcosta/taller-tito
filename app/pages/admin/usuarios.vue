@@ -94,7 +94,7 @@ async function changePassword() {
   try {
     await $fetch(`/api/admin/usuarios/${editingUser.value.id}`, {
       method: 'PATCH',
-      body: { password: passwordForm.newPassword }
+      body: { newPassword: passwordForm.newPassword }
     })
     passwordForm.newPassword = ''
     passwordForm.confirm = ''
