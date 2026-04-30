@@ -12,6 +12,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV HOST=0.0.0.0
 ENV PORT=3000
+ENV NODE_ENV=development
 EXPOSE 3000
 CMD ["pnpm", "dev"]
 
