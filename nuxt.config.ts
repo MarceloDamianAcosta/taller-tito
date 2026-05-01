@@ -16,7 +16,6 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     session: {
-      password: process.env.NUXT_SECRET || 'change-me-in-production-min-32-chars!!',
       cookie: {
         secure: false,
         sameSite: 'lax' as const,
