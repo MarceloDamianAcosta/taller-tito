@@ -27,6 +27,7 @@ FROM node:22-alpine AS prod
 WORKDIR /app
 RUN mkdir -p /app/uploads /app/data
 COPY --from=build /app/.output ./
+COPY --from=build /app/server/db/migrations ./server/db/migrations
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
