@@ -16,6 +16,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     session: {
+      password: '',
       cookie: {
         secure: false,
         sameSite: 'lax' as const,
