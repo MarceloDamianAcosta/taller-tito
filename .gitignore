@@ -31,3 +31,9 @@ data/
 
 # npm lockfile (using pnpm)
 package-lock.json
+
+# Local tooling (Claude Code / agents) — no compartir
+.agents/
+.claude/
+skills.txt
+skills-lock.json
