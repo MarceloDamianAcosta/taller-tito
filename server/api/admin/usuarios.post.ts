@@ -16,8 +16,8 @@ export default defineEventHandler(async (event) => {
   if (!/^[a-z0-9]{3,20}$/.test(username)) {
     throw createError({ statusCode: 400, message: 'El usuario debe tener entre 3 y 20 caracteres alfanuméricos en minúsculas' })
   }
-  if (password.length < 8) {
-    throw createError({ statusCode: 400, message: 'La contraseña debe tener al menos 8 caracteres' })
+  if (password.trim().length < 1) {
+    throw createError({ statusCode: 400, message: 'La contraseña no puede estar vacía' })
   }
   if (!['admin', 'technician'].includes(role)) {
     throw createError({ statusCode: 400, message: 'Rol inválido' })
