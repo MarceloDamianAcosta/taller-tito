@@ -39,7 +39,7 @@ const { data: ordenes } = await useFetch<OT[]>('/api/workorders', {
 })
 
 function formatDate(iso: string | null | undefined) {
-  if (!iso) return '—'
+  if (!iso) return 'Sin fecha'
   const [y, m, d] = iso.split('-')
   return `${d}/${m}/${y}`
 }

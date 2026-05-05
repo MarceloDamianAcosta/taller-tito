@@ -53,7 +53,7 @@ export const ordenTrabajo = sqliteTable('orden_trabajo', {
   cantidad: integer('cantidad'),
   maquinaId: integer('maquina_id').references(() => maquinas.id),
   fechaIngreso: text('fecha_ingreso').notNull(),
-  fechaPrometida: text('fecha_prometida').notNull(),
+  fechaPrometida: text('fecha_prometida'),
   fechaInicio: text('fecha_inicio'),
   fechaFinalizacion: text('fecha_finalizacion'),
   fechaEntrega: text('fecha_entrega'),

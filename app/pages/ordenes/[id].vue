@@ -93,7 +93,7 @@ function startEdit() {
   editForm.cantidad = o.cantidad !== null ? String(o.cantidad) : ''
   editForm.maquina_id = o.maquinaId ?? undefined
   editForm.fecha_ingreso = o.fechaIngreso
-  editForm.fecha_prometida = o.fechaPrometida
+  editForm.fecha_prometida = o.fechaPrometida ?? ''
   editForm.fecha_inicio = o.fechaInicio ?? ''
   editForm.fecha_finalizacion = o.fechaFinalizacion ?? ''
   editForm.fecha_entrega = o.fechaEntrega ?? ''
@@ -124,7 +124,7 @@ async function saveEdit() {
         cantidad: editForm.cantidad !== '' ? Number(editForm.cantidad) : null,
         maquina_id: editForm.maquina_id ?? null,
         fecha_ingreso: editForm.fecha_ingreso,
-        fecha_prometida: editForm.fecha_prometida,
+        fecha_prometida: editForm.fecha_prometida || null,
         fecha_inicio: editForm.fecha_inicio || null,
         fecha_finalizacion: editForm.fecha_finalizacion || null,
         fecha_entrega: editForm.fecha_entrega || null,
@@ -279,7 +279,7 @@ function onClienteCreatedEdit(payload: { id: number, nombre: string }) {
 }
 
 function formatDate(iso: string | null | undefined) {
-  if (!iso) return '—'
+  if (!iso) return 'Sin fecha'
   const [y, m, d] = iso.split('-')
   return `${d}/${m}/${y}`
 }

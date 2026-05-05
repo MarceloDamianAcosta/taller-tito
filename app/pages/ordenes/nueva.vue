@@ -46,7 +46,6 @@ async function submit() {
   errorMsg.value = ''
   if (!form.cliente_id && form.cliente_id !== 0) { errorMsg.value = 'Seleccioná un cliente'; return }
   if (!form.descripcion.trim()) { errorMsg.value = 'La descripción es obligatoria'; return }
-  if (!form.fecha_prometida) { errorMsg.value = 'La fecha prometida es obligatoria'; return }
 
   saving.value = true
   try {
@@ -59,7 +58,7 @@ async function submit() {
         cantidad: form.cantidad !== '' ? Number(form.cantidad) : null,
         maquina_id: form.maquina_id ?? null,
         fecha_ingreso: form.fecha_ingreso,
-        fecha_prometida: form.fecha_prometida,
+        fecha_prometida: form.fecha_prometida || null,
         tiempo_estimado_hs: form.tiempo_estimado_hs !== '' ? Number(form.tiempo_estimado_hs) : null,
         observaciones: form.observaciones.trim() || null
       }
@@ -171,10 +170,7 @@ async function submit() {
           />
         </UFormField>
 
-        <UFormField
-          label="Fecha prometida"
-          required
-        >
+        <UFormField label="Fecha prometida">
           <UInput
             v-model="form.fecha_prometida"
             type="date"

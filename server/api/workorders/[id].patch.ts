@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
   if (fields.cantidad !== undefined) updateData.cantidad = fields.cantidad ? Number(fields.cantidad) : null
   if (fields.maquina_id !== undefined) updateData.maquinaId = fields.maquina_id ? Number(fields.maquina_id) : null
   if (fields.fecha_ingreso !== undefined) updateData.fechaIngreso = fields.fecha_ingreso
-  if (fields.fecha_prometida !== undefined) updateData.fechaPrometida = fields.fecha_prometida
+  if (fields.fecha_prometida !== undefined) updateData.fechaPrometida = fields.fecha_prometida || null
   if (fields.fecha_inicio !== undefined) updateData.fechaInicio = fields.fecha_inicio || null
   if (fields.fecha_finalizacion !== undefined) updateData.fechaFinalizacion = fields.fecha_finalizacion || null
   if (fields.fecha_entrega !== undefined) updateData.fechaEntrega = fields.fecha_entrega || null

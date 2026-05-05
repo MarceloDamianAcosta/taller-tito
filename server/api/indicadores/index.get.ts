@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
     .all()
 
   const conEntrega = allOts.filter(o => o.fechaEntrega)
-  const aTiempo = conEntrega.filter(o => o.fechaEntrega! <= o.fechaPrometida)
+  const aTiempo = conEntrega.filter(o => !o.fechaPrometida || o.fechaEntrega! <= o.fechaPrometida)
   const entregasPorcentaje = conEntrega.length > 0 ? Math.round((aTiempo.length / conEntrega.length) * 100) : 0
 
   const otsConNcIds = new Set(

@@ -1,6 +1,6 @@
 import { db } from '../../db/index'
 import { ordenTrabajo, controlCalidad, noConformidades, registroMantenimiento, clientes, maquinas } from '../../db/schema'
-import { eq, ne, and, isNotNull, count, lt } from 'drizzle-orm'
+import { eq, ne, and, isNotNull, count, lt, sql } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
   const entregasRows = db.select({ eTiempo: ordenTrabajo.fechaEntrega, ePrometida: ordenTrabajo.fechaPrometida })
     .from(ordenTrabajo).where(isNotNull(ordenTrabajo.fechaEntrega)).all()
   const entregasTotal = entregasRows.length
-  const entregasATiempo = entregasRows.filter(r => r.eTiempo! <= r.ePrometida).length
+  const entregasATiempo = entregasRows.filter(r => !r.ePrometida || r.eTiempo! <= r.ePrometida).length
   const entregasPorcentaje = entregasTotal > 0 ? Math.round((entregasATiempo / entregasTotal) * 100) : 0
 
   const noConformidadesTotal = db.select({ c: count() }).from(noConformidades).get()?.c ?? 0
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
   }).from(ordenTrabajo)
     .leftJoin(clientes, eq(ordenTrabajo.clienteId, clientes.id))
     .where(ne(ordenTrabajo.estado, 'Entregado'))
-    .orderBy(ordenTrabajo.fechaPrometida)
+    .orderBy(sql`${ordenTrabajo.fechaPrometida} IS NULL ASC`, ordenTrabajo.fechaPrometida)
     .limit(10).all()
     .map(ot => ({ ...ot, isOverdue: !!ot.fechaPrometida && ot.fechaPrometida < today }))
 

@@ -8,6 +8,13 @@
       "when": 1777473697071,
       "tag": "0000_glossy_vanisher",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1778018741739,
+      "tag": "0001_fecha_prometida_nullable",
+      "breakpoints": true
     }
   ]
 }

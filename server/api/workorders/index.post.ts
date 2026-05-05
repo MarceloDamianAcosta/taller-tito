@@ -12,7 +12,6 @@ export default defineEventHandler(async (event) => {
   if (!cliente_id) throw createError({ statusCode: 400, message: 'El cliente es obligatorio' })
   if (!descripcion?.trim()) throw createError({ statusCode: 400, message: 'La descripción es obligatoria' })
   if (!fecha_ingreso) throw createError({ statusCode: 400, message: 'La fecha de ingreso es obligatoria' })
-  if (!fecha_prometida) throw createError({ statusCode: 400, message: 'La fecha prometida es obligatoria' })
 
   const result = db.insert(ordenTrabajo).values({
     clienteId: Number(cliente_id),
@@ -21,7 +20,7 @@ export default defineEventHandler(async (event) => {
     cantidad: cantidad ? Number(cantidad) : null,
     maquinaId: maquina_id ? Number(maquina_id) : null,
     fechaIngreso: fecha_ingreso,
-    fechaPrometida: fecha_prometida,
+    fechaPrometida: fecha_prometida || null,
     tiempoEstimadoHs: tiempo_estimado_hs ? Number(tiempo_estimado_hs) : null,
     observaciones: observaciones?.trim() || null,
     estado: 'Recepcionado'
