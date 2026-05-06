@@ -1,6 +1,6 @@
 import { db } from '../../db/index'
 import { ordenTrabajo, controlCalidad, noConformidades, materiales, catalogoMateriales, clientes, registroMantenimiento } from '../../db/schema'
-import { eq, and, isNotNull, count, gte } from 'drizzle-orm'
+import { eq, and, isNotNull, count, gte, ne } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     estado: ordenTrabajo.estado,
     clienteId: ordenTrabajo.clienteId
   }).from(ordenTrabajo)
-    .where(desde ? gte(ordenTrabajo.createdAt, desde) : undefined)
+    .where(and(ne(ordenTrabajo.estado, 'Anulada'), desde ? gte(ordenTrabajo.createdAt, desde) : undefined))
     .all()
 
   const conEntrega = allOts.filter(o => o.fechaEntrega)

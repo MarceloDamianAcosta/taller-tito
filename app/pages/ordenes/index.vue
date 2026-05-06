@@ -26,7 +26,7 @@ watch(search, (val) => {
   }, 300)
 })
 
-const tabs = ['Todos', 'Recepcionado', 'En proceso', 'Finalizado en stock', 'Entregado']
+const tabs = ['Todos', 'Recepcionado', 'En proceso', 'Finalizado en stock', 'Entregado', 'Anulada']
 
 const fetchQuery = computed(() => {
   const q: Record<string, string> = {}

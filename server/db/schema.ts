@@ -60,8 +60,9 @@ export const ordenTrabajo = sqliteTable('orden_trabajo', {
   tiempoRealHs: real('tiempo_real_hs'),
   motivoRetraso: text('motivo_retraso'),
   estado: text('estado', {
-    enum: ['Recepcionado', 'En proceso', 'Finalizado en stock', 'Entregado']
+    enum: ['Recepcionado', 'En proceso', 'Finalizado en stock', 'Entregado', 'Anulada']
   }).notNull().default('Recepcionado'),
+  motivoAnulacion: text('motivo_anulacion'),
   observaciones: text('observaciones'),
   clienteConforme: integer('cliente_conforme', { mode: 'boolean' }),
   createdAt: text('created_at').notNull().default(sql`(datetime('now'))`)

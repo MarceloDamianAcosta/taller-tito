@@ -41,6 +41,7 @@ interface OT {
   tiempoRealHs: number | null
   motivoRetraso: string | null
   estado: string
+  motivoAnulacion: string | null
   observaciones: string | null
   clienteConforme: boolean | null
   createdAt: string
@@ -183,6 +184,52 @@ async function confirmarEntregaForzada() {
   await cambiarEstado(pendingEstado.value, true)
 }
 
+const router = useRouter()
+const showAnularModal = ref(false)
+const motivoAnulacion = ref('')
+const anularError = ref('')
+const anulando = ref(false)
+
+function openAnular() {
+  motivoAnulacion.value = ''
+  anularError.value = ''
+  showAnularModal.value = true
+}
+
+async function confirmarAnulacion() {
+  if (!motivoAnulacion.value.trim()) { anularError.value = 'Indicá el motivo'; return }
+  anulando.value = true
+  anularError.value = ''
+  try {
+    await $fetch(`/api/workorders/${id.value}`, {
+      method: 'PATCH',
+      body: { estado: 'Anulada', motivo_anulacion: motivoAnulacion.value.trim() }
+    })
+    showAnularModal.value = false
+    await refresh()
+  } catch (e: any) {
+    anularError.value = e.data?.message || 'Error al anular'
+  } finally {
+    anulando.value = false
+  }
+}
+
+const showEliminarModal = ref(false)
+const eliminandoOt = ref(false)
+const eliminarError = ref('')
+
+async function confirmarEliminacion() {
+  eliminandoOt.value = true
+  eliminarError.value = ''
+  try {
+    await $fetch(`/api/workorders/${id.value}`, { method: 'DELETE' })
+    await router.push('/ordenes')
+  } catch (e: any) {
+    eliminarError.value = e.data?.message || 'Error al eliminar'
+    eliminandoOt.value = false
+  }
+}
+
 const addingMaterial = ref(false)
 const savingMaterial = ref(false)
 const materialError = ref('')
@@ -304,6 +351,14 @@ const estadoTransiciones = estadoTransitions
       <OrdenesStatusBadge :estado="ot.estado" />
     </div>
 
+    <UAlert
+      v-if="ot.estado === 'Anulada'"
+      color="neutral"
+      icon="i-lucide-ban"
+      title="OT anulada"
+      :description="ot.motivoAnulacion || 'Sin motivo registrado'"
+    />
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="lg:col-span-2 space-y-6">
         <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 space-y-4">
@@ -312,7 +367,7 @@ const estadoTransiciones = estadoTransitions
               Información
             </h2>
             <div
-              v-if="!isEditing"
+              v-if="!isEditing && ot.estado !== 'Anulada'"
               class="flex gap-2"
             >
               <UButton
@@ -919,8 +974,115 @@ const estadoTransiciones = estadoTransitions
             <span>{{ ot.tiempoRealHs }} hs</span>
           </div>
         </div>
+
+        <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 space-y-3">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+            Acciones
+          </h2>
+          <UButton
+            v-if="ot.estado !== 'Anulada'"
+            label="Anular OT"
+            icon="i-lucide-ban"
+            color="warning"
+            variant="subtle"
+            class="w-full justify-center"
+            @click="openAnular"
+          />
+          <UButton
+            label="Eliminar OT"
+            icon="i-lucide-trash-2"
+            color="error"
+            variant="subtle"
+            class="w-full justify-center"
+            @click="showEliminarModal = true"
+          />
+        </div>
       </div>
     </div>
+
+    <UModal v-model:open="showAnularModal">
+      <template #content>
+        <div class="p-5 space-y-4">
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+            Anular OT #{{ ot.nroOt }}
+          </h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            La OT queda registrada con estado "Anulada" y no entra en los KPIs.
+          </p>
+          <UFormField
+            label="Motivo"
+            required
+          >
+            <UTextarea
+              v-model="motivoAnulacion"
+              :rows="3"
+              class="w-full"
+              placeholder="Ej: cliente canceló, error de carga, presupuesto rechazado…"
+            />
+          </UFormField>
+          <UAlert
+            v-if="anularError"
+            color="error"
+            :description="anularError"
+          />
+          <div class="flex justify-end gap-2">
+            <UButton
+              label="Cancelar"
+              color="neutral"
+              variant="subtle"
+              @click="showAnularModal = false"
+            />
+            <UButton
+              label="Anular"
+              color="warning"
+              :loading="anulando"
+              @click="confirmarAnulacion"
+            />
+          </div>
+        </div>
+      </template>
+    </UModal>
+
+    <UModal v-model:open="showEliminarModal">
+      <template #content>
+        <div class="p-5 space-y-4">
+          <div class="flex items-start gap-3">
+            <UIcon
+              name="i-lucide-alert-triangle"
+              class="size-6 text-red-500 shrink-0 mt-0.5"
+            />
+            <div>
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+                Eliminar OT #{{ ot.nroOt }}
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Se borrará la OT y todo lo asociado (control de calidad, no conformidades, materiales, archivos, máquinas). Esta acción no se puede deshacer.
+              </p>
+            </div>
+          </div>
+          <UAlert
+            v-if="eliminarError"
+            color="error"
+            :description="eliminarError"
+          />
+          <div class="flex justify-end gap-2">
+            <UButton
+              label="Cancelar"
+              color="neutral"
+              variant="subtle"
+              :disabled="eliminandoOt"
+              @click="showEliminarModal = false"
+            />
+            <UButton
+              label="Eliminar"
+              color="error"
+              :loading="eliminandoOt"
+              @click="confirmarEliminacion"
+            />
+          </div>
+        </div>
+      </template>
+    </UModal>
 
     <UModal v-model:open="showForceModal">
       <template #content>

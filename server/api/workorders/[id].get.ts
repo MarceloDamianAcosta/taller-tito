@@ -27,6 +27,7 @@ export default defineEventHandler(async (event) => {
       tiempoRealHs: ordenTrabajo.tiempoRealHs,
       motivoRetraso: ordenTrabajo.motivoRetraso,
       estado: ordenTrabajo.estado,
+      motivoAnulacion: ordenTrabajo.motivoAnulacion,
       observaciones: ordenTrabajo.observaciones,
       clienteConforme: ordenTrabajo.clienteConforme,
       createdAt: ordenTrabajo.createdAt

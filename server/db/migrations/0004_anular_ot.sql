@@ -1,0 +1,1 @@
+ALTER TABLE `orden_trabajo` ADD `motivo_anulacion` text;

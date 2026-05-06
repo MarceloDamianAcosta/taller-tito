@@ -1,6 +1,6 @@
 import { db } from '../../db/index'
 import { ordenTrabajo, controlCalidad, noConformidades, registroMantenimiento, clientes, maquinas, otMaquinas } from '../../db/schema'
-import { eq, ne, and, isNotNull, count, lt, sql, inArray } from 'drizzle-orm'
+import { eq, ne, and, isNotNull, count, lt, sql, inArray, notInArray } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
@@ -8,11 +8,11 @@ export default defineEventHandler(async (event) => {
 
   const today = new Date().toISOString().slice(0, 10)
 
-  const otsActivas = db.select({ c: count() }).from(ordenTrabajo).where(ne(ordenTrabajo.estado, 'Entregado')).get()?.c ?? 0
-  const otsTotal = db.select({ c: count() }).from(ordenTrabajo).get()?.c ?? 0
+  const otsActivas = db.select({ c: count() }).from(ordenTrabajo).where(notInArray(ordenTrabajo.estado, ['Entregado', 'Anulada'])).get()?.c ?? 0
+  const otsTotal = db.select({ c: count() }).from(ordenTrabajo).where(ne(ordenTrabajo.estado, 'Anulada')).get()?.c ?? 0
 
   const entregasRows = db.select({ eTiempo: ordenTrabajo.fechaEntrega, ePrometida: ordenTrabajo.fechaPrometida })
-    .from(ordenTrabajo).where(isNotNull(ordenTrabajo.fechaEntrega)).all()
+    .from(ordenTrabajo).where(and(isNotNull(ordenTrabajo.fechaEntrega), ne(ordenTrabajo.estado, 'Anulada'))).all()
   const entregasTotal = entregasRows.length
   const entregasATiempo = entregasRows.filter(r => !r.ePrometida || r.eTiempo! <= r.ePrometida).length
   const entregasPorcentaje = entregasTotal > 0 ? Math.round((entregasATiempo / entregasTotal) * 100) : 0
@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
     clienteNombre: clientes.nombre
   }).from(ordenTrabajo)
     .leftJoin(clientes, eq(ordenTrabajo.clienteId, clientes.id))
-    .where(ne(ordenTrabajo.estado, 'Entregado'))
+    .where(notInArray(ordenTrabajo.estado, ['Entregado', 'Anulada']))
     .orderBy(sql`${ordenTrabajo.fechaPrometida} IS NULL ASC`, ordenTrabajo.fechaPrometida)
     .limit(10).all()
 
@@ -66,7 +66,7 @@ export default defineEventHandler(async (event) => {
     .limit(5).all()
 
   const otsVencidas = db.select({ c: count() }).from(ordenTrabajo)
-    .where(and(lt(ordenTrabajo.fechaPrometida, today), ne(ordenTrabajo.estado, 'Entregado'))).get()?.c ?? 0
+    .where(and(lt(ordenTrabajo.fechaPrometida, today), notInArray(ordenTrabajo.estado, ['Entregado', 'Anulada']))).get()?.c ?? 0
   const mantenimientosVencidos = db.select({ c: count() }).from(registroMantenimiento)
     .where(and(isNotNull(registroMantenimiento.proximaFecha), lt(registroMantenimiento.proximaFecha, today))).get()?.c ?? 0
 
