@@ -31,8 +31,7 @@ interface OT {
   descripcion: string
   material: string | null
   cantidad: number | null
-  maquinaId: number | null
-  maquinaNombre: string | null
+  maquinas: { id: number, nombre: string }[]
   fechaIngreso: string
   fechaPrometida: string
   fechaInicio: string | null
@@ -71,7 +70,7 @@ const editForm = reactive({
   descripcion: '',
   material: '',
   cantidad: '',
-  maquina_id: undefined as number | undefined,
+  maquina_ids: [] as number[],
   fecha_ingreso: '',
   fecha_prometida: '',
   fecha_inicio: '',
@@ -91,7 +90,7 @@ function startEdit() {
   editForm.descripcion = o.descripcion
   editForm.material = o.material ?? ''
   editForm.cantidad = o.cantidad !== null ? String(o.cantidad) : ''
-  editForm.maquina_id = o.maquinaId ?? undefined
+  editForm.maquina_ids = o.maquinas.map(m => m.id)
   editForm.fecha_ingreso = o.fechaIngreso
   editForm.fecha_prometida = o.fechaPrometida ?? ''
   editForm.fecha_inicio = o.fechaInicio ?? ''
@@ -122,7 +121,7 @@ async function saveEdit() {
         descripcion: editForm.descripcion,
         material: editForm.material || null,
         cantidad: editForm.cantidad !== '' ? Number(editForm.cantidad) : null,
-        maquina_id: editForm.maquina_id ?? null,
+        maquina_ids: editForm.maquina_ids,
         fecha_ingreso: editForm.fecha_ingreso,
         fecha_prometida: editForm.fecha_prometida || null,
         fecha_inicio: editForm.fecha_inicio || null,
@@ -268,10 +267,9 @@ const clienteOptions = computed(() =>
   (clientesData.value ?? []).map(c => ({ label: c.nombre, value: c.id }))
 )
 
-const maquinaOptions = computed(() => [
-  { label: 'Sin máquina', value: null },
-  ...(maquinasData.value ?? []).map(m => ({ label: m.nombre, value: m.id }))
-])
+const maquinaOptions = computed(() =>
+  (maquinasData.value ?? []).map(m => ({ label: m.nombre, value: m.id }))
+)
 
 function onClienteCreatedEdit(payload: { id: number, nombre: string }) {
   clientesData.value = [...(clientesData.value ?? []), payload]
@@ -358,10 +356,26 @@ const estadoTransiciones = estadoTransitions
               </p>
             </div>
             <div>
-              <span class="text-gray-500 dark:text-gray-400">Máquina</span>
-              <p class="font-medium text-gray-900 dark:text-white">
-                {{ ot.maquinaNombre || '—' }}
+              <span class="text-gray-500 dark:text-gray-400">Máquinas</span>
+              <p
+                v-if="!ot.maquinas.length"
+                class="font-medium text-gray-900 dark:text-white"
+              >
+                —
               </p>
+              <div
+                v-else
+                class="flex flex-wrap gap-1.5 mt-0.5"
+              >
+                <UBadge
+                  v-for="m in ot.maquinas"
+                  :key="m.id"
+                  color="neutral"
+                  variant="subtle"
+                >
+                  {{ m.nombre }}
+                </UBadge>
+              </div>
             </div>
             <div class="sm:col-span-2">
               <span class="text-gray-500 dark:text-gray-400">Descripción</span>
@@ -500,12 +514,14 @@ const estadoTransiciones = estadoTransitions
               </UFormField>
             </div>
 
-            <UFormField label="Máquina">
-              <USelect
-                v-model="editForm.maquina_id"
+            <UFormField label="Máquinas">
+              <USelectMenu
+                v-model="editForm.maquina_ids"
                 :items="maquinaOptions"
                 value-key="value"
                 label-key="label"
+                multiple
+                placeholder="Sin máquinas"
                 class="w-full"
               />
             </UFormField>

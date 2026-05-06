@@ -1,4 +1,4 @@
-import { sqliteTable, integer, text, real } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, integer, text, real, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
 export const users = sqliteTable('users', {
@@ -51,7 +51,6 @@ export const ordenTrabajo = sqliteTable('orden_trabajo', {
   descripcion: text('descripcion').notNull(),
   material: text('material'),
   cantidad: integer('cantidad'),
-  maquinaId: integer('maquina_id').references(() => maquinas.id),
   fechaIngreso: text('fecha_ingreso').notNull(),
   fechaPrometida: text('fecha_prometida'),
   fechaInicio: text('fecha_inicio'),
@@ -67,6 +66,14 @@ export const ordenTrabajo = sqliteTable('orden_trabajo', {
   clienteConforme: integer('cliente_conforme', { mode: 'boolean' }),
   createdAt: text('created_at').notNull().default(sql`(datetime('now'))`)
 })
+
+export const otMaquinas = sqliteTable('ot_maquinas', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  otId: integer('ot_id').notNull().references(() => ordenTrabajo.nroOt),
+  maquinaId: integer('maquina_id').notNull().references(() => maquinas.id)
+}, (t) => ({
+  uniqOtMaquina: uniqueIndex('uniq_ot_maquina').on(t.otId, t.maquinaId)
+}))
 
 export const otArchivos = sqliteTable('ot_archivos', {
   id: integer('id').primaryKey({ autoIncrement: true }),

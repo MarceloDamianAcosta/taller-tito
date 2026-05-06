@@ -1,5 +1,5 @@
 import { db } from '../../db/index'
-import { ordenTrabajo, controlCalidad } from '../../db/schema'
+import { ordenTrabajo, controlCalidad, otMaquinas } from '../../db/schema'
 import { eq } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
@@ -38,7 +38,6 @@ export default defineEventHandler(async (event) => {
   if (fields.descripcion !== undefined) updateData.descripcion = fields.descripcion
   if (fields.material !== undefined) updateData.material = fields.material || null
   if (fields.cantidad !== undefined) updateData.cantidad = fields.cantidad ? Number(fields.cantidad) : null
-  if (fields.maquina_id !== undefined) updateData.maquinaId = fields.maquina_id ? Number(fields.maquina_id) : null
   if (fields.fecha_ingreso !== undefined) updateData.fechaIngreso = fields.fecha_ingreso
   if (fields.fecha_prometida !== undefined) updateData.fechaPrometida = fields.fecha_prometida || null
   if (fields.fecha_inicio !== undefined) updateData.fechaInicio = fields.fecha_inicio || null
@@ -51,8 +50,16 @@ export default defineEventHandler(async (event) => {
   if (fields.observaciones !== undefined) updateData.observaciones = fields.observaciones || null
   if (fields.cliente_conforme !== undefined) updateData.clienteConforme = fields.cliente_conforme
 
+  if (Array.isArray(fields.maquina_ids)) {
+    const uniqueIds = [...new Set(fields.maquina_ids.map(Number).filter((n: number) => Number.isInteger(n) && n > 0))]
+    db.delete(otMaquinas).where(eq(otMaquinas.otId, id)).run()
+    if (uniqueIds.length > 0) {
+      db.insert(otMaquinas).values(uniqueIds.map(mid => ({ otId: id, maquinaId: mid }))).run()
+    }
+  }
+
   if (Object.keys(updateData).length === 0) {
-    return existing
+    return db.select().from(ordenTrabajo).where(eq(ordenTrabajo.nroOt, id)).get()
   }
 
   db.update(ordenTrabajo).set(updateData).where(eq(ordenTrabajo.nroOt, id)).run()

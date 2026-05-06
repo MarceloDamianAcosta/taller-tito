@@ -1,6 +1,6 @@
 import { db } from '../../db/index'
-import { ordenTrabajo, controlCalidad, noConformidades, registroMantenimiento, clientes, maquinas } from '../../db/schema'
-import { eq, ne, and, isNotNull, count, lt, sql } from 'drizzle-orm'
+import { ordenTrabajo, controlCalidad, noConformidades, registroMantenimiento, clientes, maquinas, otMaquinas } from '../../db/schema'
+import { eq, ne, and, isNotNull, count, lt, sql, inArray } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
   const noConformidadesTotal = db.select({ c: count() }).from(noConformidades).get()?.c ?? 0
   const reprocesosTotal = db.select({ c: count() }).from(controlCalidad).where(eq(controlCalidad.huboReproceso, true)).get()?.c ?? 0
 
-  const otsEnCurso = db.select({
+  const otsEnCursoRaw = db.select({
     nroOt: ordenTrabajo.nroOt,
     descripcion: ordenTrabajo.descripcion,
     estado: ordenTrabajo.estado,
@@ -31,7 +31,28 @@ export default defineEventHandler(async (event) => {
     .where(ne(ordenTrabajo.estado, 'Entregado'))
     .orderBy(sql`${ordenTrabajo.fechaPrometida} IS NULL ASC`, ordenTrabajo.fechaPrometida)
     .limit(10).all()
-    .map(ot => ({ ...ot, isOverdue: !!ot.fechaPrometida && ot.fechaPrometida < today }))
+
+  const otsEnCursoIds = otsEnCursoRaw.map(o => o.nroOt)
+  const maquinasPorOt = new Map<number, string[]>()
+  if (otsEnCursoIds.length > 0) {
+    const links = db
+      .select({ otId: otMaquinas.otId, nombre: maquinas.nombre })
+      .from(otMaquinas)
+      .innerJoin(maquinas, eq(otMaquinas.maquinaId, maquinas.id))
+      .where(inArray(otMaquinas.otId, otsEnCursoIds))
+      .all()
+    for (const l of links) {
+      const arr = maquinasPorOt.get(l.otId) ?? []
+      arr.push(l.nombre)
+      maquinasPorOt.set(l.otId, arr)
+    }
+  }
+
+  const otsEnCurso = otsEnCursoRaw.map(ot => ({
+    ...ot,
+    maquinasNombres: (maquinasPorOt.get(ot.nroOt) ?? []).join(', '),
+    isOverdue: !!ot.fechaPrometida && ot.fechaPrometida < today
+  }))
 
   const proximosMantenimientos = db.select({
     id: registroMantenimiento.id,

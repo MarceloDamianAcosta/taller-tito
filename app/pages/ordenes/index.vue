@@ -9,7 +9,8 @@ interface OT {
   fechaPrometida: string
   fechaEntrega: string | null
   clienteNombre: string | null
-  maquinaNombre: string | null
+  maquinas: { id: number, nombre: string }[]
+  maquinasNombres: string
   isOverdue: boolean
 }
 
