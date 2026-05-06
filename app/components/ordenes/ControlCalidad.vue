@@ -82,6 +82,7 @@ async function save() {
     await refresh()
     if (calidad.value) populateForm(calidad.value)
     isEditing.value = false
+    await navigateTo('/')
   } catch (e: any) {
     saveError.value = e.data?.message || 'Error al guardar'
   } finally {

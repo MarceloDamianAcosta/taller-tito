@@ -37,7 +37,7 @@ function onMaquinaSaved() {
 
 function onRegistroSaved() {
   showRegistroModal.value = false
-  refreshRegistros()
+  navigateTo('/')
 }
 </script>
 

@@ -77,6 +77,7 @@ async function save() {
     }
     await refresh()
     showModal.value = false
+    await navigateTo('/')
   } catch (e: any) {
     saveError.value = e.data?.message || 'Error al guardar'
   } finally {
