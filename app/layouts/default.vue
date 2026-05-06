@@ -14,7 +14,7 @@ watch(() => route.path, () => { isOpen.value = false })
       class="lg:hidden"
     >
       <template #content>
-        <AppSidebar />
+        <AppSidebar :on-nav-click="() => (isOpen = false)" />
       </template>
     </USlideover>
 

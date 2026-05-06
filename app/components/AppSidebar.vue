@@ -1,4 +1,6 @@
 <script setup lang="ts">
+defineProps<{ onNavClick?: () => void }>()
+
 const route = useRoute()
 const { user, clear } = useUserSession()
 
@@ -28,7 +30,10 @@ async function logout() {
 <template>
   <nav class="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">
     <div class="px-4 py-5 border-b border-gray-200 dark:border-gray-800">
-      <NuxtLink to="/">
+      <NuxtLink
+        to="/"
+        @click="onNavClick?.()"
+      >
         <AppLogo />
       </NuxtLink>
     </div>
@@ -44,6 +49,7 @@ async function logout() {
           :class="isActive(item.to)
             ? 'bg-primary/10 text-primary'
             : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'"
+          @click="onNavClick?.()"
         >
           <UIcon
             :name="item.icon"
