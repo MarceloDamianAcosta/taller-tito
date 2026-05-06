@@ -184,7 +184,6 @@ async function confirmarEntregaForzada() {
   await cambiarEstado(pendingEstado.value, true)
 }
 
-const router = useRouter()
 const showAnularModal = ref(false)
 const motivoAnulacion = ref('')
 const anularError = ref('')
@@ -211,22 +210,6 @@ async function confirmarAnulacion() {
     anularError.value = e.data?.message || 'Error al anular'
   } finally {
     anulando.value = false
-  }
-}
-
-const showEliminarModal = ref(false)
-const eliminandoOt = ref(false)
-const eliminarError = ref('')
-
-async function confirmarEliminacion() {
-  eliminandoOt.value = true
-  eliminarError.value = ''
-  try {
-    await $fetch(`/api/workorders/${id.value}`, { method: 'DELETE' })
-    await router.push('/ordenes')
-  } catch (e: any) {
-    eliminarError.value = e.data?.message || 'Error al eliminar'
-    eliminandoOt.value = false
   }
 }
 
@@ -988,14 +971,6 @@ const estadoTransiciones = estadoTransitions
             class="w-full justify-center"
             @click="openAnular"
           />
-          <UButton
-            label="Eliminar OT"
-            icon="i-lucide-trash-2"
-            color="error"
-            variant="subtle"
-            class="w-full justify-center"
-            @click="showEliminarModal = true"
-          />
         </div>
       </div>
     </div>
@@ -1037,47 +1012,6 @@ const estadoTransiciones = estadoTransitions
               color="warning"
               :loading="anulando"
               @click="confirmarAnulacion"
-            />
-          </div>
-        </div>
-      </template>
-    </UModal>
-
-    <UModal v-model:open="showEliminarModal">
-      <template #content>
-        <div class="p-5 space-y-4">
-          <div class="flex items-start gap-3">
-            <UIcon
-              name="i-lucide-alert-triangle"
-              class="size-6 text-red-500 shrink-0 mt-0.5"
-            />
-            <div>
-              <h3 class="text-base font-semibold text-gray-900 dark:text-white">
-                Eliminar OT #{{ ot.nroOt }}
-              </h3>
-              <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Se borrará la OT y todo lo asociado (control de calidad, no conformidades, materiales, archivos, máquinas). Esta acción no se puede deshacer.
-              </p>
-            </div>
-          </div>
-          <UAlert
-            v-if="eliminarError"
-            color="error"
-            :description="eliminarError"
-          />
-          <div class="flex justify-end gap-2">
-            <UButton
-              label="Cancelar"
-              color="neutral"
-              variant="subtle"
-              :disabled="eliminandoOt"
-              @click="showEliminarModal = false"
-            />
-            <UButton
-              label="Eliminar"
-              color="error"
-              :loading="eliminandoOt"
-              @click="confirmarEliminacion"
             />
           </div>
         </div>
