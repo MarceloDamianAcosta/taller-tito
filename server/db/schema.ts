@@ -80,7 +80,7 @@ export const controlCalidad = sqliteTable('control_calidad', {
   otId: integer('ot_id').notNull().references(() => ordenTrabajo.nroOt),
   queSeControla: text('que_se_controla').notNull(),
   instrumento: text('instrumento'),
-  resultado: text('resultado', { enum: ['OK', 'NO OK'] }).notNull(),
+  resultado: text('resultado', { enum: ['OK', 'NO OK'] }),
   accion: text('accion'),
   cumpleFuncion: integer('cumple_funcion', { mode: 'boolean' }).notNull(),
   obsCalidad: text('obs_calidad'),

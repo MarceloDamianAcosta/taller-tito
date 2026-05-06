@@ -12,15 +12,16 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
 
   if (!body.que_se_controla) throw createError({ statusCode: 400, message: '¿Qué se controló? es obligatorio' })
-  if (!body.resultado) throw createError({ statusCode: 400, message: 'El resultado es obligatorio' })
   if (body.cumple_funcion === undefined || body.cumple_funcion === null) throw createError({ statusCode: 400, message: '¿Cumple función? es obligatorio' })
   if (body.hubo_reproceso === undefined || body.hubo_reproceso === null) throw createError({ statusCode: 400, message: '¿Hubo reproceso? es obligatorio' })
   if (!body.fecha_control) throw createError({ statusCode: 400, message: 'La fecha de control es obligatoria' })
 
+  const resultado = body.resultado === 'OK' || body.resultado === 'NO OK' ? body.resultado : null
+
   const values = {
     queSeControla: body.que_se_controla,
     instrumento: body.instrumento || null,
-    resultado: body.resultado as 'OK' | 'NO OK',
+    resultado,
     accion: body.accion || null,
     cumpleFuncion: Boolean(body.cumple_funcion),
     obsCalidad: body.obs_calidad || null,

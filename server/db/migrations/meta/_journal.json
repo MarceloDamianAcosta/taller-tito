@@ -15,6 +15,13 @@
       "when": 1778018741739,
       "tag": "0001_fecha_prometida_nullable",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1778021752186,
+      "tag": "0002_resultado_calidad_nullable",
+      "breakpoints": true
     }
   ]
 }
