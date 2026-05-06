@@ -150,7 +150,7 @@ const showForceModal = ref(false)
 const pendingEstado = ref('')
 const clienteConformeEntrega = ref<boolean | null>(null)
 
-const estadosNormales = ['Recepcionado', 'En proceso', 'Finalizado en stock', 'Entregado'] as const
+const estadosNormales = ['Recepcionado', 'En proceso', 'Finalizado', 'Entregado'] as const
 const estadoOptions = estadosNormales.map(e => ({ label: e, value: e }))
 
 const targetEstado = ref<string>('')

@@ -67,7 +67,7 @@ export default defineEventHandler(async (event) => {
     ? Math.round(tiemposRows.reduce((sum, r) => sum + (r.real! - r.est!), 0) / tiemposRows.length * 10) / 10
     : null
 
-  const estados = ['Recepcionado', 'En proceso', 'Finalizado en stock', 'Entregado']
+  const estados = ['Recepcionado', 'En proceso', 'Finalizado', 'Entregado']
   const otsPorEstado = estados.map(estado => ({
     estado,
     cantidad: allOts.filter(o => o.estado === estado).length

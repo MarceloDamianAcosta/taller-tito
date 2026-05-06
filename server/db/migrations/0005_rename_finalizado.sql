@@ -1,0 +1,1 @@
+UPDATE `orden_trabajo` SET `estado` = 'Finalizado' WHERE `estado` = 'Finalizado en stock';

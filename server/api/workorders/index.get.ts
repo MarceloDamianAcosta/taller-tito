@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
   const clienteId = query.cliente_id ? Number(query.cliente_id) : undefined
 
   const conditions = []
-  if (estado) conditions.push(eq(ordenTrabajo.estado, estado as 'Recepcionado' | 'En proceso' | 'Finalizado en stock' | 'Entregado'))
+  if (estado) conditions.push(eq(ordenTrabajo.estado, estado as 'Recepcionado' | 'En proceso' | 'Finalizado' | 'Entregado'))
   if (q) conditions.push(like(ordenTrabajo.descripcion, `%${q}%`))
   if (clienteId) conditions.push(eq(ordenTrabajo.clienteId, clienteId))
 

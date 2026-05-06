@@ -4,7 +4,7 @@ const props = defineProps<{ estado: string }>()
 const colorMap: Record<string, string> = {
   'Recepcionado': 'neutral',
   'En proceso': 'info',
-  'Finalizado en stock': 'success',
+  'Finalizado': 'success',
   'Entregado': 'primary',
   'Anulada': 'neutral'
 }
