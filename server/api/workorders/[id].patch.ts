@@ -29,6 +29,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Indicá el motivo de anulación' })
   }
 
+  if (fields.estado !== undefined && fields.estado !== 'Anulada' && existing.estado === 'Anulada' && fields.motivo_anulacion === undefined) {
+    fields.motivo_anulacion = null
+  }
+
   const fechaEntrega = fields.fecha_entrega ?? existing.fechaEntrega
   const fechaPrometida = fields.fecha_prometida ?? existing.fechaPrometida
   const motivoRetraso = fields.motivo_retraso ?? existing.motivoRetraso

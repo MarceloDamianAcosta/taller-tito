@@ -150,11 +150,14 @@ const showForceModal = ref(false)
 const pendingEstado = ref('')
 const clienteConformeEntrega = ref<boolean | null>(null)
 
-const estadoTransitions: Record<string, { label: string, next: string }> = {
-  'Recepcionado': { label: 'Marcar En proceso', next: 'En proceso' },
-  'En proceso': { label: 'Marcar Finalizado en stock', next: 'Finalizado en stock' },
-  'Finalizado en stock': { label: 'Marcar Entregado', next: 'Entregado' }
-}
+const estadosNormales = ['Recepcionado', 'En proceso', 'Finalizado en stock', 'Entregado'] as const
+const estadoOptions = estadosNormales.map(e => ({ label: e, value: e }))
+
+const targetEstado = ref<string>('')
+watch(() => ot.value?.estado, (e) => {
+  if (e && e !== 'Anulada') targetEstado.value = e
+  else if (e === 'Anulada') targetEstado.value = 'Recepcionado'
+}, { immediate: true })
 
 async function cambiarEstado(next: string, force = false) {
   estadoError.value = ''
@@ -311,9 +314,6 @@ function formatDate(iso: string | null | undefined) {
   const [y, m, d] = iso.split('-')
   return `${d}/${m}/${y}`
 }
-
-const transition = computed(() => ot.value ? estadoTransiciones[ot.value.estado] : null)
-const estadoTransiciones = estadoTransitions
 </script>
 
 <template>
@@ -881,45 +881,42 @@ const estadoTransiciones = estadoTransitions
           </h2>
           <OrdenesStatusBadge :estado="ot.estado" />
 
-          <div v-if="transition">
-            <div
-              v-if="transition.next === 'Entregado'"
-              class="space-y-3"
-            >
-              <div>
-                <span class="text-sm text-gray-700 dark:text-gray-300 block mb-1">¿Cliente conforme?</span>
-                <div class="flex gap-2">
-                  <UButton
-                    label="👍 Sí"
-                    size="sm"
-                    :color="clienteConformeEntrega === true ? 'success' : 'neutral'"
-                    :variant="clienteConformeEntrega === true ? 'solid' : 'subtle'"
-                    @click="clienteConformeEntrega = true"
-                  />
-                  <UButton
-                    label="👎 No"
-                    size="sm"
-                    :color="clienteConformeEntrega === false ? 'error' : 'neutral'"
-                    :variant="clienteConformeEntrega === false ? 'solid' : 'subtle'"
-                    @click="clienteConformeEntrega = false"
-                  />
-                </div>
+          <div class="space-y-3">
+            <USelect
+              v-model="targetEstado"
+              :items="estadoOptions"
+              value-key="value"
+              label-key="label"
+              class="w-full"
+            />
+
+            <div v-if="targetEstado === 'Entregado' && ot.estado !== 'Entregado'">
+              <span class="text-sm text-gray-700 dark:text-gray-300 block mb-1">¿Cliente conforme?</span>
+              <div class="flex gap-2">
+                <UButton
+                  label="👍 Sí"
+                  size="sm"
+                  :color="clienteConformeEntrega === true ? 'success' : 'neutral'"
+                  :variant="clienteConformeEntrega === true ? 'solid' : 'subtle'"
+                  @click="clienteConformeEntrega = true"
+                />
+                <UButton
+                  label="👎 No"
+                  size="sm"
+                  :color="clienteConformeEntrega === false ? 'error' : 'neutral'"
+                  :variant="clienteConformeEntrega === false ? 'solid' : 'subtle'"
+                  @click="clienteConformeEntrega = false"
+                />
               </div>
-              <UButton
-                :label="transition.label"
-                color="primary"
-                class="w-full"
-                :loading="savingEstado"
-                @click="cambiarEstado(transition.next)"
-              />
             </div>
+
             <UButton
-              v-else
-              :label="transition.label"
+              v-if="targetEstado !== ot.estado"
+              :label="`Cambiar a ${targetEstado}`"
               color="primary"
               class="w-full"
               :loading="savingEstado"
-              @click="cambiarEstado(transition.next)"
+              @click="cambiarEstado(targetEstado)"
             />
           </div>
 
