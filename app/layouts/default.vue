@@ -5,7 +5,7 @@ watch(() => route.path, () => { isOpen.value = false })
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-950">
+  <div class="min-h-screen bg-[var(--brand-fondo)] dark:bg-[var(--brand-fondo-oscuro)]">
     <AppNavbar :on-open="() => (isOpen = true)" />
 
     <USlideover

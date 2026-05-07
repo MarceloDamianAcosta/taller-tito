@@ -12,7 +12,8 @@ const navItems = [
   { label: 'Biblioteca', to: '/biblioteca', icon: 'i-lucide-folder-open' },
   { label: 'Mantenimiento', to: '/mantenimiento', icon: 'i-lucide-wrench' },
   { label: 'Indicadores', to: '/indicadores', icon: 'i-lucide-bar-chart-2' },
-  { label: 'Usuarios', to: '/admin/usuarios', icon: 'i-lucide-user-cog' }
+  { label: 'Usuarios', to: '/admin/usuarios', icon: 'i-lucide-user-cog' },
+  { label: 'Configuración', to: '/admin/configuracion', icon: 'i-lucide-settings' }
 ]
 
 function isActive(to: string) {

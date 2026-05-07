@@ -125,3 +125,15 @@ export const registroMantenimiento = sqliteTable('registro_mantenimiento', {
   responsable: text('responsable'),
   proximaFecha: text('proxima_fecha')
 })
+
+export const brandConfig = sqliteTable('brand_config', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  nombreParte1: text('nombre_parte1').notNull().default('Mecanizados'),
+  nombreParte2: text('nombre_parte2').notNull().default('Schmidt'),
+  colorPrimario: text('color_primario').notNull().default('#00A155'),
+  colorPrimarioEscala: text('color_primario_escala').notNull(),
+  colorFondo: text('color_fondo').notNull().default('#f9fafb'),
+  colorFondoOscuro: text('color_fondo_oscuro').notNull().default('#020617'),
+  colorParte2Texto: text('color_parte2_texto').notNull().default('auto'),
+  updatedAt: text('updated_at').notNull().default(sql`(datetime('now'))`)
+})
