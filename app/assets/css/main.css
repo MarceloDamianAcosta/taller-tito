@@ -30,6 +30,10 @@
   --brand-900: #0A5331;
   --brand-950: #052E16;
   --brand-fondo: #f9fafb;
-  --brand-fondo-oscuro: #020617;
-  --brand-parte2: currentColor;
+  --brand-parte2: #0f172a;
+}
+
+html.dark {
+  --brand-fondo: #020617;
+  --brand-parte2: #f8fafc;
 }

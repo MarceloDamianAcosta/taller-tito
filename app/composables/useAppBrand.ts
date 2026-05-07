@@ -1,11 +1,14 @@
 interface BrandConfig {
   nombreParte1: string
   nombreParte2: string
-  colorPrimario: string
-  colorPrimarioEscala: string[]
-  colorFondo: string
-  colorFondoOscuro: string
-  colorParte2Texto: string
+  colorPrimarioLight: string
+  colorPrimarioEscalaLight: string[]
+  colorPrimarioDark: string
+  colorPrimarioEscalaDark: string[]
+  colorFondoLight: string
+  colorFondoDark: string
+  colorParte2TextoLight: string
+  colorParte2TextoDark: string
 }
 
 export function useAppBrand() {

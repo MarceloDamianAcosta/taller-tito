@@ -22,6 +22,11 @@ function validateText(value: unknown, field: string, max: number): string {
   return trimmed
 }
 
+function validateParte2(value: unknown, field: string): string {
+  if (value === 'auto' || value == null) return 'auto'
+  return validateHex(value, field)
+}
+
 export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
   if (!session.user) throw createError({ statusCode: 401, message: 'No autenticado' })
@@ -31,28 +36,29 @@ export default defineEventHandler(async (event) => {
 
   const nombreParte1 = validateText(body?.nombreParte1, 'nombreParte1', 40)
   const nombreParte2 = validateText(body?.nombreParte2, 'nombreParte2', 40)
-  const colorPrimario = validateHex(body?.colorPrimario, 'primario')
-  const colorFondo = validateHex(body?.colorFondo, 'fondo')
-  const colorFondoOscuro = validateHex(body?.colorFondoOscuro, 'fondoOscuro')
+  const colorPrimarioLight = validateHex(body?.colorPrimarioLight, 'primario claro')
+  const colorPrimarioDark = validateHex(body?.colorPrimarioDark, 'primario oscuro')
+  const colorFondoLight = validateHex(body?.colorFondoLight, 'fondo claro')
+  const colorFondoDark = validateHex(body?.colorFondoDark, 'fondo oscuro')
+  const colorParte2TextoLight = validateParte2(body?.colorParte2TextoLight, 'parte2 claro')
+  const colorParte2TextoDark = validateParte2(body?.colorParte2TextoDark, 'parte2 oscuro')
 
-  let colorParte2Texto: string
-  if (body?.colorParte2Texto === 'auto' || body?.colorParte2Texto == null) {
-    colorParte2Texto = 'auto'
-  } else {
-    colorParte2Texto = validateHex(body.colorParte2Texto, 'parte2Texto')
-  }
-
-  hexToRgb(colorPrimario)
-  const escala = generateScale(colorPrimario)
+  hexToRgb(colorPrimarioLight)
+  hexToRgb(colorPrimarioDark)
+  const escalaLight = generateScale(colorPrimarioLight)
+  const escalaDark = generateScale(colorPrimarioDark)
 
   const updated = db.update(brandConfig).set({
     nombreParte1,
     nombreParte2,
-    colorPrimario,
-    colorPrimarioEscala: JSON.stringify(escala),
-    colorFondo,
-    colorFondoOscuro,
-    colorParte2Texto,
+    colorPrimarioLight,
+    colorPrimarioEscalaLight: JSON.stringify(escalaLight),
+    colorPrimarioDark,
+    colorPrimarioEscalaDark: JSON.stringify(escalaDark),
+    colorFondoLight,
+    colorFondoDark,
+    colorParte2TextoLight,
+    colorParte2TextoDark,
     updatedAt: sql`(datetime('now'))`
   }).where(eq(brandConfig.id, 1)).run()
 
@@ -61,21 +67,27 @@ export default defineEventHandler(async (event) => {
       id: 1,
       nombreParte1,
       nombreParte2,
-      colorPrimario,
-      colorPrimarioEscala: JSON.stringify(escala),
-      colorFondo,
-      colorFondoOscuro,
-      colorParte2Texto
+      colorPrimarioLight,
+      colorPrimarioEscalaLight: JSON.stringify(escalaLight),
+      colorPrimarioDark,
+      colorPrimarioEscalaDark: JSON.stringify(escalaDark),
+      colorFondoLight,
+      colorFondoDark,
+      colorParte2TextoLight,
+      colorParte2TextoDark
     }).run()
   }
 
   return {
     nombreParte1,
     nombreParte2,
-    colorPrimario,
-    colorPrimarioEscala: escala,
-    colorFondo,
-    colorFondoOscuro,
-    colorParte2Texto
+    colorPrimarioLight,
+    colorPrimarioEscalaLight: escalaLight,
+    colorPrimarioDark,
+    colorPrimarioEscalaDark: escalaDark,
+    colorFondoLight,
+    colorFondoDark,
+    colorParte2TextoLight,
+    colorParte2TextoDark
   }
 })
