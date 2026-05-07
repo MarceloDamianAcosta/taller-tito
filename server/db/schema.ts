@@ -72,7 +72,7 @@ export const otMaquinas = sqliteTable('ot_maquinas', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   otId: integer('ot_id').notNull().references(() => ordenTrabajo.nroOt),
   maquinaId: integer('maquina_id').notNull().references(() => maquinas.id)
-}, (t) => ({
+}, t => ({
   uniqOtMaquina: uniqueIndex('uniq_ot_maquina').on(t.otId, t.maquinaId)
 }))
 

@@ -52,7 +52,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const today = new Date().toISOString().slice(0, 10)
-  return rows.map(r => {
+  return rows.map((r) => {
     const ms = maquinasPorOt.get(r.nroOt) ?? []
     return {
       ...r,
