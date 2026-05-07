@@ -60,7 +60,11 @@ export default defineEventHandler(async (event) => {
   if (fields.cliente_conforme !== undefined) updateData.clienteConforme = fields.cliente_conforme
 
   if (Array.isArray(fields.maquina_ids)) {
-    const uniqueIds = [...new Set(fields.maquina_ids.map(Number).filter((n: number) => Number.isInteger(n) && n > 0))]
+    const uniqueIds: number[] = Array.from(new Set(
+      (fields.maquina_ids as unknown[])
+        .map(v => Number(v))
+        .filter((n): n is number => Number.isInteger(n) && n > 0)
+    ))
     db.delete(otMaquinas).where(eq(otMaquinas.otId, id)).run()
     if (uniqueIds.length > 0) {
       db.insert(otMaquinas).values(uniqueIds.map(mid => ({ otId: id, maquinaId: mid }))).run()

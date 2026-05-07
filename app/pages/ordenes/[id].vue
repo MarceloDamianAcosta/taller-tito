@@ -151,12 +151,16 @@ const pendingEstado = ref('')
 const clienteConformeEntrega = ref<boolean | null>(null)
 
 const estadosNormales = ['Recepcionado', 'En proceso', 'Finalizado', 'Entregado'] as const
+type EstadoNormal = typeof estadosNormales[number]
 const estadoOptions = estadosNormales.map(e => ({ label: e, value: e }))
 
-const targetEstado = ref<string>('')
+const targetEstado = ref<EstadoNormal>('Recepcionado')
 watch(() => ot.value?.estado, (e) => {
-  if (e && e !== 'Anulada') targetEstado.value = e
-  else if (e === 'Anulada') targetEstado.value = 'Recepcionado'
+  if (e && e !== 'Anulada' && (estadosNormales as readonly string[]).includes(e)) {
+    targetEstado.value = e as EstadoNormal
+  } else if (e === 'Anulada') {
+    targetEstado.value = 'Recepcionado'
+  }
 }, { immediate: true })
 
 async function cambiarEstado(next: string, force = false) {

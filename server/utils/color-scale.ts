@@ -15,6 +15,10 @@ const SCALE_LIGHTNESS: Record<string, number> = {
 export const SCALE_KEYS = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'] as const
 export type ScaleKey = typeof SCALE_KEYS[number]
 
+function lightnessFor(key: ScaleKey): number {
+  return SCALE_LIGHTNESS[key] as number
+}
+
 function clamp(n: number, min = 0, max = 1) {
   return Math.min(max, Math.max(min, n))
 }
@@ -76,7 +80,7 @@ export function generateScale(baseHex: string): string[] {
   const [r, g, b] = hexToRgb(baseHex)
   const [h, s] = rgbToHsl(r, g, b)
   return SCALE_KEYS.map((key) => {
-    const l = SCALE_LIGHTNESS[key]
+    const l = lightnessFor(key)
     const adjustedS = l > 90 || l < 15 ? s * 0.7 : s
     const [nr, ng, nb] = hslToRgb(h, adjustedS, l)
     return rgbToHex(nr, ng, nb)
@@ -84,10 +88,11 @@ export function generateScale(baseHex: string): string[] {
 }
 
 export function relativeLuminance(hex: string): number {
-  const [r, g, b] = hexToRgb(hex).map((v) => {
+  const channels = hexToRgb(hex).map((v) => {
     const c = v / 255
     return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
   })
+  const [r, g, b] = channels as [number, number, number]
   return 0.2126 * r + 0.7152 * g + 0.0722 * b
 }
 
