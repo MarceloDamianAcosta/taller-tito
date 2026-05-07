@@ -196,11 +196,11 @@ async function executeDelete() {
                 class="size-8 text-gray-400 mb-1"
               />
               <span class="text-sm text-gray-500">
-                {{ uploadForm.file ? uploadForm.file.name : 'JPG, PNG o PDF — máx 10MB' }}
+                {{ uploadForm.file ? uploadForm.file.name : 'Imagen o PDF' }}
               </span>
               <input
                 type="file"
-                accept=".jpg,.jpeg,.png,.pdf"
+                accept="image/*,application/pdf"
                 class="sr-only"
                 @change="onFileChange"
               >

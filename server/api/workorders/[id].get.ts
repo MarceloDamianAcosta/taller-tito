@@ -1,5 +1,5 @@
 import { db } from '../../db/index'
-import { ordenTrabajo, clientes, maquinas, materiales, catalogoMateriales, otArchivos, bibliotecaArchivos } from '../../db/schema'
+import { ordenTrabajo, clientes, maquinas, materiales, catalogoMateriales, otArchivos, bibliotecaArchivos, otMaquinas } from '../../db/schema'
 import { eq } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
@@ -18,8 +18,6 @@ export default defineEventHandler(async (event) => {
       descripcion: ordenTrabajo.descripcion,
       material: ordenTrabajo.material,
       cantidad: ordenTrabajo.cantidad,
-      maquinaId: ordenTrabajo.maquinaId,
-      maquinaNombre: maquinas.nombre,
       fechaIngreso: ordenTrabajo.fechaIngreso,
       fechaPrometida: ordenTrabajo.fechaPrometida,
       fechaInicio: ordenTrabajo.fechaInicio,
@@ -29,17 +27,24 @@ export default defineEventHandler(async (event) => {
       tiempoRealHs: ordenTrabajo.tiempoRealHs,
       motivoRetraso: ordenTrabajo.motivoRetraso,
       estado: ordenTrabajo.estado,
+      motivoAnulacion: ordenTrabajo.motivoAnulacion,
       observaciones: ordenTrabajo.observaciones,
       clienteConforme: ordenTrabajo.clienteConforme,
       createdAt: ordenTrabajo.createdAt
     })
     .from(ordenTrabajo)
     .leftJoin(clientes, eq(ordenTrabajo.clienteId, clientes.id))
-    .leftJoin(maquinas, eq(ordenTrabajo.maquinaId, maquinas.id))
     .where(eq(ordenTrabajo.nroOt, id))
     .get()
 
   if (!ot) throw createError({ statusCode: 404, message: 'Orden de trabajo no encontrada' })
+
+  const otMaquinasList = db
+    .select({ id: maquinas.id, nombre: maquinas.nombre })
+    .from(otMaquinas)
+    .innerJoin(maquinas, eq(otMaquinas.maquinaId, maquinas.id))
+    .where(eq(otMaquinas.otId, id))
+    .all()
 
   const otMateriales = db
     .select({
@@ -73,5 +78,5 @@ export default defineEventHandler(async (event) => {
     .where(eq(otArchivos.otId, id))
     .all()
 
-  return { ...ot, materiales: otMateriales, archivos }
+  return { ...ot, maquinas: otMaquinasList, materiales: otMateriales, archivos }
 })

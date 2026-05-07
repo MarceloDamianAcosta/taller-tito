@@ -5,7 +5,7 @@ const { data, pending } = await useFetch('/api/dashboard/resumen')
 const today = new Date().toISOString().slice(0, 10)
 
 function formatDate(iso: string | null | undefined) {
-  if (!iso) return '—'
+  if (!iso) return 'Sin fecha'
   const [y, m, d] = iso.split('-')
   return `${d}/${m}/${y}`
 }

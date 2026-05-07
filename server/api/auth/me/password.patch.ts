@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
 
   const { currentPassword, newPassword } = await readBody(event)
   if (!currentPassword || !newPassword) throw createError({ statusCode: 400, message: 'Datos incompletos' })
-  if (newPassword.length < 8) throw createError({ statusCode: 400, message: 'La contraseña debe tener al menos 8 caracteres' })
+  if (newPassword.trim().length < 1) throw createError({ statusCode: 400, message: 'La contraseña no puede estar vacía' })
 
   const user = db.select().from(users).where(eq(users.id, session.user.id)).get()
   if (!user) throw createError({ statusCode: 404, message: 'Usuario no encontrado' })

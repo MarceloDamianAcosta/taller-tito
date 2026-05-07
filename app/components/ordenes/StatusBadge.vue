@@ -4,8 +4,9 @@ const props = defineProps<{ estado: string }>()
 const colorMap: Record<string, string> = {
   'Recepcionado': 'neutral',
   'En proceso': 'info',
-  'Finalizado en stock': 'success',
-  'Entregado': 'primary'
+  'Finalizado': 'success',
+  'Entregado': 'primary',
+  'Anulada': 'neutral'
 }
 
 type BadgeColor = 'neutral' | 'primary' | 'secondary' | 'info' | 'success' | 'warning' | 'error'

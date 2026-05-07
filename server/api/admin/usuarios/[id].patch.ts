@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
   if (active !== undefined) updates.active = active
 
   if (newPassword !== undefined) {
-    if (newPassword.length < 8) throw createError({ statusCode: 400, message: 'La contraseña debe tener al menos 8 caracteres' })
+    if (newPassword.trim().length < 1) throw createError({ statusCode: 400, message: 'La contraseña no puede estar vacía' })
     updates.passwordHash = await bcrypt.hash(newPassword, 12)
     updates.mustChangePassword = false
   }

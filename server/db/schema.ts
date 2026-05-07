@@ -1,4 +1,4 @@
-import { sqliteTable, integer, text, real } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, integer, text, real, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
 export const users = sqliteTable('users', {
@@ -51,9 +51,8 @@ export const ordenTrabajo = sqliteTable('orden_trabajo', {
   descripcion: text('descripcion').notNull(),
   material: text('material'),
   cantidad: integer('cantidad'),
-  maquinaId: integer('maquina_id').references(() => maquinas.id),
   fechaIngreso: text('fecha_ingreso').notNull(),
-  fechaPrometida: text('fecha_prometida').notNull(),
+  fechaPrometida: text('fecha_prometida'),
   fechaInicio: text('fecha_inicio'),
   fechaFinalizacion: text('fecha_finalizacion'),
   fechaEntrega: text('fecha_entrega'),
@@ -61,12 +60,21 @@ export const ordenTrabajo = sqliteTable('orden_trabajo', {
   tiempoRealHs: real('tiempo_real_hs'),
   motivoRetraso: text('motivo_retraso'),
   estado: text('estado', {
-    enum: ['Recepcionado', 'En proceso', 'Finalizado en stock', 'Entregado']
+    enum: ['Recepcionado', 'En proceso', 'Finalizado', 'Entregado', 'Anulada']
   }).notNull().default('Recepcionado'),
+  motivoAnulacion: text('motivo_anulacion'),
   observaciones: text('observaciones'),
   clienteConforme: integer('cliente_conforme', { mode: 'boolean' }),
   createdAt: text('created_at').notNull().default(sql`(datetime('now'))`)
 })
+
+export const otMaquinas = sqliteTable('ot_maquinas', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  otId: integer('ot_id').notNull().references(() => ordenTrabajo.nroOt),
+  maquinaId: integer('maquina_id').notNull().references(() => maquinas.id)
+}, t => ({
+  uniqOtMaquina: uniqueIndex('uniq_ot_maquina').on(t.otId, t.maquinaId)
+}))
 
 export const otArchivos = sqliteTable('ot_archivos', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -80,7 +88,7 @@ export const controlCalidad = sqliteTable('control_calidad', {
   otId: integer('ot_id').notNull().references(() => ordenTrabajo.nroOt),
   queSeControla: text('que_se_controla').notNull(),
   instrumento: text('instrumento'),
-  resultado: text('resultado', { enum: ['OK', 'NO OK'] }).notNull(),
+  resultado: text('resultado', { enum: ['OK', 'NO OK'] }),
   accion: text('accion'),
   cumpleFuncion: integer('cumple_funcion', { mode: 'boolean' }).notNull(),
   obsCalidad: text('obs_calidad'),
@@ -116,4 +124,19 @@ export const registroMantenimiento = sqliteTable('registro_mantenimiento', {
   descripcion: text('descripcion').notNull(),
   responsable: text('responsable'),
   proximaFecha: text('proxima_fecha')
+})
+
+export const brandConfig = sqliteTable('brand_config', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  nombreParte1: text('nombre_parte1').notNull().default('Mecanizados'),
+  nombreParte2: text('nombre_parte2').notNull().default('Schmidt'),
+  colorPrimarioLight: text('color_primario').notNull().default('#00A155'),
+  colorPrimarioEscalaLight: text('color_primario_escala').notNull(),
+  colorPrimarioDark: text('color_primario_dark').notNull().default('#00A155'),
+  colorPrimarioEscalaDark: text('color_primario_escala_dark').notNull(),
+  colorFondoLight: text('color_fondo').notNull().default('#f9fafb'),
+  colorFondoDark: text('color_fondo_oscuro').notNull().default('#020617'),
+  colorParte2TextoLight: text('color_parte2_texto').notNull().default('auto'),
+  colorParte2TextoDark: text('color_parte2_texto_dark').notNull().default('auto'),
+  updatedAt: text('updated_at').notNull().default(sql`(datetime('now'))`)
 })

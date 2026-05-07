@@ -41,7 +41,7 @@ async function saveCreate() {
     error.value = 'Completá todos los campos obligatorios'
     return
   }
-  if (createForm.password.length < 8) { error.value = 'La contraseña debe tener al menos 8 caracteres'; return }
+  if (createForm.password.trim().length < 1) { error.value = 'La contraseña no puede estar vacía'; return }
   saving.value = true
   error.value = ''
   try {
@@ -81,8 +81,8 @@ async function saveEdit() {
 }
 
 async function changePassword() {
-  if (!passwordForm.newPassword || passwordForm.newPassword.length < 8) {
-    passwordError.value = 'La contraseña debe tener al menos 8 caracteres'
+  if (!passwordForm.newPassword || passwordForm.newPassword.trim().length < 1) {
+    passwordError.value = 'La contraseña no puede estar vacía'
     return
   }
   if (passwordForm.newPassword !== passwordForm.confirm) {
