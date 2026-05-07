@@ -10,8 +10,8 @@ async function submit() {
     error.value = 'Las contraseñas no coinciden'
     return
   }
-  if (form.newPassword.length < 8) {
-    error.value = 'La contraseña debe tener al menos 8 caracteres'
+  if (form.newPassword.trim().length < 1) {
+    error.value = 'La contraseña no puede estar vacía'
     return
   }
   loading.value = true

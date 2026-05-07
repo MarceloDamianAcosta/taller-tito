@@ -9,7 +9,8 @@ interface OT {
   fechaPrometida: string
   fechaEntrega: string | null
   clienteNombre: string | null
-  maquinaNombre: string | null
+  maquinas: { id: number, nombre: string }[]
+  maquinasNombres: string
   isOverdue: boolean
 }
 
@@ -25,7 +26,7 @@ watch(search, (val) => {
   }, 300)
 })
 
-const tabs = ['Todos', 'Recepcionado', 'En proceso', 'Finalizado en stock', 'Entregado']
+const tabs = ['Todos', 'Recepcionado', 'En proceso', 'Finalizado', 'Entregado', 'Anulada']
 
 const fetchQuery = computed(() => {
   const q: Record<string, string> = {}
@@ -39,7 +40,7 @@ const { data: ordenes } = await useFetch<OT[]>('/api/workorders', {
 })
 
 function formatDate(iso: string | null | undefined) {
-  if (!iso) return '—'
+  if (!iso) return 'Sin fecha'
   const [y, m, d] = iso.split('-')
   return `${d}/${m}/${y}`
 }

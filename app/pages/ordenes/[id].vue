@@ -31,8 +31,7 @@ interface OT {
   descripcion: string
   material: string | null
   cantidad: number | null
-  maquinaId: number | null
-  maquinaNombre: string | null
+  maquinas: { id: number, nombre: string }[]
   fechaIngreso: string
   fechaPrometida: string
   fechaInicio: string | null
@@ -42,6 +41,7 @@ interface OT {
   tiempoRealHs: number | null
   motivoRetraso: string | null
   estado: string
+  motivoAnulacion: string | null
   observaciones: string | null
   clienteConforme: boolean | null
   createdAt: string
@@ -71,7 +71,7 @@ const editForm = reactive({
   descripcion: '',
   material: '',
   cantidad: '',
-  maquina_id: undefined as number | undefined,
+  maquina_ids: [] as number[],
   fecha_ingreso: '',
   fecha_prometida: '',
   fecha_inicio: '',
@@ -91,9 +91,9 @@ function startEdit() {
   editForm.descripcion = o.descripcion
   editForm.material = o.material ?? ''
   editForm.cantidad = o.cantidad !== null ? String(o.cantidad) : ''
-  editForm.maquina_id = o.maquinaId ?? undefined
+  editForm.maquina_ids = o.maquinas.map(m => m.id)
   editForm.fecha_ingreso = o.fechaIngreso
-  editForm.fecha_prometida = o.fechaPrometida
+  editForm.fecha_prometida = o.fechaPrometida ?? ''
   editForm.fecha_inicio = o.fechaInicio ?? ''
   editForm.fecha_finalizacion = o.fechaFinalizacion ?? ''
   editForm.fecha_entrega = o.fechaEntrega ?? ''
@@ -122,9 +122,9 @@ async function saveEdit() {
         descripcion: editForm.descripcion,
         material: editForm.material || null,
         cantidad: editForm.cantidad !== '' ? Number(editForm.cantidad) : null,
-        maquina_id: editForm.maquina_id ?? null,
+        maquina_ids: editForm.maquina_ids,
         fecha_ingreso: editForm.fecha_ingreso,
-        fecha_prometida: editForm.fecha_prometida,
+        fecha_prometida: editForm.fecha_prometida || null,
         fecha_inicio: editForm.fecha_inicio || null,
         fecha_finalizacion: editForm.fecha_finalizacion || null,
         fecha_entrega: editForm.fecha_entrega || null,
@@ -150,11 +150,18 @@ const showForceModal = ref(false)
 const pendingEstado = ref('')
 const clienteConformeEntrega = ref<boolean | null>(null)
 
-const estadoTransitions: Record<string, { label: string, next: string }> = {
-  'Recepcionado': { label: 'Marcar En proceso', next: 'En proceso' },
-  'En proceso': { label: 'Marcar Finalizado en stock', next: 'Finalizado en stock' },
-  'Finalizado en stock': { label: 'Marcar Entregado', next: 'Entregado' }
-}
+const estadosNormales = ['Recepcionado', 'En proceso', 'Finalizado', 'Entregado'] as const
+type EstadoNormal = typeof estadosNormales[number]
+const estadoOptions = estadosNormales.map(e => ({ label: e, value: e }))
+
+const targetEstado = ref<EstadoNormal>('Recepcionado')
+watch(() => ot.value?.estado, (e) => {
+  if (e && e !== 'Anulada' && (estadosNormales as readonly string[]).includes(e)) {
+    targetEstado.value = e as EstadoNormal
+  } else if (e === 'Anulada') {
+    targetEstado.value = 'Recepcionado'
+  }
+}, { immediate: true })
 
 async function cambiarEstado(next: string, force = false) {
   estadoError.value = ''
@@ -182,6 +189,35 @@ async function cambiarEstado(next: string, force = false) {
 
 async function confirmarEntregaForzada() {
   await cambiarEstado(pendingEstado.value, true)
+}
+
+const showAnularModal = ref(false)
+const motivoAnulacion = ref('')
+const anularError = ref('')
+const anulando = ref(false)
+
+function openAnular() {
+  motivoAnulacion.value = ''
+  anularError.value = ''
+  showAnularModal.value = true
+}
+
+async function confirmarAnulacion() {
+  if (!motivoAnulacion.value.trim()) { anularError.value = 'Indicá el motivo'; return }
+  anulando.value = true
+  anularError.value = ''
+  try {
+    await $fetch(`/api/workorders/${id.value}`, {
+      method: 'PATCH',
+      body: { estado: 'Anulada', motivo_anulacion: motivoAnulacion.value.trim() }
+    })
+    showAnularModal.value = false
+    await refresh()
+  } catch (e: any) {
+    anularError.value = e.data?.message || 'Error al anular'
+  } finally {
+    anulando.value = false
+  }
 }
 
 const addingMaterial = ref(false)
@@ -268,10 +304,9 @@ const clienteOptions = computed(() =>
   (clientesData.value ?? []).map(c => ({ label: c.nombre, value: c.id }))
 )
 
-const maquinaOptions = computed(() => [
-  { label: 'Sin máquina', value: null },
-  ...(maquinasData.value ?? []).map(m => ({ label: m.nombre, value: m.id }))
-])
+const maquinaOptions = computed(() =>
+  (maquinasData.value ?? []).map(m => ({ label: m.nombre, value: m.id }))
+)
 
 function onClienteCreatedEdit(payload: { id: number, nombre: string }) {
   clientesData.value = [...(clientesData.value ?? []), payload]
@@ -279,13 +314,10 @@ function onClienteCreatedEdit(payload: { id: number, nombre: string }) {
 }
 
 function formatDate(iso: string | null | undefined) {
-  if (!iso) return '—'
+  if (!iso) return 'Sin fecha'
   const [y, m, d] = iso.split('-')
   return `${d}/${m}/${y}`
 }
-
-const transition = computed(() => ot.value ? estadoTransiciones[ot.value.estado] : null)
-const estadoTransiciones = estadoTransitions
 </script>
 
 <template>
@@ -306,6 +338,14 @@ const estadoTransiciones = estadoTransitions
       <OrdenesStatusBadge :estado="ot.estado" />
     </div>
 
+    <UAlert
+      v-if="ot.estado === 'Anulada'"
+      color="neutral"
+      icon="i-lucide-ban"
+      title="OT anulada"
+      :description="ot.motivoAnulacion || 'Sin motivo registrado'"
+    />
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="lg:col-span-2 space-y-6">
         <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 space-y-4">
@@ -314,7 +354,7 @@ const estadoTransiciones = estadoTransitions
               Información
             </h2>
             <div
-              v-if="!isEditing"
+              v-if="!isEditing && ot.estado !== 'Anulada'"
               class="flex gap-2"
             >
               <UButton
@@ -358,10 +398,26 @@ const estadoTransiciones = estadoTransitions
               </p>
             </div>
             <div>
-              <span class="text-gray-500 dark:text-gray-400">Máquina</span>
-              <p class="font-medium text-gray-900 dark:text-white">
-                {{ ot.maquinaNombre || '—' }}
+              <span class="text-gray-500 dark:text-gray-400">Máquinas</span>
+              <p
+                v-if="!ot.maquinas.length"
+                class="font-medium text-gray-900 dark:text-white"
+              >
+                —
               </p>
+              <div
+                v-else
+                class="flex flex-wrap gap-1.5 mt-0.5"
+              >
+                <UBadge
+                  v-for="m in ot.maquinas"
+                  :key="m.id"
+                  color="neutral"
+                  variant="subtle"
+                >
+                  {{ m.nombre }}
+                </UBadge>
+              </div>
             </div>
             <div class="sm:col-span-2">
               <span class="text-gray-500 dark:text-gray-400">Descripción</span>
@@ -500,12 +556,14 @@ const estadoTransiciones = estadoTransitions
               </UFormField>
             </div>
 
-            <UFormField label="Máquina">
-              <USelect
-                v-model="editForm.maquina_id"
+            <UFormField label="Máquinas">
+              <USelectMenu
+                v-model="editForm.maquina_ids"
                 :items="maquinaOptions"
                 value-key="value"
                 label-key="label"
+                multiple
+                placeholder="Sin máquinas"
                 class="w-full"
               />
             </UFormField>
@@ -827,45 +885,42 @@ const estadoTransiciones = estadoTransitions
           </h2>
           <OrdenesStatusBadge :estado="ot.estado" />
 
-          <div v-if="transition">
-            <div
-              v-if="transition.next === 'Entregado'"
-              class="space-y-3"
-            >
-              <div>
-                <span class="text-sm text-gray-700 dark:text-gray-300 block mb-1">¿Cliente conforme?</span>
-                <div class="flex gap-2">
-                  <UButton
-                    label="👍 Sí"
-                    size="sm"
-                    :color="clienteConformeEntrega === true ? 'success' : 'neutral'"
-                    :variant="clienteConformeEntrega === true ? 'solid' : 'subtle'"
-                    @click="clienteConformeEntrega = true"
-                  />
-                  <UButton
-                    label="👎 No"
-                    size="sm"
-                    :color="clienteConformeEntrega === false ? 'error' : 'neutral'"
-                    :variant="clienteConformeEntrega === false ? 'solid' : 'subtle'"
-                    @click="clienteConformeEntrega = false"
-                  />
-                </div>
+          <div class="space-y-3">
+            <USelect
+              v-model="targetEstado"
+              :items="estadoOptions"
+              value-key="value"
+              label-key="label"
+              class="w-full"
+            />
+
+            <div v-if="targetEstado === 'Entregado' && ot.estado !== 'Entregado'">
+              <span class="text-sm text-gray-700 dark:text-gray-300 block mb-1">¿Cliente conforme?</span>
+              <div class="flex gap-2">
+                <UButton
+                  label="👍 Sí"
+                  size="sm"
+                  :color="clienteConformeEntrega === true ? 'success' : 'neutral'"
+                  :variant="clienteConformeEntrega === true ? 'solid' : 'subtle'"
+                  @click="clienteConformeEntrega = true"
+                />
+                <UButton
+                  label="👎 No"
+                  size="sm"
+                  :color="clienteConformeEntrega === false ? 'error' : 'neutral'"
+                  :variant="clienteConformeEntrega === false ? 'solid' : 'subtle'"
+                  @click="clienteConformeEntrega = false"
+                />
               </div>
-              <UButton
-                :label="transition.label"
-                color="primary"
-                class="w-full"
-                :loading="savingEstado"
-                @click="cambiarEstado(transition.next)"
-              />
             </div>
+
             <UButton
-              v-else
-              :label="transition.label"
+              v-if="targetEstado !== ot.estado"
+              :label="`Cambiar a ${targetEstado}`"
               color="primary"
               class="w-full"
               :loading="savingEstado"
-              @click="cambiarEstado(transition.next)"
+              @click="cambiarEstado(targetEstado)"
             />
           </div>
 
@@ -903,8 +958,66 @@ const estadoTransiciones = estadoTransitions
             <span>{{ ot.tiempoRealHs }} hs</span>
           </div>
         </div>
+
+        <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 space-y-3">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+            Acciones
+          </h2>
+          <UButton
+            v-if="ot.estado !== 'Anulada'"
+            label="Anular OT"
+            icon="i-lucide-ban"
+            color="warning"
+            variant="subtle"
+            class="w-full justify-center"
+            @click="openAnular"
+          />
+        </div>
       </div>
     </div>
+
+    <UModal v-model:open="showAnularModal">
+      <template #content>
+        <div class="p-5 space-y-4">
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+            Anular OT #{{ ot.nroOt }}
+          </h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            La OT queda registrada con estado "Anulada" y no entra en los KPIs.
+          </p>
+          <UFormField
+            label="Motivo"
+            required
+          >
+            <UTextarea
+              v-model="motivoAnulacion"
+              :rows="3"
+              class="w-full"
+              placeholder="Ej: cliente canceló, error de carga, presupuesto rechazado…"
+            />
+          </UFormField>
+          <UAlert
+            v-if="anularError"
+            color="error"
+            :description="anularError"
+          />
+          <div class="flex justify-end gap-2">
+            <UButton
+              label="Cancelar"
+              color="neutral"
+              variant="subtle"
+              @click="showAnularModal = false"
+            />
+            <UButton
+              label="Anular"
+              color="warning"
+              :loading="anulando"
+              @click="confirmarAnulacion"
+            />
+          </div>
+        </div>
+      </template>
+    </UModal>
 
     <UModal v-model:open="showForceModal">
       <template #content>

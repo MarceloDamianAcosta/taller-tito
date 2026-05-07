@@ -5,11 +5,13 @@ const emit = defineEmits<{
 
 const modalOpen = ref(false)
 const nombre = ref('')
+const activo = ref(true)
 const saving = ref(false)
 const error = ref('')
 
 function open() {
   nombre.value = ''
+  activo.value = true
   error.value = ''
   modalOpen.value = true
 }
@@ -24,7 +26,7 @@ async function save() {
   try {
     const created = await $fetch<{ id: number, nombre: string }>('/api/clientes', {
       method: 'POST',
-      body: { nombre: nombre.value.trim() }
+      body: { nombre: nombre.value.trim(), activo: activo.value }
     })
     modalOpen.value = false
     emit('created', { id: created.id, nombre: created.nombre })
@@ -67,6 +69,14 @@ async function save() {
               class="w-full"
               autofocus
             />
+          </UFormField>
+
+          <UFormField
+            :label="activo ? 'Mostrar' : 'Ocultar'"
+            name="activo"
+            help="Si lo apagás, el cliente queda oculto y podés activarlo más tarde."
+          >
+            <USwitch v-model="activo" />
           </UFormField>
 
           <UAlert

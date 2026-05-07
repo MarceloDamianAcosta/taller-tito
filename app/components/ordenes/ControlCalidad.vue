@@ -4,7 +4,7 @@ interface ControlCalidad {
   otId: number
   queSeControla: string
   instrumento: string | null
-  resultado: 'OK' | 'NO OK'
+  resultado: 'OK' | 'NO OK' | null
   accion: string | null
   cumpleFuncion: boolean
   obsCalidad: string | null
@@ -36,7 +36,7 @@ const form = reactive({
 function populateForm(data: ControlCalidad) {
   form.que_se_controla = data.queSeControla
   form.instrumento = data.instrumento ?? ''
-  form.resultado = data.resultado
+  form.resultado = data.resultado ?? ''
   form.accion = data.accion ?? ''
   form.cumple_funcion = data.cumpleFuncion
   form.hubo_reproceso = data.huboReproceso
@@ -62,7 +62,6 @@ function cancelEdit() {
 async function save() {
   saveError.value = ''
   if (!form.que_se_controla.trim()) { saveError.value = '¿Qué se controló? es obligatorio'; return }
-  if (!form.resultado) { saveError.value = 'El resultado es obligatorio'; return }
   if (!form.fecha_control) { saveError.value = 'La fecha es obligatoria'; return }
 
   saving.value = true
@@ -72,7 +71,7 @@ async function save() {
       body: {
         que_se_controla: form.que_se_controla.trim(),
         instrumento: form.instrumento.trim() || null,
-        resultado: form.resultado,
+        resultado: form.resultado || null,
         accion: form.accion.trim() || null,
         cumple_funcion: form.cumple_funcion,
         hubo_reproceso: form.hubo_reproceso,
@@ -83,6 +82,7 @@ async function save() {
     await refresh()
     if (calidad.value) populateForm(calidad.value)
     isEditing.value = false
+    await navigateTo('/')
   } catch (e: any) {
     saveError.value = e.data?.message || 'Error al guardar'
   } finally {
@@ -97,7 +97,7 @@ function formatDate(iso: string | null | undefined) {
 }
 
 const borderClass = computed(() => {
-  if (!calidad.value) return 'border-gray-200 dark:border-gray-800'
+  if (!calidad.value || !calidad.value.resultado) return 'border-gray-200 dark:border-gray-800'
   return calidad.value.resultado === 'OK'
     ? 'border-green-400 dark:border-green-600'
     : 'border-red-400 dark:border-red-600'
@@ -115,7 +115,7 @@ const borderClass = computed(() => {
           Control de Calidad
         </h2>
         <UBadge
-          v-if="calidad"
+          v-if="calidad && calidad.resultado"
           :color="calidad.resultado === 'OK' ? 'success' : 'error'"
           variant="subtle"
         >
@@ -248,23 +248,26 @@ const borderClass = computed(() => {
       </UFormField>
 
       <div>
-        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1.5">Resultado <span class="text-red-500">*</span></span>
+        <span class="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1.5">Resultado</span>
         <div class="flex gap-2">
           <UButton
             label="OK"
             size="sm"
             :color="form.resultado === 'OK' ? 'success' : 'neutral'"
             :variant="form.resultado === 'OK' ? 'solid' : 'subtle'"
-            @click="form.resultado = 'OK'"
+            @click="form.resultado = form.resultado === 'OK' ? '' : 'OK'"
           />
           <UButton
             label="NO OK"
             size="sm"
             :color="form.resultado === 'NO OK' ? 'error' : 'neutral'"
             :variant="form.resultado === 'NO OK' ? 'solid' : 'subtle'"
-            @click="form.resultado = 'NO OK'"
+            @click="form.resultado = form.resultado === 'NO OK' ? '' : 'NO OK'"
           />
         </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5">
+          Opcional. Marcalo cuando tengas el feedback. Click sobre el botón seleccionado para des-marcarlo.
+        </p>
       </div>
 
       <div

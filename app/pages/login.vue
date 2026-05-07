@@ -1,9 +1,21 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
 
+const { loggedIn } = useUserSession()
+
 const form = reactive({ username: '', password: '' })
 const error = ref('')
 const loading = ref(false)
+
+onMounted(() => {
+  const handler = (event: PageTransitionEvent) => {
+    if (event.persisted && loggedIn.value) {
+      navigateTo('/', { external: true })
+    }
+  }
+  window.addEventListener('pageshow', handler)
+  onBeforeUnmount(() => window.removeEventListener('pageshow', handler))
+})
 
 async function submit() {
   error.value = ''

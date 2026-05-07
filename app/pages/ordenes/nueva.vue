@@ -16,7 +16,7 @@ const form = reactive({
   descripcion: '',
   material: '',
   cantidad: '',
-  maquina_id: undefined as number | undefined,
+  maquina_ids: [] as number[],
   fecha_ingreso: today,
   fecha_prometida: '',
   tiempo_estimado_hs: '',
@@ -32,10 +32,9 @@ const clienteOptions = computed(() =>
   (clientesData.value ?? []).map(c => ({ label: c.nombre, value: c.id }))
 )
 
-const maquinaOptions = computed(() => [
-  { label: 'Sin máquina', value: null },
-  ...(maquinasData.value ?? []).map(m => ({ label: m.nombre, value: m.id }))
-])
+const maquinaOptions = computed(() =>
+  (maquinasData.value ?? []).map(m => ({ label: m.nombre, value: m.id }))
+)
 
 function onClienteCreated(payload: { id: number, nombre: string }) {
   clientesData.value = [...(clientesData.value ?? []), payload]
@@ -46,7 +45,6 @@ async function submit() {
   errorMsg.value = ''
   if (!form.cliente_id && form.cliente_id !== 0) { errorMsg.value = 'Seleccioná un cliente'; return }
   if (!form.descripcion.trim()) { errorMsg.value = 'La descripción es obligatoria'; return }
-  if (!form.fecha_prometida) { errorMsg.value = 'La fecha prometida es obligatoria'; return }
 
   saving.value = true
   try {
@@ -57,9 +55,9 @@ async function submit() {
         descripcion: form.descripcion.trim(),
         material: form.material.trim() || null,
         cantidad: form.cantidad !== '' ? Number(form.cantidad) : null,
-        maquina_id: form.maquina_id ?? null,
+        maquina_ids: form.maquina_ids,
         fecha_ingreso: form.fecha_ingreso,
-        fecha_prometida: form.fecha_prometida,
+        fecha_prometida: form.fecha_prometida || null,
         tiempo_estimado_hs: form.tiempo_estimado_hs !== '' ? Number(form.tiempo_estimado_hs) : null,
         observaciones: form.observaciones.trim() || null
       }
@@ -148,15 +146,19 @@ async function submit() {
         </UFormField>
       </div>
 
-      <UFormField label="Máquina">
-        <USelect
-          v-model="form.maquina_id"
+      <UFormField label="Máquinas">
+        <USelectMenu
+          v-model="form.maquina_ids"
           :items="maquinaOptions"
           value-key="value"
           label-key="label"
-          placeholder="Sin máquina"
+          multiple
+          placeholder="Sin máquinas"
           class="w-full"
         />
+        <template #help>
+          <span class="text-xs text-gray-500">Podés elegir una o más. Dejalo vacío si no aplica.</span>
+        </template>
       </UFormField>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -171,10 +173,7 @@ async function submit() {
           />
         </UFormField>
 
-        <UFormField
-          label="Fecha prometida"
-          required
-        >
+        <UFormField label="Fecha prometida">
           <UInput
             v-model="form.fecha_prometida"
             type="date"

@@ -2,7 +2,7 @@
 const route = useRoute()
 
 const { data: machine, refresh: refreshMachine } = await useFetch<any>(() => `/api/machines/${route.params.id}`)
-const { data: registros, refresh: refreshRegistros } = await useFetch<any[]>(() => `/api/mantenimiento?maquina_id=${route.params.id}`)
+const { data: registros } = await useFetch<any[]>(() => `/api/mantenimiento?maquina_id=${route.params.id}`)
 
 const showEditModal = ref(false)
 const showRegistroModal = ref(false)
@@ -37,7 +37,7 @@ function onMaquinaSaved() {
 
 function onRegistroSaved() {
   showRegistroModal.value = false
-  refreshRegistros()
+  navigateTo('/')
 }
 </script>
 

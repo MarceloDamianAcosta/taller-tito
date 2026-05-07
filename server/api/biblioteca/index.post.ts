@@ -13,10 +13,10 @@ export default defineEventHandler(async (event) => {
 
   if (!file || !nombre) throw createError({ statusCode: 400, message: 'Datos incompletos' })
   if (!nombre.trim()) throw createError({ statusCode: 400, message: 'El nombre es obligatorio' })
-  if (file.size > 10 * 1024 * 1024) throw createError({ statusCode: 400, message: 'Archivo demasiado grande (máx 10MB)' })
 
-  const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf']
-  if (!allowedTypes.includes(file.type)) {
+  const isPdf = file.type === 'application/pdf'
+  const isImage = file.type.startsWith('image/')
+  if (!isPdf && !isImage) {
     throw createError({ statusCode: 400, message: 'Tipo de archivo no permitido' })
   }
 
@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
   const buffer = Buffer.from(await file.arrayBuffer())
   await writeFile(join(uploadsDir, filename), buffer)
 
-  const tipo = file.type === 'application/pdf' ? 'pdf' : 'imagen'
+  const tipo = isPdf ? 'pdf' : 'imagen'
   const record = db.insert(bibliotecaArchivos).values({ nombre: nombre.trim(), archivo: filename, tipo }).returning().get()
   return record
 })
