@@ -21,6 +21,12 @@ export const clientes = sqliteTable('clientes', {
   activo: integer('activo', { mode: 'boolean' }).notNull().default(true)
 })
 
+export const operarios = sqliteTable('operarios', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  nombre: text('nombre').notNull(),
+  activo: integer('activo', { mode: 'boolean' }).notNull().default(true)
+})
+
 export const bibliotecaArchivos = sqliteTable('biblioteca_archivos', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   nombre: text('nombre').notNull(),
@@ -82,6 +88,16 @@ export const otArchivos = sqliteTable('ot_archivos', {
   createdAt: text('created_at').notNull().default(sql`(datetime('now'))`)
 })
 
+export const otHistorial = sqliteTable('ot_historial', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  otId: integer('ot_id').notNull().references(() => ordenTrabajo.nroOt, { onDelete: 'cascade' }),
+  userId: integer('user_id').notNull().references(() => users.id),
+  operarioId: integer('operario_id').references(() => operarios.id),
+  estadoAnterior: text('estado_anterior'),
+  estadoNuevo: text('estado_nuevo').notNull(),
+  fecha: text('fecha').notNull()
+})
+
 export const controlCalidad = sqliteTable('control_calidad', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   otId: integer('ot_id').notNull().references(() => ordenTrabajo.nroOt),
@@ -137,5 +153,6 @@ export const brandConfig = sqliteTable('brand_config', {
   colorFondoDark: text('color_fondo_oscuro').notNull().default('#020617'),
   colorParte2TextoLight: text('color_parte2_texto').notNull().default('auto'),
   colorParte2TextoDark: text('color_parte2_texto_dark').notNull().default('auto'),
+  logoPath: text('logo_path'),
   updatedAt: text('updated_at').notNull().default(sql`(datetime('now'))`)
 })

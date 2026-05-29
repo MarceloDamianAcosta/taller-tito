@@ -71,6 +71,27 @@
       "when": 1748505600000,
       "tag": "0009_add_que_se_controla_ot",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1780100000000,
+      "tag": "0010_operarios",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1780100001000,
+      "tag": "0011_ot_historial",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1780100002000,
+      "tag": "0012_brand_logo_path",
+      "breakpoints": true
     }
   ]
 }
