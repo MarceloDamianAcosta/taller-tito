@@ -51,6 +51,7 @@ interface OT {
 interface Cliente { id: number, nombre: string }
 interface Maquina { id: number, nombre: string }
 interface CatMaterial { id: number, nombre: string, unidad: string }
+interface Operario { id: number, nombre: string }
 
 const route = useRoute()
 const id = computed(() => route.params.id as string)
@@ -60,6 +61,7 @@ const { data: ot, refresh } = await useFetch<OT>(() => `/api/workorders/${id.val
 const { data: clientesData } = await useFetch<Cliente[]>('/api/clientes', { query: { activo: 'true' } })
 const { data: maquinasData } = await useFetch<Maquina[]>('/api/machines')
 const { data: catMateriales } = await useFetch<CatMaterial[]>('/api/materiales', { query: { activo: 'true' } })
+const { data: operariosData } = await useFetch<Operario[]>('/api/operarios', { query: { activo: 'true' } })
 
 const isEditing = ref(false)
 const savingEdit = ref(false)
@@ -146,6 +148,37 @@ const showForceModal = ref(false)
 const pendingEstado = ref('')
 const clienteConformeEntrega = ref<boolean | null>(null)
 
+// Selección de operario al cambiar estado (TITO-115)
+const showOperarioModal = ref(false)
+const operarioModalEstado = ref('')
+const selectedOperarioId = ref<number | undefined>(undefined)
+const operarioModalError = ref('')
+
+const operarioOptions = computed(() =>
+  (operariosData.value ?? []).map(o => ({ label: o.nombre, value: o.id }))
+)
+
+function onOperarioCreated(payload: { id: number, nombre: string }) {
+  operariosData.value = [...(operariosData.value ?? []), payload]
+  selectedOperarioId.value = payload.id
+}
+
+// Abre el modal "¿qué operario hizo este trabajo?" antes de confirmar el cambio.
+function pedirOperario(next: string) {
+  operarioModalEstado.value = next
+  selectedOperarioId.value = undefined
+  operarioModalError.value = ''
+  showOperarioModal.value = true
+}
+
+async function confirmarCambioEstado() {
+  if (!selectedOperarioId.value) {
+    operarioModalError.value = 'Elegí el operario'
+    return
+  }
+  await cambiarEstado(operarioModalEstado.value)
+}
+
 const estadosNormales = ['Recepcionado', 'En proceso', 'Finalizado', 'Entregado'] as const
 type EstadoNormal = typeof estadosNormales[number]
 const estadoOptions = estadosNormales.map(e => ({ label: e, value: e }))
@@ -161,20 +194,26 @@ watch(() => ot.value?.estado, (e) => {
 
 async function cambiarEstado(next: string, force = false) {
   estadoError.value = ''
+  operarioModalError.value = ''
   savingEstado.value = true
   try {
-    const body: Record<string, unknown> = { estado: next }
+    const body: Record<string, unknown> = { estado: next, operario_id: selectedOperarioId.value ?? null }
     if (force) body.force = true
     if (next === 'Entregado' && clienteConformeEntrega.value !== null) {
       body.cliente_conforme = clienteConformeEntrega.value
     }
     await $fetch(`/api/workorders/${id.value}`, { method: 'PATCH', body })
     showForceModal.value = false
+    showOperarioModal.value = false
     await refresh()
   } catch (e: any) {
     if (e.status === 409 && e.data?.warning === 'sin_control_calidad') {
+      // Operario ya elegido; pasamos a confirmar la entrega sin CC.
       pendingEstado.value = next
+      showOperarioModal.value = false
       showForceModal.value = true
+    } else if (showOperarioModal.value) {
+      operarioModalError.value = e.data?.message || 'Error al cambiar estado'
     } else {
       estadoError.value = e.data?.message || 'Error al cambiar estado'
     }
@@ -189,23 +228,26 @@ async function confirmarEntregaForzada() {
 
 const showAnularModal = ref(false)
 const motivoAnulacion = ref('')
+const operarioAnularId = ref<number | undefined>(undefined)
 const anularError = ref('')
 const anulando = ref(false)
 
 function openAnular() {
   motivoAnulacion.value = ''
+  operarioAnularId.value = undefined
   anularError.value = ''
   showAnularModal.value = true
 }
 
 async function confirmarAnulacion() {
   if (!motivoAnulacion.value.trim()) { anularError.value = 'Indicá el motivo'; return }
+  if (!operarioAnularId.value) { anularError.value = 'Elegí el operario'; return }
   anulando.value = true
   anularError.value = ''
   try {
     await $fetch(`/api/workorders/${id.value}`, {
       method: 'PATCH',
-      body: { estado: 'Anulada', motivo_anulacion: motivoAnulacion.value.trim() }
+      body: { estado: 'Anulada', motivo_anulacion: motivoAnulacion.value.trim(), operario_id: operarioAnularId.value }
     })
     showAnularModal.value = false
     await refresh()
@@ -909,7 +951,7 @@ function formatDate(iso: string | null | undefined) {
               color="primary"
               class="w-full"
               :loading="savingEstado"
-              @click="cambiarEstado(targetEstado)"
+              @click="pedirOperario(targetEstado)"
             />
           </div>
 
@@ -962,6 +1004,11 @@ function formatDate(iso: string | null | undefined) {
             @click="openAnular"
           />
         </div>
+
+        <OrdenesHistorialTimeline
+          :ot-id="ot.nroOt"
+          :estado="ot.estado"
+        />
       </div>
     </div>
 
@@ -985,6 +1032,22 @@ function formatDate(iso: string | null | undefined) {
               placeholder="Ej: cliente canceló, error de carga, presupuesto rechazado…"
             />
           </UFormField>
+          <UFormField
+            label="Operario"
+            required
+          >
+            <div class="flex items-center gap-2">
+              <USelectMenu
+                v-model="operarioAnularId"
+                :items="operarioOptions"
+                value-key="value"
+                label-key="label"
+                placeholder="¿Quién anula?"
+                class="flex-1"
+              />
+              <OperariosQuickAdd @created="p => operarioAnularId = p.id" />
+            </div>
+          </UFormField>
           <UAlert
             v-if="anularError"
             color="error"
@@ -1002,6 +1065,54 @@ function formatDate(iso: string | null | undefined) {
               color="warning"
               :loading="anulando"
               @click="confirmarAnulacion"
+            />
+          </div>
+        </div>
+      </template>
+    </UModal>
+
+    <UModal v-model:open="showOperarioModal">
+      <template #content>
+        <div class="p-5 space-y-4">
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+            ¿Qué operario hizo este trabajo?
+          </h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            Cambio de estado a "{{ operarioModalEstado }}". Queda registrado en el historial.
+          </p>
+          <UFormField
+            label="Operario"
+            required
+          >
+            <div class="flex items-center gap-2">
+              <USelectMenu
+                v-model="selectedOperarioId"
+                :items="operarioOptions"
+                value-key="value"
+                label-key="label"
+                placeholder="Elegí el operario"
+                class="flex-1"
+              />
+              <OperariosQuickAdd @created="onOperarioCreated" />
+            </div>
+          </UFormField>
+          <UAlert
+            v-if="operarioModalError"
+            color="error"
+            :description="operarioModalError"
+          />
+          <div class="flex justify-end gap-2">
+            <UButton
+              label="Cancelar"
+              color="neutral"
+              variant="subtle"
+              @click="showOperarioModal = false"
+            />
+            <UButton
+              :label="`Cambiar a ${operarioModalEstado}`"
+              color="primary"
+              :loading="savingEstado"
+              @click="confirmarCambioEstado"
             />
           </div>
         </div>

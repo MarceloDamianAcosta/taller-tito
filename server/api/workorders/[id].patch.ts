@@ -1,5 +1,5 @@
 import { db } from '../../db/index'
-import { ordenTrabajo, controlCalidad, otMaquinas } from '../../db/schema'
+import { ordenTrabajo, controlCalidad, otMaquinas, otHistorial } from '../../db/schema'
 import { eq } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
@@ -13,7 +13,14 @@ export default defineEventHandler(async (event) => {
   if (!existing) throw createError({ statusCode: 404, message: 'Orden de trabajo no encontrada' })
 
   const body = await readBody(event)
-  const { nro_ot, created_at, force, ...fields } = body
+  const { nro_ot, created_at, force, operario_id, ...fields } = body
+
+  // Cualquier cambio de estado (incluido anular y reactivar) requiere operario.
+  const estadoChanged = fields.estado !== undefined && fields.estado !== existing.estado
+  const operarioId = operario_id != null ? Number(operario_id) : null
+  if (estadoChanged && !operarioId) {
+    throw createError({ statusCode: 400, message: 'Indicá el operario que hizo el trabajo' })
+  }
 
   if (fields.estado === 'Entregado' && force !== true) {
     const cc = db.select().from(controlCalidad).where(eq(controlCalidad.otId, id)).get()
@@ -75,5 +82,17 @@ export default defineEventHandler(async (event) => {
   }
 
   db.update(ordenTrabajo).set(updateData).where(eq(ordenTrabajo.nroOt, id)).run()
+
+  if (estadoChanged) {
+    db.insert(otHistorial).values({
+      otId: id,
+      userId: session.user.id,
+      operarioId,
+      estadoAnterior: existing.estado,
+      estadoNuevo: fields.estado,
+      fecha: new Date().toISOString()
+    }).run()
+  }
+
   return db.select().from(ordenTrabajo).where(eq(ordenTrabajo.nroOt, id)).get()
 })
