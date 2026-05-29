@@ -29,8 +29,7 @@ interface OT {
   clienteNombre: string | null
   clienteTelefono: string | null
   descripcion: string
-  material: string | null
-  cantidad: number | null
+  queSeControla: string | null
   maquinas: { id: number, nombre: string }[]
   fechaIngreso: string
   fechaPrometida: string
@@ -69,8 +68,7 @@ const editError = ref('')
 const editForm = reactive({
   cliente_id: undefined as number | undefined,
   descripcion: '',
-  material: '',
-  cantidad: '',
+  que_se_controla: '',
   maquina_ids: [] as number[],
   fecha_ingreso: '',
   fecha_prometida: '',
@@ -89,8 +87,7 @@ function startEdit() {
   const o = ot.value
   editForm.cliente_id = o.clienteId
   editForm.descripcion = o.descripcion
-  editForm.material = o.material ?? ''
-  editForm.cantidad = o.cantidad !== null ? String(o.cantidad) : ''
+  editForm.que_se_controla = o.queSeControla ?? ''
   editForm.maquina_ids = o.maquinas.map(m => m.id)
   editForm.fecha_ingreso = o.fechaIngreso
   editForm.fecha_prometida = o.fechaPrometida ?? ''
@@ -120,8 +117,7 @@ async function saveEdit() {
       body: {
         cliente_id: editForm.cliente_id ?? null,
         descripcion: editForm.descripcion,
-        material: editForm.material || null,
-        cantidad: editForm.cantidad !== '' ? Number(editForm.cantidad) : null,
+        que_se_controla: editForm.que_se_controla.trim() || null,
         maquina_ids: editForm.maquina_ids,
         fecha_ingreso: editForm.fecha_ingreso,
         fecha_prometida: editForm.fecha_prometida || null,
@@ -425,16 +421,13 @@ function formatDate(iso: string | null | undefined) {
                 {{ ot.descripcion }}
               </p>
             </div>
-            <div>
-              <span class="text-gray-500 dark:text-gray-400">Material</span>
-              <p class="font-medium text-gray-900 dark:text-white">
-                {{ ot.material || '—' }}
-              </p>
-            </div>
-            <div>
-              <span class="text-gray-500 dark:text-gray-400">Cantidad</span>
-              <p class="font-medium text-gray-900 dark:text-white">
-                {{ ot.cantidad ?? '—' }}
+            <div
+              v-if="ot.queSeControla"
+              class="sm:col-span-2"
+            >
+              <span class="text-gray-500 dark:text-gray-400">¿Qué se controla?</span>
+              <p class="font-medium text-gray-900 dark:text-white whitespace-pre-line">
+                {{ ot.queSeControla }}
               </p>
             </div>
             <div>
@@ -540,21 +533,17 @@ function formatDate(iso: string | null | undefined) {
               />
             </UFormField>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <UFormField label="Material">
-                <UInput
-                  v-model="editForm.material"
-                  class="w-full"
-                />
-              </UFormField>
-              <UFormField label="Cantidad">
-                <UInput
-                  v-model="editForm.cantidad"
-                  type="number"
-                  class="w-full"
-                />
-              </UFormField>
-            </div>
+            <UFormField label="¿Qué se controla?">
+              <UTextarea
+                v-model="editForm.que_se_controla"
+                placeholder="Criterios de control de calidad planificados"
+                class="w-full"
+                :rows="3"
+              />
+              <template #help>
+                <span class="text-xs text-gray-500">Opcional. Planificación de qué controlar al finalizar.</span>
+              </template>
+            </UFormField>
 
             <UFormField label="Máquinas">
               <USelectMenu

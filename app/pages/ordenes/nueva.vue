@@ -14,8 +14,7 @@ const today = new Date().toISOString().slice(0, 10)
 const form = reactive({
   cliente_id: undefined as number | undefined,
   descripcion: '',
-  material: '',
-  cantidad: '',
+  que_se_controla: '',
   maquina_ids: [] as number[],
   fecha_ingreso: today,
   fecha_prometida: '',
@@ -53,8 +52,7 @@ async function submit() {
       body: {
         cliente_id: form.cliente_id ?? null,
         descripcion: form.descripcion.trim(),
-        material: form.material.trim() || null,
-        cantidad: form.cantidad !== '' ? Number(form.cantidad) : null,
+        que_se_controla: form.que_se_controla.trim() || null,
         maquina_ids: form.maquina_ids,
         fecha_ingreso: form.fecha_ingreso,
         fecha_prometida: form.fecha_prometida || null,
@@ -126,25 +124,17 @@ async function submit() {
         />
       </UFormField>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <UFormField label="Material">
-          <UInput
-            v-model="form.material"
-            placeholder="Ej: Chapa 2mm"
-            class="w-full"
-          />
-        </UFormField>
-
-        <UFormField label="Cantidad">
-          <UInput
-            v-model="form.cantidad"
-            type="number"
-            min="0"
-            placeholder="Ej: 10"
-            class="w-full"
-          />
-        </UFormField>
-      </div>
+      <UFormField label="¿Qué se controla?">
+        <UTextarea
+          v-model="form.que_se_controla"
+          placeholder="Criterios de control de calidad planificados (ej: medidas, tolerancias, acabado…)"
+          class="w-full"
+          :rows="3"
+        />
+        <template #help>
+          <span class="text-xs text-gray-500">Opcional. Definí ahora qué se va a controlar al finalizar la OT.</span>
+        </template>
+      </UFormField>
 
       <UFormField label="Máquinas">
         <USelectMenu

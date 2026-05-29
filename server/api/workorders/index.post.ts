@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   if (!session.user) throw createError({ statusCode: 401, message: 'No autenticado' })
 
   const body = await readBody(event)
-  const { cliente_id, descripcion, material, cantidad, maquina_ids, fecha_ingreso, fecha_prometida, tiempo_estimado_hs, observaciones } = body
+  const { cliente_id, descripcion, que_se_controla, maquina_ids, fecha_ingreso, fecha_prometida, tiempo_estimado_hs, observaciones } = body
 
   if (!cliente_id) throw createError({ statusCode: 400, message: 'El cliente es obligatorio' })
   if (!descripcion?.trim()) throw createError({ statusCode: 400, message: 'La descripción es obligatoria' })
@@ -16,8 +16,7 @@ export default defineEventHandler(async (event) => {
   const result = db.insert(ordenTrabajo).values({
     clienteId: Number(cliente_id),
     descripcion: descripcion.trim(),
-    material: material?.trim() || null,
-    cantidad: cantidad ? Number(cantidad) : null,
+    queSeControla: que_se_controla?.trim() || null,
     fechaIngreso: fecha_ingreso,
     fechaPrometida: fecha_prometida || null,
     tiempoEstimadoHs: tiempo_estimado_hs ? Number(tiempo_estimado_hs) : null,

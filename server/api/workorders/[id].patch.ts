@@ -44,8 +44,7 @@ export default defineEventHandler(async (event) => {
   const updateData: Record<string, unknown> = {}
   if (fields.cliente_id !== undefined) updateData.clienteId = Number(fields.cliente_id)
   if (fields.descripcion !== undefined) updateData.descripcion = fields.descripcion
-  if (fields.material !== undefined) updateData.material = fields.material || null
-  if (fields.cantidad !== undefined) updateData.cantidad = fields.cantidad ? Number(fields.cantidad) : null
+  if (fields.que_se_controla !== undefined) updateData.queSeControla = fields.que_se_controla?.trim() || null
   if (fields.fecha_ingreso !== undefined) updateData.fechaIngreso = fields.fecha_ingreso
   if (fields.fecha_prometida !== undefined) updateData.fechaPrometida = fields.fecha_prometida || null
   if (fields.fecha_inicio !== undefined) updateData.fechaInicio = fields.fecha_inicio || null
