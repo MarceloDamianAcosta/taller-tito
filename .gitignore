@@ -32,6 +32,9 @@ data/
 # npm lockfile (using pnpm)
 package-lock.json
 
+# Local pnpm config (store-dir es path-específico)
+.npmrc
+
 # Local tooling (Claude Code / agents) — no compartir
 .agents/
 .claude/
