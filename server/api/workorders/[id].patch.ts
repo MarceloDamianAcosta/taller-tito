@@ -65,6 +65,14 @@ export default defineEventHandler(async (event) => {
   if (fields.observaciones !== undefined) updateData.observaciones = fields.observaciones || null
   if (fields.cliente_conforme !== undefined) updateData.clienteConforme = fields.cliente_conforme
 
+  const cambiaAFinalizado = fields.estado === 'Finalizado' && existing.estado !== 'Finalizado'
+  if (cambiaAFinalizado) {
+    const fechaResultante = updateData.fechaFinalizacion !== undefined ? updateData.fechaFinalizacion : existing.fechaFinalizacion
+    if (!fechaResultante) {
+      updateData.fechaFinalizacion = new Date().toISOString().slice(0, 10)
+    }
+  }
+
   if (Array.isArray(fields.maquina_ids)) {
     const uniqueIds: number[] = Array.from(new Set(
       (fields.maquina_ids as unknown[])
