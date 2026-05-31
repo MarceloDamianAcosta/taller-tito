@@ -19,7 +19,10 @@ export const db = drizzle(sqlite, { schema })
 
 // FKs OFF during migrate: Drizzle's create-rename-drop technique for SQLite
 // ALTERs needs to drop referenced tables. PRAGMA inside migration SQL is a no-op
-// because migrate() wraps statements in a transaction.
+// because migrate() wraps statements in a transaction — has to ser forzado a
+// nivel de conexión antes. Si una migración previa terminó con
+// `PRAGMA foreign_keys=ON`, queda persistida y rompe las siguientes.
+sqlite.pragma('foreign_keys = OFF')
 migrate(db, { migrationsFolder: join(process.cwd(), 'server/db/migrations') })
 
 sqlite.pragma('foreign_keys = ON')
