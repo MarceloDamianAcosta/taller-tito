@@ -27,7 +27,7 @@ migrate(db, { migrationsFolder: join(process.cwd(), 'server/db/migrations') })
 
 sqlite.pragma('foreign_keys = ON')
 
-async function bootstrap() {
+export async function bootstrap() {
   const existingAdmin = db.select().from(users).where(eq(users.username, 'tito')).get()
   if (!existingAdmin) {
     const hash = await bcrypt.hash('bigboss', 12)
@@ -43,4 +43,4 @@ async function bootstrap() {
   await seedIfEmpty(db)
 }
 
-bootstrap()
+export const bootstrapPromise = bootstrap()
