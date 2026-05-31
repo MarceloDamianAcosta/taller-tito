@@ -85,11 +85,7 @@ async function save() {
       label="Fecha"
       required
     >
-      <UInput
-        v-model="form.fecha"
-        type="date"
-        class="w-full"
-      />
+      <DateField v-model="form.fecha" />
     </UFormField>
 
     <div>
@@ -133,11 +129,7 @@ async function save() {
     </UFormField>
 
     <UFormField label="Próxima revisión">
-      <UInput
-        v-model="form.proxima_fecha"
-        type="date"
-        class="w-full"
-      />
+      <DateField v-model="form.proxima_fecha" />
     </UFormField>
 
     <UAlert

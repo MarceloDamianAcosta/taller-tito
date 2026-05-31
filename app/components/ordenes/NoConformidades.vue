@@ -192,11 +192,7 @@ function formatDate(iso: string | null | undefined) {
             label="Fecha"
             required
           >
-            <UInput
-              v-model="form.fecha"
-              type="date"
-              class="w-full"
-            />
+            <DateField v-model="form.fecha" />
           </UFormField>
 
           <UFormField

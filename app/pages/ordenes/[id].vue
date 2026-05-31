@@ -601,39 +601,19 @@ function formatDate(iso: string | null | undefined) {
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <UFormField label="Fecha ingreso">
-                <UInput
-                  v-model="editForm.fecha_ingreso"
-                  type="date"
-                  class="w-full"
-                />
+                <DateField v-model="editForm.fecha_ingreso" />
               </UFormField>
               <UFormField label="Fecha prometida">
-                <UInput
-                  v-model="editForm.fecha_prometida"
-                  type="date"
-                  class="w-full"
-                />
+                <DateField v-model="editForm.fecha_prometida" />
               </UFormField>
               <UFormField label="Fecha inicio">
-                <UInput
-                  v-model="editForm.fecha_inicio"
-                  type="date"
-                  class="w-full"
-                />
+                <DateField v-model="editForm.fecha_inicio" />
               </UFormField>
               <UFormField label="Fecha finalización">
-                <UInput
-                  v-model="editForm.fecha_finalizacion"
-                  type="date"
-                  class="w-full"
-                />
+                <DateField v-model="editForm.fecha_finalizacion" />
               </UFormField>
               <UFormField label="Fecha entrega">
-                <UInput
-                  v-model="editForm.fecha_entrega"
-                  type="date"
-                  class="w-full"
-                />
+                <DateField v-model="editForm.fecha_entrega" />
               </UFormField>
             </div>
 
@@ -781,11 +761,7 @@ function formatDate(iso: string | null | undefined) {
                 />
               </UFormField>
               <UFormField label="Fecha">
-                <UInput
-                  v-model="matForm.fecha"
-                  type="date"
-                  class="w-full"
-                />
+                <DateField v-model="matForm.fecha" />
               </UFormField>
             </div>
 

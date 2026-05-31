@@ -156,19 +156,11 @@ async function submit() {
           label="Fecha de ingreso"
           required
         >
-          <UInput
-            v-model="form.fecha_ingreso"
-            type="date"
-            class="w-full"
-          />
+          <DateField v-model="form.fecha_ingreso" />
         </UFormField>
 
         <UFormField label="Fecha prometida">
-          <UInput
-            v-model="form.fecha_prometida"
-            type="date"
-            class="w-full"
-          />
+          <DateField v-model="form.fecha_prometida" />
         </UFormField>
       </div>
 
