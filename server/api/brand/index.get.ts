@@ -16,7 +16,8 @@ export default defineEventHandler(() => {
       colorFondoLight: '#f9fafb',
       colorFondoDark: '#020617',
       colorParte2TextoLight: 'auto',
-      colorParte2TextoDark: 'auto'
+      colorParte2TextoDark: 'auto',
+      logoPath: null as string | null
     }
   }
   return {
@@ -29,6 +30,7 @@ export default defineEventHandler(() => {
     colorFondoLight: row.colorFondoLight,
     colorFondoDark: row.colorFondoDark,
     colorParte2TextoLight: row.colorParte2TextoLight,
-    colorParte2TextoDark: row.colorParte2TextoDark
+    colorParte2TextoDark: row.colorParte2TextoDark,
+    logoPath: row.logoPath ? `/api/branding/${row.logoPath}` : null
   }
 })

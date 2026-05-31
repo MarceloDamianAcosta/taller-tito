@@ -78,6 +78,8 @@ export default defineEventHandler(async (event) => {
     }).run()
   }
 
+  const current = db.select({ logoPath: brandConfig.logoPath }).from(brandConfig).where(eq(brandConfig.id, 1)).get()
+
   return {
     nombreParte1,
     nombreParte2,
@@ -88,6 +90,7 @@ export default defineEventHandler(async (event) => {
     colorFondoLight,
     colorFondoDark,
     colorParte2TextoLight,
-    colorParte2TextoDark
+    colorParte2TextoDark,
+    logoPath: current?.logoPath ? `/api/branding/${current.logoPath}` : null
   }
 })

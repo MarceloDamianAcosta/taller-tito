@@ -14,6 +14,7 @@ interface BrandConfig {
   colorFondoDark: string
   colorParte2TextoLight: string
   colorParte2TextoDark: string
+  logoPath: string | null
 }
 
 const { brand } = useAppBrand()
@@ -36,6 +37,60 @@ const form = reactive({
 const saving = ref(false)
 const errorMsg = ref('')
 const okMsg = ref('')
+
+const logoFileInput = ref<HTMLInputElement | null>(null)
+const logoUploading = ref(false)
+const logoErrorMsg = ref('')
+
+async function onLogoFileChange(e: Event) {
+  const target = e.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+  logoErrorMsg.value = ''
+
+  const okType = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'].includes(file.type)
+  if (!okType) {
+    logoErrorMsg.value = 'Tipo no permitido (PNG, JPG o SVG)'
+    target.value = ''
+    return
+  }
+  if (file.size > 2 * 1024 * 1024) {
+    logoErrorMsg.value = 'El archivo excede 2MB'
+    target.value = ''
+    return
+  }
+
+  logoUploading.value = true
+  try {
+    const fd = new FormData()
+    fd.append('archivo', file)
+    const res = await $fetch<{ logoPath: string }>('/api/admin/brand/logo', { method: 'POST', body: fd })
+    if (brand.value) brand.value = { ...brand.value, logoPath: res.logoPath }
+    await refresh()
+  } catch (e: unknown) {
+    const err = e as { data?: { message?: string } }
+    logoErrorMsg.value = err.data?.message || 'Error al subir el logo'
+  } finally {
+    logoUploading.value = false
+    target.value = ''
+  }
+}
+
+async function quitarLogo() {
+  if (!confirm('¿Quitar el logo?')) return
+  logoErrorMsg.value = ''
+  logoUploading.value = true
+  try {
+    await $fetch('/api/admin/brand/logo', { method: 'DELETE' })
+    if (brand.value) brand.value = { ...brand.value, logoPath: null }
+    await refresh()
+  } catch (e: unknown) {
+    const err = e as { data?: { message?: string } }
+    logoErrorMsg.value = err.data?.message || 'Error al quitar el logo'
+  } finally {
+    logoUploading.value = false
+  }
+}
 
 const presetsPrimario = [
   { label: 'Verde', hex: '#00A155' },
@@ -267,6 +322,70 @@ async function guardar() {
             class="w-full"
           />
         </UFormField>
+      </div>
+    </UCard>
+
+    <UCard>
+      <template #header>
+        <h2 class="font-semibold">
+          Logo
+        </h2>
+        <p class="text-sm text-muted">
+          Imagen PNG, JPG o SVG, máximo 2MB. Se muestra al lado del nombre en el header y en el login.
+        </p>
+      </template>
+
+      <UAlert
+        v-if="logoErrorMsg"
+        class="mb-3"
+        icon="i-lucide-circle-alert"
+        color="error"
+        variant="soft"
+        :title="logoErrorMsg"
+      />
+
+      <div class="flex items-center gap-4 flex-wrap">
+        <div class="h-16 w-32 flex items-center justify-center rounded-lg border border-default bg-elevated overflow-hidden">
+          <img
+            v-if="brand?.logoPath"
+            :src="brand.logoPath"
+            alt="Logo actual"
+            class="max-h-full max-w-full object-contain"
+          >
+          <span
+            v-else
+            class="text-xs text-muted"
+          >Sin logo</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <input
+            ref="logoFileInput"
+            type="file"
+            accept="image/png,image/jpeg,image/svg+xml"
+            class="hidden"
+            @change="onLogoFileChange"
+          >
+          <UButton
+            size="sm"
+            color="primary"
+            icon="i-lucide-upload"
+            :loading="logoUploading"
+            @click="logoFileInput?.click()"
+          >
+            {{ brand?.logoPath ? 'Cambiar logo' : 'Subir logo' }}
+          </UButton>
+          <UButton
+            v-if="brand?.logoPath"
+            size="sm"
+            color="error"
+            variant="outline"
+            icon="i-lucide-trash-2"
+            :loading="logoUploading"
+            @click="quitarLogo"
+          >
+            Quitar
+          </UButton>
+        </div>
       </div>
     </UCard>
 

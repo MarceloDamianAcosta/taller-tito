@@ -9,6 +9,7 @@ interface BrandConfig {
   colorFondoDark: string
   colorParte2TextoLight: string
   colorParte2TextoDark: string
+  logoPath: string | null
 }
 
 export function useAppBrand() {
