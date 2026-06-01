@@ -29,6 +29,13 @@ uploads/
 # Database
 data/
 
+# Canal de control con el agente host (auto-update): archivos de runtime
+control/*
+!control/.gitkeep
+
+# Backups de DB (deploy/db-backup.sh y el agente)
+backups/
+
 # npm lockfile (using pnpm)
 package-lock.json
 

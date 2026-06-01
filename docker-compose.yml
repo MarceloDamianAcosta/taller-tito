@@ -10,6 +10,7 @@ services:
     volumes:
       - dev-data:/app/data
       - dev-uploads:/app/uploads
+      - ./control:/app/control
     env_file:
       - .env
     restart: unless-stopped
@@ -20,11 +21,17 @@ services:
     build:
       context: .
       target: prod
+      args:
+        GIT_SHA: ${GIT_SHA:-dev}
+        BUILD_TIME: ${BUILD_TIME:-}
     ports:
       - "3000:3000"
     volumes:
       - prod-data:/app/data
       - prod-uploads:/app/uploads
+      # Canal de control con el agente host (auto-update). El agente escribe/lee
+      # acá; la app escribe requests y lee status. Bind mount, no volume.
+      - ./control:/app/control
     env_file:
       - .env
     restart: unless-stopped

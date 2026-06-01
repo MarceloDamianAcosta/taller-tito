@@ -7,3 +7,5 @@ node_modules
 .env.*
 uploads
 *.log
+control
+backups

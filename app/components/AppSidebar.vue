@@ -14,7 +14,8 @@ const navItems = [
   { label: 'Mantenimiento', to: '/mantenimiento', icon: 'i-lucide-wrench' },
   { label: 'Indicadores', to: '/indicadores', icon: 'i-lucide-bar-chart-2' },
   { label: 'Usuarios', to: '/admin/usuarios', icon: 'i-lucide-user-cog' },
-  { label: 'Configuración', to: '/admin/configuracion', icon: 'i-lucide-settings' }
+  { label: 'Configuración', to: '/admin/configuracion', icon: 'i-lucide-settings' },
+  { label: 'Sistema', to: '/admin/sistema', icon: 'i-lucide-server-cog' }
 ]
 
 function isActive(to: string) {

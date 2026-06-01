@@ -1,0 +1,12 @@
+[Unit]
+Description=Pipeline de auto-actualización de la app del taller
+# Necesita Docker para build/up y red para git fetch
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/taller/app
+ExecStart=/opt/taller/app/deploy/updater/taller-updater.sh
+# El pipeline maneja sus propios timeouts (health-check). Margen amplio para el build.
+TimeoutStartSec=1800
