@@ -34,7 +34,10 @@ function buildVarsBlock(
 export function buildBrandCss(b: BrandConfig): string {
   const lightBlock = buildVarsBlock(b.colorPrimarioEscalaLight, b.colorParte2EscalaLight, b.colorFondoLight, b.colorParte2TextoLight, false)
   const darkBlock = buildVarsBlock(b.colorPrimarioEscalaDark, b.colorParte2EscalaDark, b.colorFondoDark, b.colorParte2TextoDark, true)
-  return `:root{${lightBlock}}html.dark{${darkBlock}}`
+  // Especificidad elevada (`html:root` / `html.dark:root`) para ganarle a los
+  // valores de fábrica de main.css (`:root` / `html.dark`), que cargan después.
+  // Sin esto, --brand-fondo/--brand-parte2 del usuario quedan pisados por el default.
+  return `html:root{${lightBlock}}html.dark:root{${darkBlock}}`
 }
 
 export default defineNuxtPlugin(async () => {
