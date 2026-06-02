@@ -11,18 +11,6 @@ interface OTArchivo {
   createdAt: string | null
 }
 
-interface OTMaterial {
-  id: number
-  otId: number | null
-  materialId: number
-  materialNombre: string | null
-  unidad: string | null
-  fecha: string
-  proveedor: string
-  cantidad: number
-  problemas: string | null
-}
-
 interface OT {
   nroOt: number
   clienteId: number
@@ -44,13 +32,11 @@ interface OT {
   observaciones: string | null
   clienteConforme: boolean | null
   createdAt: string
-  materiales: OTMaterial[]
   archivos: OTArchivo[]
 }
 
 interface Cliente { id: number, nombre: string }
 interface Maquina { id: number, nombre: string }
-interface CatMaterial { id: number, nombre: string, unidad: string }
 interface Operario { id: number, nombre: string }
 
 const route = useRoute()
@@ -60,7 +46,6 @@ const { data: ot, refresh } = await useFetch<OT>(() => `/api/workorders/${id.val
 
 const { data: clientesData } = await useFetch<Cliente[]>('/api/clientes', { query: { activo: 'true' } })
 const { data: maquinasData } = await useFetch<Maquina[]>('/api/machines')
-const { data: catMateriales } = await useFetch<CatMaterial[]>('/api/materiales', { query: { activo: 'true' } })
 const { data: operariosData } = await useFetch<Operario[]>('/api/operarios', { query: { activo: 'true' } })
 
 const isEditing = ref(false)
@@ -255,65 +240,6 @@ async function confirmarAnulacion() {
     anularError.value = e.data?.message || 'Error al anular'
   } finally {
     anulando.value = false
-  }
-}
-
-const addingMaterial = ref(false)
-const savingMaterial = ref(false)
-const materialError = ref('')
-
-const matForm = reactive({
-  material_id: undefined as number | undefined,
-  cantidad: '',
-  proveedor: 'Yo mismo',
-  proveedorOtro: '',
-  fecha: new Date().toISOString().slice(0, 10),
-  problemas: ''
-})
-
-const proveedorOptions = [
-  { label: 'Yo mismo', value: 'Yo mismo' },
-  { label: 'Cliente', value: 'Cliente' },
-  { label: 'Otro', value: 'Otro' }
-]
-
-const catMatOptions = computed(() =>
-  (catMateriales.value ?? []).map(m => ({ label: `${m.nombre} (${m.unidad})`, value: m.id }))
-)
-
-function onMaterialCreated(payload: { id: number, nombre: string, unidad: string }) {
-  catMateriales.value = [...(catMateriales.value ?? []), { id: payload.id, nombre: payload.nombre, unidad: payload.unidad }]
-  matForm.material_id = payload.id
-}
-
-async function addMaterial() {
-  materialError.value = ''
-  if (matForm.material_id === undefined) { materialError.value = 'Seleccioná un material'; return }
-  if (matForm.cantidad === '' || matForm.cantidad === null) { materialError.value = 'La cantidad es obligatoria'; return }
-  savingMaterial.value = true
-  try {
-    const proveedor = matForm.proveedor === 'Otro' ? matForm.proveedorOtro.trim() || 'Otro' : matForm.proveedor
-    await $fetch(`/api/workorders/${id.value}/materiales`, {
-      method: 'POST',
-      body: {
-        material_id: matForm.material_id ?? null,
-        cantidad: Number(matForm.cantidad),
-        proveedor,
-        fecha: matForm.fecha,
-        problemas: matForm.problemas.trim() || null
-      }
-    })
-    addingMaterial.value = false
-    matForm.material_id = undefined
-    matForm.cantidad = ''
-    matForm.proveedor = 'Yo mismo'
-    matForm.proveedorOtro = ''
-    matForm.problemas = ''
-    await refresh()
-  } catch (e: any) {
-    materialError.value = e.data?.message || 'Error al agregar material'
-  } finally {
-    savingMaterial.value = false
   }
 }
 
@@ -676,144 +602,6 @@ function formatDate(iso: string | null | undefined) {
               color="error"
               :description="editError"
             />
-          </div>
-        </div>
-
-        <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 space-y-4">
-          <div class="flex items-center justify-between">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">
-              Materiales utilizados
-            </h2>
-            <UButton
-              v-if="!addingMaterial"
-              label="Agregar material"
-              icon="i-lucide-plus"
-              size="sm"
-              color="neutral"
-              variant="subtle"
-              @click="addingMaterial = true"
-            />
-          </div>
-
-          <div
-            v-if="ot.materiales.length > 0"
-            class="space-y-2"
-          >
-            <div
-              v-for="mat in ot.materiales"
-              :key="mat.id"
-              class="flex items-center justify-between text-sm py-2 border-b border-gray-100 dark:border-gray-800 last:border-0"
-            >
-              <div>
-                <span class="font-medium text-gray-900 dark:text-white">{{ mat.materialNombre || '—' }}</span>
-                <span class="text-gray-500 dark:text-gray-400 ml-1">({{ mat.unidad }})</span>
-              </div>
-              <div class="text-right text-gray-600 dark:text-gray-300">
-                <span>{{ mat.cantidad }} · {{ mat.proveedor }} · {{ formatDate(mat.fecha) }}</span>
-                <p
-                  v-if="mat.problemas"
-                  class="text-xs text-red-500"
-                >
-                  {{ mat.problemas }}
-                </p>
-              </div>
-            </div>
-          </div>
-          <p
-            v-else-if="!addingMaterial"
-            class="text-sm text-gray-500 dark:text-gray-400"
-          >
-            Sin materiales registrados.
-          </p>
-
-          <div
-            v-if="addingMaterial"
-            class="border border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-3 space-y-3"
-          >
-            <UFormField
-              label="Material"
-              required
-            >
-              <div class="flex items-center gap-2">
-                <USelect
-                  v-model="matForm.material_id"
-                  :items="catMatOptions"
-                  value-key="value"
-                  label-key="label"
-                  placeholder="Seleccionar material"
-                  class="flex-1"
-                />
-                <MaterialesQuickAdd @created="onMaterialCreated" />
-              </div>
-            </UFormField>
-
-            <div class="grid grid-cols-2 gap-3">
-              <UFormField
-                label="Cantidad"
-                required
-              >
-                <UInput
-                  v-model="matForm.cantidad"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  class="w-full"
-                />
-              </UFormField>
-              <UFormField label="Fecha">
-                <DateField v-model="matForm.fecha" />
-              </UFormField>
-            </div>
-
-            <UFormField label="Proveedor">
-              <USelect
-                v-model="matForm.proveedor"
-                :items="proveedorOptions"
-                value-key="value"
-                label-key="label"
-                class="w-full"
-              />
-            </UFormField>
-            <UFormField
-              v-if="matForm.proveedor === 'Otro'"
-              label="Nombre del proveedor"
-            >
-              <UInput
-                v-model="matForm.proveedorOtro"
-                placeholder="Nombre del proveedor"
-                class="w-full"
-              />
-            </UFormField>
-
-            <UFormField label="Problemas">
-              <UInput
-                v-model="matForm.problemas"
-                placeholder="Opcional"
-                class="w-full"
-              />
-            </UFormField>
-
-            <UAlert
-              v-if="materialError"
-              color="error"
-              :description="materialError"
-            />
-
-            <div class="flex gap-2 justify-end">
-              <UButton
-                label="Cancelar"
-                size="sm"
-                color="neutral"
-                variant="subtle"
-                @click="addingMaterial = false"
-              />
-              <UButton
-                label="Agregar"
-                size="sm"
-                :loading="savingMaterial"
-                @click="addMaterial"
-              />
-            </div>
           </div>
         </div>
 

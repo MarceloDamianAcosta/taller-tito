@@ -3,12 +3,10 @@ import type * as schema from './schema'
 import {
   clientes,
   maquinas,
-  catalogoMateriales,
   ordenTrabajo,
   otMaquinas,
   controlCalidad,
   noConformidades,
-  materiales,
   registroMantenimiento
 } from './schema'
 
@@ -41,21 +39,6 @@ export async function seedIfEmpty(db: DB) {
     { nombre: 'Soldadora MIG 250A', descripcion: 'Soldadora Lincoln Power MIG' }
   ]).returning().all()
 
-  const matIns = db.insert(catalogoMateriales).values([
-    { nombre: 'Chapa SAE 1010 6mm', unidad: 'kg', tipo: 'Chapa' },
-    { nombre: 'Chapa SAE 1010 3mm', unidad: 'kg', tipo: 'Chapa' },
-    { nombre: 'Perfil ángulo 1" x 1/8"', unidad: 'mts', tipo: 'Perfil' },
-    { nombre: 'Perfil UPN 80', unidad: 'mts', tipo: 'Perfil' },
-    { nombre: 'Caño estructural 40x40x2', unidad: 'mts', tipo: 'Perfil' },
-    { nombre: 'Varilla SAE 1020 Ø20', unidad: 'mts', tipo: 'Barra' },
-    { nombre: 'Varilla SAE 1045 Ø30', unidad: 'mts', tipo: 'Barra' },
-    { nombre: 'Electrodo 6013 2.5mm', unidad: 'kg', tipo: 'Consumible' },
-    { nombre: 'Alambre MIG ER70S-6 1.0mm', unidad: 'kg', tipo: 'Consumible' },
-    { nombre: 'Disco de corte 4.5"', unidad: 'kg', tipo: 'Herramental', notas: 'Norton standard' },
-    { nombre: 'Buje de bronce SAE 660', unidad: 'kg', tipo: 'Bronce' },
-    { nombre: 'Aceite refrigerante', unidad: 'lts', tipo: 'Insumo' }
-  ]).returning().all()
-
   // 2 Recepcionado, 3 En proceso, 2 Finalizado (en stock), 2 Entregado, 1 Anulada
   const otsIns = db.insert(ordenTrabajo).values([
     { clienteId: clientesIns[0]!.id, descripcion: 'Reparación caja reductora', fechaIngreso: iso(-2), fechaPrometida: iso(7), estado: 'Recepcionado', tiempoEstimadoHs: 12 },
@@ -81,15 +64,6 @@ export async function seedIfEmpty(db: DB) {
     { otId: otsIns[8]!.nroOt, maquinaId: maquinasIns[0]!.id }
   ]).run()
 
-  db.insert(materiales).values([
-    { otId: otsIns[2]!.nroOt, materialId: matIns[6]!.id, fecha: iso(-3), proveedor: 'Aceros Bragado', cantidad: 1.5 },
-    { otId: otsIns[3]!.nroOt, materialId: matIns[4]!.id, fecha: iso(-4), proveedor: 'Aceros Bragado', cantidad: 20 },
-    { otId: otsIns[3]!.nroOt, materialId: matIns[8]!.id, fecha: iso(-4), proveedor: 'Aceros Bragado', cantidad: 5 },
-    { otId: otsIns[6]!.nroOt, materialId: matIns[10]!.id, fecha: iso(-9), proveedor: 'Bronces del Sur', cantidad: 8 },
-    { otId: otsIns[7]!.nroOt, materialId: matIns[0]!.id, fecha: iso(-27), proveedor: 'Chapesur', cantidad: 25 },
-    { materialId: matIns[7]!.id, fecha: iso(-1), proveedor: 'Soldaduras Aldo', cantidad: 10 }
-  ]).run()
-
   db.insert(controlCalidad).values([
     { otId: otsIns[5]!.nroOt, queSeControla: 'Diámetro M16', instrumento: 'Calibre digital', resultado: 'OK', cumpleFuncion: true, huboReproceso: false, fechaControl: iso(-3) },
     { otId: otsIns[5]!.nroOt, queSeControla: 'Dureza superficial', instrumento: 'Durómetro Rockwell C', resultado: 'OK', cumpleFuncion: true, huboReproceso: false, fechaControl: iso(-3) },
@@ -109,5 +83,5 @@ export async function seedIfEmpty(db: DB) {
     { maquinaId: maquinasIns[2]!.id, fecha: iso(-7), tipo: 'Preventivo', descripcion: 'Limpieza de antorcha + cambio de pico', responsable: 'Tito' }
   ]).run()
 
-  console.log(`[seed] OK — ${clientesIns.length} clientes, ${maquinasIns.length} máquinas, ${matIns.length} materiales, ${otsIns.length} OTs.`)
+  console.log(`[seed] OK — ${clientesIns.length} clientes, ${maquinasIns.length} máquinas, ${otsIns.length} OTs.`)
 }

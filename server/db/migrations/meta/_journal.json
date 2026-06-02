@@ -92,6 +92,13 @@
       "when": 1780100002000,
       "tag": "0012_brand_logo_path",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1780100003000,
+      "tag": "0013_drop_materiales",
+      "breakpoints": true
     }
   ]
 }

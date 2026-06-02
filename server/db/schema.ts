@@ -42,15 +42,6 @@ export const maquinas = sqliteTable('maquinas', {
   activo: integer('activo', { mode: 'boolean' }).notNull().default(true)
 })
 
-export const catalogoMateriales = sqliteTable('catalogo_materiales', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  nombre: text('nombre').notNull(),
-  unidad: text('unidad', { enum: ['kg', 'cm2', 'mts', 'mts2', 'lts'] }).notNull(),
-  tipo: text('tipo'),
-  notas: text('notas'),
-  activo: integer('activo', { mode: 'boolean' }).notNull().default(true)
-})
-
 export const ordenTrabajo = sqliteTable('orden_trabajo', {
   nroOt: integer('nro_ot').primaryKey({ autoIncrement: true }),
   clienteId: integer('cliente_id').notNull().references(() => clientes.id),
@@ -119,16 +110,6 @@ export const noConformidades = sqliteTable('no_conformidades', {
   causa: text('causa'),
   solucion: text('solucion'),
   accionPreventiva: text('accion_preventiva')
-})
-
-export const materiales = sqliteTable('materiales', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  otId: integer('ot_id').references(() => ordenTrabajo.nroOt),
-  materialId: integer('material_id').notNull().references(() => catalogoMateriales.id),
-  fecha: text('fecha').notNull(),
-  proveedor: text('proveedor').notNull(),
-  cantidad: real('cantidad').notNull(),
-  problemas: text('problemas')
 })
 
 export const registroMantenimiento = sqliteTable('registro_mantenimiento', {

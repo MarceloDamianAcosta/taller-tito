@@ -1,5 +1,5 @@
 import { db } from '../../db/index'
-import { ordenTrabajo, clientes, maquinas, materiales, catalogoMateriales, otArchivos, bibliotecaArchivos, otMaquinas } from '../../db/schema'
+import { ordenTrabajo, clientes, maquinas, otArchivos, bibliotecaArchivos, otMaquinas } from '../../db/schema'
 import { eq } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
@@ -45,23 +45,6 @@ export default defineEventHandler(async (event) => {
     .where(eq(otMaquinas.otId, id))
     .all()
 
-  const otMateriales = db
-    .select({
-      id: materiales.id,
-      otId: materiales.otId,
-      materialId: materiales.materialId,
-      materialNombre: catalogoMateriales.nombre,
-      unidad: catalogoMateriales.unidad,
-      fecha: materiales.fecha,
-      proveedor: materiales.proveedor,
-      cantidad: materiales.cantidad,
-      problemas: materiales.problemas
-    })
-    .from(materiales)
-    .leftJoin(catalogoMateriales, eq(materiales.materialId, catalogoMateriales.id))
-    .where(eq(materiales.otId, id))
-    .all()
-
   const archivos = db
     .select({
       id: otArchivos.id,
@@ -77,5 +60,5 @@ export default defineEventHandler(async (event) => {
     .where(eq(otArchivos.otId, id))
     .all()
 
-  return { ...ot, maquinas: otMaquinasList, materiales: otMateriales, archivos }
+  return { ...ot, maquinas: otMaquinasList, archivos }
 })

@@ -9,7 +9,6 @@ const navItems = [
   { label: 'Órdenes de Trabajo', to: '/ordenes', icon: 'i-lucide-clipboard-list' },
   { label: 'Clientes', to: '/clientes', icon: 'i-lucide-users' },
   { label: 'Operarios', to: '/operarios', icon: 'i-lucide-hard-hat' },
-  { label: 'Materiales', to: '/materiales', icon: 'i-lucide-package' },
   { label: 'Biblioteca', to: '/biblioteca', icon: 'i-lucide-folder-open' },
   { label: 'Mantenimiento', to: '/mantenimiento', icon: 'i-lucide-wrench' },
   { label: 'Indicadores', to: '/indicadores', icon: 'i-lucide-bar-chart-2' },
