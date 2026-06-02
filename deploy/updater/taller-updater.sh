@@ -26,15 +26,16 @@ FINISHED=""
 
 log() { echo "[$(date -u +%H:%M:%S)] $*" | tee -a "$LOG" >&2; }
 
-# Escritura atómica de status.json. Sanitiza message/result (sin comillas ni saltos).
+# Escribe status.json EN EL LUGAR (sin rename). Docker Desktop no propaga los
+# renames host→contenedor, así que un `mv` deja a la app leyendo el status viejo.
+# El archivo es chico (<4KB, una sola escritura) → lectura parcial es casi imposible
+# y la app tolera un JSON inválido (lo trata como idle y reintenta). Sanitiza message.
 write_status() {
   local phase="$1" message="${2:-}" result="${3:-}"
   message="$(printf '%s' "$message" | tr -d '"\\' | tr '\n\r' '  ')"
-  local tmp="$CONTROL/status.json.tmp"
-  cat > "$tmp" <<EOF
+  cat > "$CONTROL/status.json" <<EOF
 {"phase":"$phase","result":"$result","oldSha":"$OLD_SHA","targetSha":"$TARGET_SHA","startedAt":"$STARTED","finishedAt":"$FINISHED","message":"$message"}
 EOF
-  mv "$tmp" "$CONTROL/status.json"
 }
 
 finish() { FINISHED="$(date -u +%Y-%m-%dT%H:%M:%SZ)"; write_status "$1" "$2" "$1"; rm -f "$REQ"; }

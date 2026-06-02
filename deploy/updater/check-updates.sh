@@ -27,9 +27,8 @@ AVAIL=false
 [ "$LOCAL" != "$REMOTE" ] && AVAIL=true
 NOW="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-tmp="$CONTROL/remote.json.tmp"
-cat > "$tmp" <<EOF
+# En el lugar (sin rename): Docker Desktop no propaga renames host→contenedor.
+cat > "$CONTROL/remote.json" <<EOF
 {"branch":"$BRANCH","localSha":"$LOCAL","remoteSha":"$REMOTE","updateAvailable":$AVAIL,"checkedAt":"$NOW","error":"$ERR"}
 EOF
-mv "$tmp" "$CONTROL/remote.json"
 rm -f "$CONTROL/check.request.json"
