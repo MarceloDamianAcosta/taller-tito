@@ -51,6 +51,13 @@ const isUpdating = computed(() => ACTIVE_PHASES.includes(status.value.phase))
 // Mostramos la tarjeta de progreso desde que pedimos el update hasta el resultado,
 // aunque el server se reinicie o el agente tarde en arrancar.
 const showProgress = computed(() => watchingRun.value || isUpdating.value)
+// Prioridad de la card (cuando no hay progreso): si hay update genuinamente nuevo
+// se ofrece (salvo que el último resultado sea un rollback/fallo, donde mostramos
+// eso); si no, el resultado recién terminado; si no, "al día".
+const showAvailable = computed(() =>
+  !showProgress.value && !!info.value?.updateAvailable && (lastResult.value === null || lastResult.value === 'done')
+)
+const showResult = computed(() => !showProgress.value && lastResult.value !== null && !showAvailable.value)
 const currentStepIndex = computed(() => STEPS.findIndex(s => s.key === status.value.phase))
 
 function shortSha(sha?: string) {
@@ -84,6 +91,9 @@ async function pollStatus() {
     polling.value = false
     lastResult.value = status.value.phase
     await refreshVersion()
+    // Tras un update exitoso, re-chequeamos para que updateAvailable deje de
+    // apuntar a la versión recién instalada (y detecte si hay otra más nueva).
+    if (status.value.phase === 'done') runCheck().catch(() => {})
     return
   }
 
@@ -102,19 +112,23 @@ function startPolling() {
   pollStatus()
 }
 
+// Dispara el check en el host y refresca hasta que remote.json cambie (lastCheck).
+async function runCheck() {
+  const before = info.value?.lastCheck
+  await $fetch('/api/admin/sistema/check', { method: 'POST' })
+  for (let i = 0; i < 8; i++) {
+    await new Promise(r => setTimeout(r, 1500))
+    await refreshVersion()
+    if (info.value?.lastCheck && info.value.lastCheck !== before) break
+  }
+}
+
 async function buscarActualizaciones() {
   actionError.value = ''
   lastResult.value = null // al volver a buscar, dejamos de mostrar el resultado anterior
   checking.value = true
-  const before = info.value?.lastCheck
   try {
-    await $fetch('/api/admin/sistema/check', { method: 'POST' })
-    // El host escribe remote.json async; refrescamos hasta que cambie lastCheck.
-    for (let i = 0; i < 8; i++) {
-      await new Promise(r => setTimeout(r, 1500))
-      await refreshVersion()
-      if (info.value?.lastCheck && info.value.lastCheck !== before) break
-    }
+    await runCheck()
   } catch (e: unknown) {
     actionError.value = (e as { data?: { message?: string } }).data?.message || 'No se pudo comprobar'
   } finally {
@@ -194,8 +208,33 @@ onUnmounted(() => {
       :title="actionError"
     />
 
-    <!-- Resultado recién terminado (esta sesión): mostramos SOLO esto -->
-    <UCard v-if="!showProgress && lastResult">
+    <!-- 1) Hay una actualización genuinamente nueva → ofrecerla (prioridad) -->
+    <UCard v-if="showAvailable">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="flex items-start gap-3">
+          <UIcon
+            name="i-lucide-sparkles"
+            class="size-6 text-primary shrink-0 mt-0.5"
+          />
+          <div>
+            <p class="font-semibold text-gray-900 dark:text-white">
+              Hay una versión nueva disponible
+            </p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              Al actualizar, la app se va a reiniciar. Puede tardar 1–2 minutos.
+            </p>
+          </div>
+        </div>
+        <UButton
+          label="Actualizar ahora"
+          icon="i-lucide-download"
+          @click="showConfirm = true"
+        />
+      </div>
+    </UCard>
+
+    <!-- 2) Resultado de la corrida recién terminada (esta sesión) -->
+    <UCard v-else-if="showResult">
       <UAlert
         v-if="lastResult === 'done'"
         color="success"
@@ -226,37 +265,9 @@ onUnmounted(() => {
       />
     </UCard>
 
-    <!-- Estado de actualización disponible / al día -->
+    <!-- 3) Al día -->
     <UCard v-else-if="!showProgress">
-      <div
-        v-if="info?.updateAvailable"
-        class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-      >
-        <div class="flex items-start gap-3">
-          <UIcon
-            name="i-lucide-sparkles"
-            class="size-6 text-primary shrink-0 mt-0.5"
-          />
-          <div>
-            <p class="font-semibold text-gray-900 dark:text-white">
-              Hay una versión nueva disponible
-            </p>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-              Al actualizar, la app se va a reiniciar. Puede tardar 1–2 minutos.
-            </p>
-          </div>
-        </div>
-        <UButton
-          label="Actualizar ahora"
-          icon="i-lucide-download"
-          @click="showConfirm = true"
-        />
-      </div>
-
-      <div
-        v-else
-        class="flex items-center gap-3 text-gray-600 dark:text-gray-300"
-      >
+      <div class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
         <UIcon
           name="i-lucide-check-circle-2"
           class="size-5 text-green-500"
