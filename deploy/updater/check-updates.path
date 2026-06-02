@@ -1,0 +1,9 @@
+[Unit]
+Description=Vigila pedidos de "buscar actualizaciones" de la app del taller
+
+[Path]
+PathExists=/opt/taller/app/control/check.request.json
+Unit=check-updates.service
+
+[Install]
+WantedBy=multi-user.target

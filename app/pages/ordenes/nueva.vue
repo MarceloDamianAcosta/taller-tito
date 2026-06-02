@@ -14,8 +14,7 @@ const today = new Date().toISOString().slice(0, 10)
 const form = reactive({
   cliente_id: undefined as number | undefined,
   descripcion: '',
-  material: '',
-  cantidad: '',
+  que_se_controla: '',
   maquina_ids: [] as number[],
   fecha_ingreso: today,
   fecha_prometida: '',
@@ -41,11 +40,39 @@ function onClienteCreated(payload: { id: number, nombre: string }) {
   form.cliente_id = payload.id as number | undefined
 }
 
-async function submit() {
+// Operario que recepciona la OT (TITO-114): se pide en un modal al confirmar el alta.
+interface Operario { id: number, nombre: string }
+const { data: operariosData } = await useFetch<Operario[]>('/api/operarios', { query: { activo: 'true' } })
+const operarioOptions = computed(() =>
+  (operariosData.value ?? []).map(o => ({ label: o.nombre, value: o.id }))
+)
+const showOperarioModal = ref(false)
+const selectedOperarioId = ref<number | undefined>(undefined)
+const operarioModalError = ref('')
+
+// Mientras el modal de operario está abierto, el botón atrás queda trabado (TITO-120).
+const { blocked } = useBackGuard()
+watch(showOperarioModal, (open) => { blocked.value = open })
+onUnmounted(() => { blocked.value = false })
+
+function onOperarioCreated(payload: { id: number, nombre: string }) {
+  operariosData.value = [...(operariosData.value ?? []), payload]
+  selectedOperarioId.value = payload.id
+}
+
+// Paso 1: validar el formulario y abrir el modal de operario.
+function pedirOperario() {
   errorMsg.value = ''
   if (!form.cliente_id && form.cliente_id !== 0) { errorMsg.value = 'Seleccioná un cliente'; return }
   if (!form.descripcion.trim()) { errorMsg.value = 'La descripción es obligatoria'; return }
+  selectedOperarioId.value = undefined
+  operarioModalError.value = ''
+  showOperarioModal.value = true
+}
 
+// Paso 2: elegido el operario, crear la OT (queda en Recepcionado + historial).
+async function confirmarCrear() {
+  if (!selectedOperarioId.value) { operarioModalError.value = 'Elegí el operario'; return }
   saving.value = true
   try {
     const created = await $fetch<{ nroOt: number }>('/api/workorders', {
@@ -53,13 +80,13 @@ async function submit() {
       body: {
         cliente_id: form.cliente_id ?? null,
         descripcion: form.descripcion.trim(),
-        material: form.material.trim() || null,
-        cantidad: form.cantidad !== '' ? Number(form.cantidad) : null,
+        que_se_controla: form.que_se_controla.trim() || null,
         maquina_ids: form.maquina_ids,
         fecha_ingreso: form.fecha_ingreso,
         fecha_prometida: form.fecha_prometida || null,
         tiempo_estimado_hs: form.tiempo_estimado_hs !== '' ? Number(form.tiempo_estimado_hs) : null,
-        observaciones: form.observaciones.trim() || null
+        observaciones: form.observaciones.trim() || null,
+        operario_id: selectedOperarioId.value
       }
     })
 
@@ -70,9 +97,10 @@ async function submit() {
       })
     }
 
+    showOperarioModal.value = false
     await router.push(`/ordenes/${created.nroOt}`)
   } catch (e: any) {
-    errorMsg.value = e.data?.message || 'Error al guardar'
+    operarioModalError.value = e.data?.message || 'Error al guardar'
   } finally {
     saving.value = false
   }
@@ -95,7 +123,7 @@ async function submit() {
 
     <form
       class="space-y-4"
-      @submit.prevent="submit"
+      @submit.prevent="pedirOperario"
     >
       <UFormField
         label="Cliente"
@@ -126,25 +154,17 @@ async function submit() {
         />
       </UFormField>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <UFormField label="Material">
-          <UInput
-            v-model="form.material"
-            placeholder="Ej: Chapa 2mm"
-            class="w-full"
-          />
-        </UFormField>
-
-        <UFormField label="Cantidad">
-          <UInput
-            v-model="form.cantidad"
-            type="number"
-            min="0"
-            placeholder="Ej: 10"
-            class="w-full"
-          />
-        </UFormField>
-      </div>
+      <UFormField label="¿Qué se controla?">
+        <UTextarea
+          v-model="form.que_se_controla"
+          placeholder="Criterios de control de calidad planificados (ej: medidas, tolerancias, acabado…)"
+          class="w-full"
+          :rows="3"
+        />
+        <template #help>
+          <span class="text-xs text-gray-500">Opcional. Definí ahora qué se va a controlar al finalizar la OT.</span>
+        </template>
+      </UFormField>
 
       <UFormField label="Máquinas">
         <USelectMenu
@@ -166,19 +186,11 @@ async function submit() {
           label="Fecha de ingreso"
           required
         >
-          <UInput
-            v-model="form.fecha_ingreso"
-            type="date"
-            class="w-full"
-          />
+          <DateField v-model="form.fecha_ingreso" />
         </UFormField>
 
         <UFormField label="Fecha prometida">
-          <UInput
-            v-model="form.fecha_prometida"
-            type="date"
-            class="w-full"
-          />
+          <DateField v-model="form.fecha_prometida" />
         </UFormField>
       </div>
 
@@ -223,5 +235,56 @@ async function submit() {
         />
       </div>
     </form>
+
+    <UModal
+      v-model:open="showOperarioModal"
+      :dismissible="false"
+    >
+      <template #content>
+        <div class="p-5 space-y-4">
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+            ¿Qué operario recepcionó la OT?
+          </h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            La OT se crea en estado "Recepcionado". Queda registrado en el historial.
+          </p>
+          <UFormField
+            label="Operario"
+            required
+          >
+            <div class="flex items-center gap-2">
+              <USelectMenu
+                v-model="selectedOperarioId"
+                :items="operarioOptions"
+                value-key="value"
+                label-key="label"
+                placeholder="Elegí el operario"
+                class="flex-1"
+              />
+              <OperariosQuickAdd @created="onOperarioCreated" />
+            </div>
+          </UFormField>
+          <UAlert
+            v-if="operarioModalError"
+            color="error"
+            :description="operarioModalError"
+          />
+          <div class="flex justify-end gap-2">
+            <UButton
+              label="Cancelar"
+              color="neutral"
+              variant="subtle"
+              @click="showOperarioModal = false"
+            />
+            <UButton
+              label="Crear OT"
+              icon="i-lucide-save"
+              :loading="saving"
+              @click="confirmarCrear"
+            />
+          </div>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>

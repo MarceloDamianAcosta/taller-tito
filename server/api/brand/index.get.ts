@@ -1,7 +1,14 @@
 import { db } from '../../db/index'
 import { brandConfig } from '../../db/schema'
+import { generateScale } from '../../utils/color-scale'
 
 const DEFAULT_SCALE = ['#EFFDF5', '#D9FBE8', '#B3F5D1', '#75EDAE', '#00DC82', '#00C16A', '#00A155', '#007F45', '#016538', '#0A5331', '#052E16']
+const SLATE_SCALE = ['#f8fafc', '#f1f5f9', '#e2e8f0', '#cbd5e1', '#94a3b8', '#64748b', '#475569', '#334155', '#1e293b', '#0f172a', '#020617']
+
+function parte2Scale(value: string): string[] {
+  if (value === 'auto') return SLATE_SCALE
+  try { return generateScale(value) } catch { return SLATE_SCALE }
+}
 
 export default defineEventHandler(() => {
   const row = db.select().from(brandConfig).get()
@@ -16,7 +23,10 @@ export default defineEventHandler(() => {
       colorFondoLight: '#f9fafb',
       colorFondoDark: '#020617',
       colorParte2TextoLight: 'auto',
-      colorParte2TextoDark: 'auto'
+      colorParte2TextoDark: 'auto',
+      colorParte2EscalaLight: SLATE_SCALE,
+      colorParte2EscalaDark: SLATE_SCALE,
+      logoPath: null as string | null
     }
   }
   return {
@@ -29,6 +39,9 @@ export default defineEventHandler(() => {
     colorFondoLight: row.colorFondoLight,
     colorFondoDark: row.colorFondoDark,
     colorParte2TextoLight: row.colorParte2TextoLight,
-    colorParte2TextoDark: row.colorParte2TextoDark
+    colorParte2TextoDark: row.colorParte2TextoDark,
+    colorParte2EscalaLight: parte2Scale(row.colorParte2TextoLight),
+    colorParte2EscalaDark: parte2Scale(row.colorParte2TextoDark),
+    logoPath: row.logoPath ? `/api/branding/${row.logoPath}` : null
   }
 })

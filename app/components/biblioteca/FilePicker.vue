@@ -13,9 +13,11 @@ const activeTab = ref('biblioteca')
 
 const localSelected = ref<number[]>([...props.modelValue])
 
-const uploadForm = reactive({ nombre: '', file: null as File | null })
+interface PendingFile { id: string, file: File, nombre: string }
+const pendingFiles = ref<PendingFile[]>([])
 const uploadError = ref('')
 const uploading = ref(false)
+const uploadedCount = ref(0)
 
 const { data: archivos, refresh: refreshArchivos } = useFetch('/api/biblioteca')
 
@@ -26,10 +28,13 @@ watch(() => props.modelValue, (val) => {
 function openModal() {
   localSelected.value = [...props.modelValue]
   activeTab.value = 'biblioteca'
-  uploadForm.nombre = ''
-  uploadForm.file = null
+  pendingFiles.value = []
   uploadError.value = ''
   modalOpen.value = true
+}
+
+function stripExt(name: string): string {
+  return name.replace(/\.[^./\\]+$/, '')
 }
 
 function toggleFile(id: number) {
@@ -56,33 +61,57 @@ function getArchivo(id: number) {
 
 function onFileChange(e: Event) {
   const input = e.target as HTMLInputElement
-  uploadForm.file = input.files?.[0] ?? null
+  const files = input.files ? Array.from(input.files) : []
+  pendingFiles.value = files.map(f => ({
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    file: f,
+    nombre: stripExt(f.name)
+  }))
+  input.value = ''
+}
+
+function removePending(id: string) {
+  pendingFiles.value = pendingFiles.value.filter(p => p.id !== id)
 }
 
 async function submitUpload() {
   uploadError.value = ''
-  if (!uploadForm.nombre.trim()) {
-    uploadError.value = 'El nombre es obligatorio'
+  if (pendingFiles.value.length === 0) {
+    uploadError.value = 'Seleccioná al menos un archivo'
     return
   }
-  if (!uploadForm.file) {
-    uploadError.value = 'Seleccioná un archivo'
-    return
+  for (const p of pendingFiles.value) {
+    if (!p.nombre.trim()) {
+      uploadError.value = 'Cada archivo necesita un nombre'
+      return
+    }
   }
   uploading.value = true
+  uploadedCount.value = 0
+  const newIds: number[] = []
   try {
-    const fd = new FormData()
-    fd.append('nombre', uploadForm.nombre.trim())
-    fd.append('archivo', uploadForm.file)
-    const created = await $fetch<{ id: number }>('/api/biblioteca', { method: 'POST', body: fd })
+    for (const p of pendingFiles.value) {
+      const fd = new FormData()
+      fd.append('nombre', p.nombre.trim())
+      fd.append('archivo', p.file)
+      const created = await $fetch<{ id: number }>('/api/biblioteca', { method: 'POST', body: fd })
+      newIds.push(created.id)
+      uploadedCount.value++
+    }
     await refreshArchivos()
-    localSelected.value = [...localSelected.value, created.id]
-    uploadForm.nombre = ''
-    uploadForm.file = null
+    localSelected.value = [...localSelected.value, ...newIds]
+    pendingFiles.value = []
     activeTab.value = 'biblioteca'
-    toast.add({ title: 'Archivo subido y seleccionado', color: 'success' })
+    toast.add({
+      title: newIds.length === 1 ? 'Archivo subido y seleccionado' : `${newIds.length} archivos subidos y seleccionados`,
+      color: 'success'
+    })
   } catch (e: any) {
-    uploadError.value = e.data?.message || 'Error al subir el archivo'
+    uploadError.value = `${e.data?.message || 'Error al subir'}. Subidos: ${uploadedCount.value}/${pendingFiles.value.length}`
+    if (newIds.length > 0) {
+      await refreshArchivos()
+      localSelected.value = [...localSelected.value, ...newIds]
+    }
   } finally {
     uploading.value = false
   }
@@ -224,39 +253,56 @@ const tabs = [
           >
             <form @submit.prevent="submitUpload">
               <div class="space-y-3">
-                <UFormField
-                  label="Nombre"
-                  name="nombre"
-                  required
-                >
-                  <UInput
-                    v-model="uploadForm.nombre"
-                    placeholder="Nombre descriptivo"
-                    class="w-full"
+                <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                  <UIcon
+                    name="i-lucide-upload-cloud"
+                    class="size-7 text-gray-400 mb-1"
                   />
-                </UFormField>
+                  <span class="text-xs text-gray-500">
+                    {{ pendingFiles.length > 0
+                      ? `${pendingFiles.length} archivo(s) seleccionado(s) — agregar más`
+                      : 'Imágenes o PDFs (uno o varios)' }}
+                  </span>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,application/pdf"
+                    class="sr-only"
+                    @change="onFileChange"
+                  >
+                </label>
 
-                <UFormField
-                  label="Archivo"
-                  name="archivo"
-                  required
+                <ul
+                  v-if="pendingFiles.length > 0"
+                  class="space-y-2 max-h-60 overflow-y-auto pr-1"
                 >
-                  <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                  <li
+                    v-for="p in pendingFiles"
+                    :key="p.id"
+                    class="flex items-center gap-2"
+                  >
                     <UIcon
-                      name="i-lucide-upload-cloud"
-                      class="size-7 text-gray-400 mb-1"
+                      :name="p.file.type === 'application/pdf' ? 'i-lucide-file-text' : 'i-lucide-image'"
+                      class="size-4 shrink-0 text-gray-500"
                     />
-                    <span class="text-xs text-gray-500">
-                      {{ uploadForm.file ? uploadForm.file.name : 'Imagen o PDF' }}
-                    </span>
-                    <input
-                      type="file"
-                      accept="image/*,application/pdf"
-                      class="sr-only"
-                      @change="onFileChange"
+                    <UInput
+                      v-model="p.nombre"
+                      class="flex-1"
+                      placeholder="Nombre descriptivo"
+                    />
+                    <button
+                      type="button"
+                      class="size-7 inline-flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500"
+                      aria-label="Quitar"
+                      @click="removePending(p.id)"
                     >
-                  </label>
-                </UFormField>
+                      <UIcon
+                        name="i-lucide-x"
+                        class="size-4"
+                      />
+                    </button>
+                  </li>
+                </ul>
 
                 <UAlert
                   v-if="uploadError"
@@ -266,10 +312,13 @@ const tabs = [
 
                 <UButton
                   type="submit"
-                  label="Subir y seleccionar"
+                  :label="pendingFiles.length > 1
+                    ? `Subir ${pendingFiles.length} archivos`
+                    : 'Subir y seleccionar'"
                   icon="i-lucide-upload"
                   class="w-full justify-center"
                   :loading="uploading"
+                  :disabled="pendingFiles.length === 0"
                 />
               </div>
             </form>

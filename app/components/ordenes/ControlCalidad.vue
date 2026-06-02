@@ -308,11 +308,7 @@ const borderClass = computed(() => {
         label="Fecha de control"
         required
       >
-        <UInput
-          v-model="form.fecha_control"
-          type="date"
-          class="w-full"
-        />
+        <DateField v-model="form.fecha_control" />
       </UFormField>
 
       <UAlert

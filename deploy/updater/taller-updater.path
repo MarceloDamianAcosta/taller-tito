@@ -1,0 +1,10 @@
+[Unit]
+Description=Vigila pedidos de actualización de la app del taller
+
+[Path]
+# Cuando la app crea este archivo, systemd lanza taller-updater.service
+PathExists=/opt/taller/app/control/update.request.json
+Unit=taller-updater.service
+
+[Install]
+WantedBy=multi-user.target

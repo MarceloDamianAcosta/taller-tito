@@ -1,5 +1,5 @@
 import { db } from '../../db/index'
-import { ordenTrabajo, controlCalidad, noConformidades, materiales, catalogoMateriales, clientes, registroMantenimiento } from '../../db/schema'
+import { ordenTrabajo, controlCalidad, noConformidades, clientes, registroMantenimiento } from '../../db/schema'
 import { eq, and, isNotNull, count, gte, ne } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
@@ -93,19 +93,6 @@ export default defineEventHandler(async (event) => {
   const preventivo = mantRecords.filter(r => r.tipo === 'Preventivo').length
   const correctivo = mantRecords.filter(r => r.tipo === 'Correctivo').length
 
-  const materialesRaw = db.select({ nombre: catalogoMateriales.nombre }).from(materiales)
-    .leftJoin(catalogoMateriales, eq(materiales.materialId, catalogoMateriales.id))
-    .where(desde ? gte(materiales.fecha, desde) : undefined).all()
-
-  const matMap = new Map<string, number>()
-  for (const r of materialesRaw) {
-    const k = r.nombre ?? 'Desconocido'
-    matMap.set(k, (matMap.get(k) ?? 0) + 1)
-  }
-  const topMateriales = Array.from(matMap.entries())
-    .sort((a, b) => b[1] - a[1]).slice(0, 5)
-    .map(([nombre, usos]) => ({ nombre, usos }))
-
   return {
     periodo,
     entregas: { porcentaje: entregasPorcentaje, aTiempo: aTiempo.length, total: conEntrega.length },
@@ -114,7 +101,6 @@ export default defineEventHandler(async (event) => {
     desviacionHoras,
     otsPorEstado,
     topClientes,
-    mantenimiento: { preventivo, correctivo },
-    topMateriales
+    mantenimiento: { preventivo, correctivo }
   }
 })

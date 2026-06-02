@@ -11,26 +11,13 @@ interface OTArchivo {
   createdAt: string | null
 }
 
-interface OTMaterial {
-  id: number
-  otId: number | null
-  materialId: number
-  materialNombre: string | null
-  unidad: string | null
-  fecha: string
-  proveedor: string
-  cantidad: number
-  problemas: string | null
-}
-
 interface OT {
   nroOt: number
   clienteId: number
   clienteNombre: string | null
   clienteTelefono: string | null
   descripcion: string
-  material: string | null
-  cantidad: number | null
+  queSeControla: string | null
   maquinas: { id: number, nombre: string }[]
   fechaIngreso: string
   fechaPrometida: string
@@ -45,13 +32,12 @@ interface OT {
   observaciones: string | null
   clienteConforme: boolean | null
   createdAt: string
-  materiales: OTMaterial[]
   archivos: OTArchivo[]
 }
 
 interface Cliente { id: number, nombre: string }
 interface Maquina { id: number, nombre: string }
-interface CatMaterial { id: number, nombre: string, unidad: string }
+interface Operario { id: number, nombre: string }
 
 const route = useRoute()
 const id = computed(() => route.params.id as string)
@@ -60,7 +46,7 @@ const { data: ot, refresh } = await useFetch<OT>(() => `/api/workorders/${id.val
 
 const { data: clientesData } = await useFetch<Cliente[]>('/api/clientes', { query: { activo: 'true' } })
 const { data: maquinasData } = await useFetch<Maquina[]>('/api/machines')
-const { data: catMateriales } = await useFetch<CatMaterial[]>('/api/materiales', { query: { activo: 'true' } })
+const { data: operariosData } = await useFetch<Operario[]>('/api/operarios', { query: { activo: 'true' } })
 
 const isEditing = ref(false)
 const savingEdit = ref(false)
@@ -69,8 +55,7 @@ const editError = ref('')
 const editForm = reactive({
   cliente_id: undefined as number | undefined,
   descripcion: '',
-  material: '',
-  cantidad: '',
+  que_se_controla: '',
   maquina_ids: [] as number[],
   fecha_ingreso: '',
   fecha_prometida: '',
@@ -89,8 +74,7 @@ function startEdit() {
   const o = ot.value
   editForm.cliente_id = o.clienteId
   editForm.descripcion = o.descripcion
-  editForm.material = o.material ?? ''
-  editForm.cantidad = o.cantidad !== null ? String(o.cantidad) : ''
+  editForm.que_se_controla = o.queSeControla ?? ''
   editForm.maquina_ids = o.maquinas.map(m => m.id)
   editForm.fecha_ingreso = o.fechaIngreso
   editForm.fecha_prometida = o.fechaPrometida ?? ''
@@ -120,8 +104,7 @@ async function saveEdit() {
       body: {
         cliente_id: editForm.cliente_id ?? null,
         descripcion: editForm.descripcion,
-        material: editForm.material || null,
-        cantidad: editForm.cantidad !== '' ? Number(editForm.cantidad) : null,
+        que_se_controla: editForm.que_se_controla.trim() || null,
         maquina_ids: editForm.maquina_ids,
         fecha_ingreso: editForm.fecha_ingreso,
         fecha_prometida: editForm.fecha_prometida || null,
@@ -150,6 +133,42 @@ const showForceModal = ref(false)
 const pendingEstado = ref('')
 const clienteConformeEntrega = ref<boolean | null>(null)
 
+// Selección de operario al cambiar estado (TITO-115)
+const showOperarioModal = ref(false)
+const operarioModalEstado = ref('')
+const selectedOperarioId = ref<number | undefined>(undefined)
+const operarioModalError = ref('')
+
+// Mientras el modal de operario está abierto, el botón atrás queda trabado (TITO-120).
+const { blocked } = useBackGuard()
+watch(showOperarioModal, (open) => { blocked.value = open })
+onUnmounted(() => { blocked.value = false })
+
+const operarioOptions = computed(() =>
+  (operariosData.value ?? []).map(o => ({ label: o.nombre, value: o.id }))
+)
+
+function onOperarioCreated(payload: { id: number, nombre: string }) {
+  operariosData.value = [...(operariosData.value ?? []), payload]
+  selectedOperarioId.value = payload.id
+}
+
+// Abre el modal "¿qué operario hizo este trabajo?" antes de confirmar el cambio.
+function pedirOperario(next: string) {
+  operarioModalEstado.value = next
+  selectedOperarioId.value = undefined
+  operarioModalError.value = ''
+  showOperarioModal.value = true
+}
+
+async function confirmarCambioEstado() {
+  if (!selectedOperarioId.value) {
+    operarioModalError.value = 'Elegí el operario'
+    return
+  }
+  await cambiarEstado(operarioModalEstado.value)
+}
+
 const estadosNormales = ['Recepcionado', 'En proceso', 'Finalizado', 'Entregado'] as const
 type EstadoNormal = typeof estadosNormales[number]
 const estadoOptions = estadosNormales.map(e => ({ label: e, value: e }))
@@ -165,20 +184,26 @@ watch(() => ot.value?.estado, (e) => {
 
 async function cambiarEstado(next: string, force = false) {
   estadoError.value = ''
+  operarioModalError.value = ''
   savingEstado.value = true
   try {
-    const body: Record<string, unknown> = { estado: next }
+    const body: Record<string, unknown> = { estado: next, operario_id: selectedOperarioId.value ?? null }
     if (force) body.force = true
     if (next === 'Entregado' && clienteConformeEntrega.value !== null) {
       body.cliente_conforme = clienteConformeEntrega.value
     }
     await $fetch(`/api/workorders/${id.value}`, { method: 'PATCH', body })
     showForceModal.value = false
+    showOperarioModal.value = false
     await refresh()
   } catch (e: any) {
     if (e.status === 409 && e.data?.warning === 'sin_control_calidad') {
+      // Operario ya elegido; pasamos a confirmar la entrega sin CC.
       pendingEstado.value = next
+      showOperarioModal.value = false
       showForceModal.value = true
+    } else if (showOperarioModal.value) {
+      operarioModalError.value = e.data?.message || 'Error al cambiar estado'
     } else {
       estadoError.value = e.data?.message || 'Error al cambiar estado'
     }
@@ -193,23 +218,26 @@ async function confirmarEntregaForzada() {
 
 const showAnularModal = ref(false)
 const motivoAnulacion = ref('')
+const operarioAnularId = ref<number | undefined>(undefined)
 const anularError = ref('')
 const anulando = ref(false)
 
 function openAnular() {
   motivoAnulacion.value = ''
+  operarioAnularId.value = undefined
   anularError.value = ''
   showAnularModal.value = true
 }
 
 async function confirmarAnulacion() {
   if (!motivoAnulacion.value.trim()) { anularError.value = 'Indicá el motivo'; return }
+  if (!operarioAnularId.value) { anularError.value = 'Elegí el operario'; return }
   anulando.value = true
   anularError.value = ''
   try {
     await $fetch(`/api/workorders/${id.value}`, {
       method: 'PATCH',
-      body: { estado: 'Anulada', motivo_anulacion: motivoAnulacion.value.trim() }
+      body: { estado: 'Anulada', motivo_anulacion: motivoAnulacion.value.trim(), operario_id: operarioAnularId.value }
     })
     showAnularModal.value = false
     await refresh()
@@ -217,65 +245,6 @@ async function confirmarAnulacion() {
     anularError.value = e.data?.message || 'Error al anular'
   } finally {
     anulando.value = false
-  }
-}
-
-const addingMaterial = ref(false)
-const savingMaterial = ref(false)
-const materialError = ref('')
-
-const matForm = reactive({
-  material_id: undefined as number | undefined,
-  cantidad: '',
-  proveedor: 'Yo mismo',
-  proveedorOtro: '',
-  fecha: new Date().toISOString().slice(0, 10),
-  problemas: ''
-})
-
-const proveedorOptions = [
-  { label: 'Yo mismo', value: 'Yo mismo' },
-  { label: 'Cliente', value: 'Cliente' },
-  { label: 'Otro', value: 'Otro' }
-]
-
-const catMatOptions = computed(() =>
-  (catMateriales.value ?? []).map(m => ({ label: `${m.nombre} (${m.unidad})`, value: m.id }))
-)
-
-function onMaterialCreated(payload: { id: number, nombre: string, unidad: string }) {
-  catMateriales.value = [...(catMateriales.value ?? []), { id: payload.id, nombre: payload.nombre, unidad: payload.unidad }]
-  matForm.material_id = payload.id
-}
-
-async function addMaterial() {
-  materialError.value = ''
-  if (matForm.material_id === undefined) { materialError.value = 'Seleccioná un material'; return }
-  if (matForm.cantidad === '' || matForm.cantidad === null) { materialError.value = 'La cantidad es obligatoria'; return }
-  savingMaterial.value = true
-  try {
-    const proveedor = matForm.proveedor === 'Otro' ? matForm.proveedorOtro.trim() || 'Otro' : matForm.proveedor
-    await $fetch(`/api/workorders/${id.value}/materiales`, {
-      method: 'POST',
-      body: {
-        material_id: matForm.material_id ?? null,
-        cantidad: Number(matForm.cantidad),
-        proveedor,
-        fecha: matForm.fecha,
-        problemas: matForm.problemas.trim() || null
-      }
-    })
-    addingMaterial.value = false
-    matForm.material_id = undefined
-    matForm.cantidad = ''
-    matForm.proveedor = 'Yo mismo'
-    matForm.proveedorOtro = ''
-    matForm.problemas = ''
-    await refresh()
-  } catch (e: any) {
-    materialError.value = e.data?.message || 'Error al agregar material'
-  } finally {
-    savingMaterial.value = false
   }
 }
 
@@ -425,16 +394,13 @@ function formatDate(iso: string | null | undefined) {
                 {{ ot.descripcion }}
               </p>
             </div>
-            <div>
-              <span class="text-gray-500 dark:text-gray-400">Material</span>
-              <p class="font-medium text-gray-900 dark:text-white">
-                {{ ot.material || '—' }}
-              </p>
-            </div>
-            <div>
-              <span class="text-gray-500 dark:text-gray-400">Cantidad</span>
-              <p class="font-medium text-gray-900 dark:text-white">
-                {{ ot.cantidad ?? '—' }}
+            <div
+              v-if="ot.queSeControla"
+              class="sm:col-span-2"
+            >
+              <span class="text-gray-500 dark:text-gray-400">¿Qué se controla?</span>
+              <p class="font-medium text-gray-900 dark:text-white whitespace-pre-line">
+                {{ ot.queSeControla }}
               </p>
             </div>
             <div>
@@ -540,21 +506,17 @@ function formatDate(iso: string | null | undefined) {
               />
             </UFormField>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <UFormField label="Material">
-                <UInput
-                  v-model="editForm.material"
-                  class="w-full"
-                />
-              </UFormField>
-              <UFormField label="Cantidad">
-                <UInput
-                  v-model="editForm.cantidad"
-                  type="number"
-                  class="w-full"
-                />
-              </UFormField>
-            </div>
+            <UFormField label="¿Qué se controla?">
+              <UTextarea
+                v-model="editForm.que_se_controla"
+                placeholder="Criterios de control de calidad planificados"
+                class="w-full"
+                :rows="3"
+              />
+              <template #help>
+                <span class="text-xs text-gray-500">Opcional. Planificación de qué controlar al finalizar.</span>
+              </template>
+            </UFormField>
 
             <UFormField label="Máquinas">
               <USelectMenu
@@ -570,39 +532,19 @@ function formatDate(iso: string | null | undefined) {
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <UFormField label="Fecha ingreso">
-                <UInput
-                  v-model="editForm.fecha_ingreso"
-                  type="date"
-                  class="w-full"
-                />
+                <DateField v-model="editForm.fecha_ingreso" />
               </UFormField>
               <UFormField label="Fecha prometida">
-                <UInput
-                  v-model="editForm.fecha_prometida"
-                  type="date"
-                  class="w-full"
-                />
+                <DateField v-model="editForm.fecha_prometida" />
               </UFormField>
               <UFormField label="Fecha inicio">
-                <UInput
-                  v-model="editForm.fecha_inicio"
-                  type="date"
-                  class="w-full"
-                />
+                <DateField v-model="editForm.fecha_inicio" />
               </UFormField>
               <UFormField label="Fecha finalización">
-                <UInput
-                  v-model="editForm.fecha_finalizacion"
-                  type="date"
-                  class="w-full"
-                />
+                <DateField v-model="editForm.fecha_finalizacion" />
               </UFormField>
               <UFormField label="Fecha entrega">
-                <UInput
-                  v-model="editForm.fecha_entrega"
-                  type="date"
-                  class="w-full"
-                />
+                <DateField v-model="editForm.fecha_entrega" />
               </UFormField>
             </div>
 
@@ -665,148 +607,6 @@ function formatDate(iso: string | null | undefined) {
               color="error"
               :description="editError"
             />
-          </div>
-        </div>
-
-        <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 space-y-4">
-          <div class="flex items-center justify-between">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">
-              Materiales utilizados
-            </h2>
-            <UButton
-              v-if="!addingMaterial"
-              label="Agregar material"
-              icon="i-lucide-plus"
-              size="sm"
-              color="neutral"
-              variant="subtle"
-              @click="addingMaterial = true"
-            />
-          </div>
-
-          <div
-            v-if="ot.materiales.length > 0"
-            class="space-y-2"
-          >
-            <div
-              v-for="mat in ot.materiales"
-              :key="mat.id"
-              class="flex items-center justify-between text-sm py-2 border-b border-gray-100 dark:border-gray-800 last:border-0"
-            >
-              <div>
-                <span class="font-medium text-gray-900 dark:text-white">{{ mat.materialNombre || '—' }}</span>
-                <span class="text-gray-500 dark:text-gray-400 ml-1">({{ mat.unidad }})</span>
-              </div>
-              <div class="text-right text-gray-600 dark:text-gray-300">
-                <span>{{ mat.cantidad }} · {{ mat.proveedor }} · {{ formatDate(mat.fecha) }}</span>
-                <p
-                  v-if="mat.problemas"
-                  class="text-xs text-red-500"
-                >
-                  {{ mat.problemas }}
-                </p>
-              </div>
-            </div>
-          </div>
-          <p
-            v-else-if="!addingMaterial"
-            class="text-sm text-gray-500 dark:text-gray-400"
-          >
-            Sin materiales registrados.
-          </p>
-
-          <div
-            v-if="addingMaterial"
-            class="border border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-3 space-y-3"
-          >
-            <UFormField
-              label="Material"
-              required
-            >
-              <div class="flex items-center gap-2">
-                <USelect
-                  v-model="matForm.material_id"
-                  :items="catMatOptions"
-                  value-key="value"
-                  label-key="label"
-                  placeholder="Seleccionar material"
-                  class="flex-1"
-                />
-                <MaterialesQuickAdd @created="onMaterialCreated" />
-              </div>
-            </UFormField>
-
-            <div class="grid grid-cols-2 gap-3">
-              <UFormField
-                label="Cantidad"
-                required
-              >
-                <UInput
-                  v-model="matForm.cantidad"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  class="w-full"
-                />
-              </UFormField>
-              <UFormField label="Fecha">
-                <UInput
-                  v-model="matForm.fecha"
-                  type="date"
-                  class="w-full"
-                />
-              </UFormField>
-            </div>
-
-            <UFormField label="Proveedor">
-              <USelect
-                v-model="matForm.proveedor"
-                :items="proveedorOptions"
-                value-key="value"
-                label-key="label"
-                class="w-full"
-              />
-            </UFormField>
-            <UFormField
-              v-if="matForm.proveedor === 'Otro'"
-              label="Nombre del proveedor"
-            >
-              <UInput
-                v-model="matForm.proveedorOtro"
-                placeholder="Nombre del proveedor"
-                class="w-full"
-              />
-            </UFormField>
-
-            <UFormField label="Problemas">
-              <UInput
-                v-model="matForm.problemas"
-                placeholder="Opcional"
-                class="w-full"
-              />
-            </UFormField>
-
-            <UAlert
-              v-if="materialError"
-              color="error"
-              :description="materialError"
-            />
-
-            <div class="flex gap-2 justify-end">
-              <UButton
-                label="Cancelar"
-                size="sm"
-                color="neutral"
-                variant="subtle"
-                @click="addingMaterial = false"
-              />
-              <UButton
-                label="Agregar"
-                size="sm"
-                :loading="savingMaterial"
-                @click="addMaterial"
-              />
-            </div>
           </div>
         </div>
 
@@ -920,7 +720,7 @@ function formatDate(iso: string | null | undefined) {
               color="primary"
               class="w-full"
               :loading="savingEstado"
-              @click="cambiarEstado(targetEstado)"
+              @click="pedirOperario(targetEstado)"
             />
           </div>
 
@@ -973,6 +773,11 @@ function formatDate(iso: string | null | undefined) {
             @click="openAnular"
           />
         </div>
+
+        <OrdenesHistorialTimeline
+          :ot-id="ot.nroOt"
+          :estado="ot.estado"
+        />
       </div>
     </div>
 
@@ -996,6 +801,22 @@ function formatDate(iso: string | null | undefined) {
               placeholder="Ej: cliente canceló, error de carga, presupuesto rechazado…"
             />
           </UFormField>
+          <UFormField
+            label="Operario"
+            required
+          >
+            <div class="flex items-center gap-2">
+              <USelectMenu
+                v-model="operarioAnularId"
+                :items="operarioOptions"
+                value-key="value"
+                label-key="label"
+                placeholder="¿Quién anula?"
+                class="flex-1"
+              />
+              <OperariosQuickAdd @created="p => operarioAnularId = p.id" />
+            </div>
+          </UFormField>
           <UAlert
             v-if="anularError"
             color="error"
@@ -1013,6 +834,57 @@ function formatDate(iso: string | null | undefined) {
               color="warning"
               :loading="anulando"
               @click="confirmarAnulacion"
+            />
+          </div>
+        </div>
+      </template>
+    </UModal>
+
+    <UModal
+      v-model:open="showOperarioModal"
+      :dismissible="false"
+    >
+      <template #content>
+        <div class="p-5 space-y-4">
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+            ¿Qué operario hizo este trabajo?
+          </h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            Cambio de estado a "{{ operarioModalEstado }}". Queda registrado en el historial.
+          </p>
+          <UFormField
+            label="Operario"
+            required
+          >
+            <div class="flex items-center gap-2">
+              <USelectMenu
+                v-model="selectedOperarioId"
+                :items="operarioOptions"
+                value-key="value"
+                label-key="label"
+                placeholder="Elegí el operario"
+                class="flex-1"
+              />
+              <OperariosQuickAdd @created="onOperarioCreated" />
+            </div>
+          </UFormField>
+          <UAlert
+            v-if="operarioModalError"
+            color="error"
+            :description="operarioModalError"
+          />
+          <div class="flex justify-end gap-2">
+            <UButton
+              label="Cancelar"
+              color="neutral"
+              variant="subtle"
+              @click="showOperarioModal = false"
+            />
+            <UButton
+              :label="`Cambiar a ${operarioModalEstado}`"
+              color="primary"
+              :loading="savingEstado"
+              @click="confirmarCambioEstado"
             />
           </div>
         </div>

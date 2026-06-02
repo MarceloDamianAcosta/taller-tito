@@ -25,9 +25,17 @@ RUN pnpm build
 # ── Prod: solo el output compilado ───────────────────────────────────────────
 FROM node:22-alpine AS prod
 WORKDIR /app
-RUN mkdir -p /app/uploads /app/data
+RUN mkdir -p /app/uploads /app/data /app/control
 COPY --from=build /app/.output ./
 COPY --from=build /app/server/db/migrations ./server/db/migrations
+
+# Versión horneada en la imagen: el endpoint /api/admin/sistema lee version.json
+# para mostrar el SHA/fecha. GIT_SHA/BUILD_TIME los pasa docker compose como build-args.
+ARG GIT_SHA=dev
+ARG BUILD_TIME=
+RUN printf '{"sha":"%s","builtAt":"%s"}\n' "$GIT_SHA" "$BUILD_TIME" > /app/version.json
+ENV NUXT_APP_SHA=$GIT_SHA
+
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000

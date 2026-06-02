@@ -204,42 +204,6 @@ function pctWidth(val: number, total: number) {
             </div>
           </div>
         </UCard>
-
-        <UCard>
-          <template #header>
-            <h2 class="font-semibold text-gray-900 dark:text-white">
-              Materiales más usados
-            </h2>
-          </template>
-          <div
-            v-if="!data.topMateriales.length"
-            class="text-sm text-gray-500"
-          >
-            Sin datos.
-          </div>
-          <ol
-            v-else
-            class="space-y-2"
-          >
-            <li
-              v-for="(m, i) in data.topMateriales"
-              :key="m.nombre"
-              class="flex items-center justify-between"
-            >
-              <div class="flex items-center gap-2 min-w-0">
-                <span class="text-xs text-gray-400 w-4">{{ i + 1 }}.</span>
-                <span class="text-sm truncate text-gray-900 dark:text-white">{{ m.nombre }}</span>
-              </div>
-              <UBadge
-                color="neutral"
-                variant="subtle"
-                size="sm"
-              >
-                {{ m.usos }} usos
-              </UBadge>
-            </li>
-          </ol>
-        </UCard>
       </div>
     </template>
   </div>

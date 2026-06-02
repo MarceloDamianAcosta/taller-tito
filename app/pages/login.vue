@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'auth' })
 
-const { loggedIn } = useUserSession()
+const { loggedIn, fetch: fetchSession } = useUserSession()
 
 const form = reactive({ username: '', password: '' })
 const error = ref('')
@@ -25,8 +25,13 @@ async function submit() {
       method: 'POST',
       body: form
     })
+    // Refrescamos el estado de sesión en el cliente antes de navegar, para que
+    // el middleware global no rebote a /login con loggedIn stale.
+    await fetchSession()
     const dest = res.mustChangePassword ? '/cambiar-password' : '/'
-    await navigateTo(dest, { external: true })
+    // replace (no push) para que /login no quede en el history del navegador:
+    // así el botón "atrás" en el celular no vuelve al login.
+    await navigateTo(dest, { replace: true })
   } catch (e: any) {
     error.value = e.data?.message || 'Usuario o contraseña incorrectos'
   } finally {

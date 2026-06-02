@@ -8,12 +8,13 @@ const navItems = [
   { label: 'Dashboard', to: '/', icon: 'i-lucide-layout-dashboard' },
   { label: 'Órdenes de Trabajo', to: '/ordenes', icon: 'i-lucide-clipboard-list' },
   { label: 'Clientes', to: '/clientes', icon: 'i-lucide-users' },
-  { label: 'Materiales', to: '/materiales', icon: 'i-lucide-package' },
+  { label: 'Operarios', to: '/operarios', icon: 'i-lucide-hard-hat' },
   { label: 'Biblioteca', to: '/biblioteca', icon: 'i-lucide-folder-open' },
   { label: 'Mantenimiento', to: '/mantenimiento', icon: 'i-lucide-wrench' },
   { label: 'Indicadores', to: '/indicadores', icon: 'i-lucide-bar-chart-2' },
   { label: 'Usuarios', to: '/admin/usuarios', icon: 'i-lucide-user-cog' },
-  { label: 'Configuración', to: '/admin/configuracion', icon: 'i-lucide-settings' }
+  { label: 'Configuración', to: '/admin/configuracion', icon: 'i-lucide-settings' },
+  { label: 'Sistema', to: '/admin/sistema', icon: 'i-lucide-server-cog' }
 ]
 
 function isActive(to: string) {

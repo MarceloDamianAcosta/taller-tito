@@ -1,0 +1,10 @@
+[Unit]
+Description=Comprueba si hay versión nueva de la app del taller
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/taller/app
+ExecStart=/opt/taller/app/deploy/updater/check-updates.sh
+TimeoutStartSec=120

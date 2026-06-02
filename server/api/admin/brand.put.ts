@@ -3,6 +3,13 @@ import { db } from '../../db/index'
 import { brandConfig } from '../../db/schema'
 import { generateScale, hexToRgb } from '../../utils/color-scale'
 
+const SLATE_SCALE = ['#f8fafc', '#f1f5f9', '#e2e8f0', '#cbd5e1', '#94a3b8', '#64748b', '#475569', '#334155', '#1e293b', '#0f172a', '#020617']
+
+function parte2Scale(value: string): string[] {
+  if (value === 'auto') return SLATE_SCALE
+  try { return generateScale(value) } catch { return SLATE_SCALE }
+}
+
 const HEX_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/
 
 function validateHex(value: unknown, field: string): string {
@@ -78,6 +85,8 @@ export default defineEventHandler(async (event) => {
     }).run()
   }
 
+  const current = db.select({ logoPath: brandConfig.logoPath }).from(brandConfig).where(eq(brandConfig.id, 1)).get()
+
   return {
     nombreParte1,
     nombreParte2,
@@ -88,6 +97,9 @@ export default defineEventHandler(async (event) => {
     colorFondoLight,
     colorFondoDark,
     colorParte2TextoLight,
-    colorParte2TextoDark
+    colorParte2TextoDark,
+    colorParte2EscalaLight: parte2Scale(colorParte2TextoLight),
+    colorParte2EscalaDark: parte2Scale(colorParte2TextoDark),
+    logoPath: current?.logoPath ? `/api/branding/${current.logoPath}` : null
   }
 })

@@ -10,12 +10,13 @@ interface Cliente {
   activo: boolean
 }
 
-const showInactive = ref(false)
+const vista = ref<'activos' | 'ocultos'>('activos')
 const searchQuery = ref('')
 const modalOpen = ref(false)
 const editingCliente = ref<Cliente | null>(null)
 const saveError = ref('')
 const saving = ref(false)
+const togglingId = ref<number | null>(null)
 
 const form = reactive({
   nombre: '',
@@ -27,9 +28,20 @@ const form = reactive({
 
 const { data: clientes, refresh } = await useFetch<Cliente[]>('/api/clientes', {
   query: computed(() => ({
-    activo: showInactive.value ? undefined : 'true'
+    activo: vista.value === 'ocultos' ? 'false' : 'true'
   }))
 })
+
+async function mostrarCliente(cliente: Cliente) {
+  togglingId.value = cliente.id
+  try {
+    await $fetch(`/api/clientes/${cliente.id}`, { method: 'PATCH', body: { activo: true } })
+    vista.value = 'activos'
+    await refresh()
+  } finally {
+    togglingId.value = null
+  }
+}
 
 const filteredClientes = computed(() => {
   const list = clientes.value ?? []
@@ -120,17 +132,30 @@ async function save() {
         icon="i-lucide-search"
         class="flex-1"
       />
-      <label class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer select-none">
-        <USwitch v-model="showInactive" />
-        <span>Ver inactivos</span>
-      </label>
+      <div class="flex gap-1">
+        <UButton
+          label="Activos"
+          size="sm"
+          :color="vista === 'activos' ? 'primary' : 'neutral'"
+          :variant="vista === 'activos' ? 'solid' : 'subtle'"
+          @click="vista = 'activos'"
+        />
+        <UButton
+          label="Ocultos"
+          icon="i-lucide-eye-off"
+          size="sm"
+          :color="vista === 'ocultos' ? 'primary' : 'neutral'"
+          :variant="vista === 'ocultos' ? 'solid' : 'subtle'"
+          @click="vista = 'ocultos'"
+        />
+      </div>
     </div>
 
     <div
       v-if="filteredClientes.length === 0"
       class="text-center py-12 text-gray-400"
     >
-      No hay clientes para mostrar.
+      {{ vista === 'ocultos' ? 'No hay clientes ocultos.' : 'No hay clientes para mostrar.' }}
     </div>
 
     <div v-else>
@@ -179,13 +204,25 @@ async function save() {
                   />
                 </td>
                 <td class="py-3 px-3 text-right">
-                  <UButton
-                    icon="i-lucide-pencil"
-                    size="sm"
-                    color="neutral"
-                    variant="ghost"
-                    @click="openEdit(cliente)"
-                  />
+                  <div class="inline-flex gap-1">
+                    <UButton
+                      v-if="vista === 'ocultos'"
+                      label="Mostrar"
+                      icon="i-lucide-eye"
+                      size="sm"
+                      color="success"
+                      variant="subtle"
+                      :loading="togglingId === cliente.id"
+                      @click="mostrarCliente(cliente)"
+                    />
+                    <UButton
+                      icon="i-lucide-pencil"
+                      size="sm"
+                      color="neutral"
+                      variant="ghost"
+                      @click="openEdit(cliente)"
+                    />
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -231,13 +268,25 @@ async function save() {
                 {{ cliente.email }}
               </div>
             </div>
-            <UButton
-              icon="i-lucide-pencil"
-              size="sm"
-              color="neutral"
-              variant="ghost"
-              @click="openEdit(cliente)"
-            />
+            <div class="flex flex-col gap-1 shrink-0">
+              <UButton
+                v-if="vista === 'ocultos'"
+                label="Mostrar"
+                icon="i-lucide-eye"
+                size="sm"
+                color="success"
+                variant="subtle"
+                :loading="togglingId === cliente.id"
+                @click="mostrarCliente(cliente)"
+              />
+              <UButton
+                icon="i-lucide-pencil"
+                size="sm"
+                color="neutral"
+                variant="ghost"
+                @click="openEdit(cliente)"
+              />
+            </div>
           </div>
         </UCard>
       </div>

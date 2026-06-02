@@ -16,7 +16,11 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     session: {
-      password: 'wTnrKUjNPYamYkSmBWNQKOge0MiV4YlmvpnhKVdMtaller',
+      // Secreto para sellar la cookie de sesión (nuxt-auth-utils). NO es la password
+      // de login de Tito (esa vive bcrypt-hasheada en la DB). Se inyecta por env
+      // NUXT_SESSION_PASSWORD desde .env — debe ser FIJO (≥32 chars) o Tito se
+      // deslogueará en cada reinicio. Sin valor, la app no arranca en prod.
+      password: '',
       cookie: {
         secure: false,
         sameSite: 'lax' as const,

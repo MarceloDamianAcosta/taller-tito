@@ -15,6 +15,18 @@
   --color-brand-800: var(--brand-800);
   --color-brand-900: var(--brand-900);
   --color-brand-950: var(--brand-950);
+
+  --color-brand-parte2-50: var(--brand-parte2-50);
+  --color-brand-parte2-100: var(--brand-parte2-100);
+  --color-brand-parte2-200: var(--brand-parte2-200);
+  --color-brand-parte2-300: var(--brand-parte2-300);
+  --color-brand-parte2-400: var(--brand-parte2-400);
+  --color-brand-parte2-500: var(--brand-parte2-500);
+  --color-brand-parte2-600: var(--brand-parte2-600);
+  --color-brand-parte2-700: var(--brand-parte2-700);
+  --color-brand-parte2-800: var(--brand-parte2-800);
+  --color-brand-parte2-900: var(--brand-parte2-900);
+  --color-brand-parte2-950: var(--brand-parte2-950);
 }
 
 :root {
@@ -31,6 +43,17 @@
   --brand-950: #052E16;
   --brand-fondo: #f9fafb;
   --brand-parte2: #0f172a;
+  --brand-parte2-50: #f8fafc;
+  --brand-parte2-100: #f1f5f9;
+  --brand-parte2-200: #e2e8f0;
+  --brand-parte2-300: #cbd5e1;
+  --brand-parte2-400: #94a3b8;
+  --brand-parte2-500: #64748b;
+  --brand-parte2-600: #475569;
+  --brand-parte2-700: #334155;
+  --brand-parte2-800: #1e293b;
+  --brand-parte2-900: #0f172a;
+  --brand-parte2-950: #020617;
 }
 
 html.dark {

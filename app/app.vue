@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { es } from '@nuxt/ui/locale'
+
 const { nombreCompleto } = useAppBrand()
 
 useHead({
@@ -13,7 +15,7 @@ useHead({
 </script>
 
 <template>
-  <UApp>
+  <UApp :locale="es">
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
