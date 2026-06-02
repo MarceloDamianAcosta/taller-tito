@@ -26,6 +26,13 @@ const checking = ref(false)
 const showConfirm = ref(false)
 const actionError = ref('')
 
+// watchingRun: pedimos un update y lo seguimos hasta el resultado. prevStartedAt
+// guarda el startedAt de la corrida anterior para distinguir cuándo arrancó la nueva
+// (evita cortar el polling al leer un status viejo antes de que el agente arranque).
+const watchingRun = ref(false)
+const prevStartedAt = ref<string | undefined>(undefined)
+const TERMINAL_PHASES = ['done', 'rolled_back', 'failed', 'up_to_date']
+
 // Fases del pipeline en orden, con etiqueta amigable.
 const STEPS = [
   { key: 'backing_up', label: 'Respaldando datos' },
@@ -37,6 +44,9 @@ const STEPS = [
 const ACTIVE_PHASES = ['checking', 'backing_up', 'pulling', 'building', 'restarting', 'health_check']
 
 const isUpdating = computed(() => ACTIVE_PHASES.includes(status.value.phase))
+// Mostramos la tarjeta de progreso desde que pedimos el update hasta el resultado,
+// aunque el server se reinicie o el agente tarde en arrancar.
+const showProgress = computed(() => watchingRun.value || isUpdating.value)
 const currentStepIndex = computed(() => STEPS.findIndex(s => s.key === status.value.phase))
 
 function shortSha(sha?: string) {
@@ -61,7 +71,18 @@ async function pollStatus() {
     reconnecting.value = true
   }
 
-  if (isUpdating.value || reconnecting.value) {
+  // Terminó la corrida que pedimos (fase terminal y startedAt distinto al previo).
+  const terminoNuestraCorrida = watchingRun.value && !reconnecting.value
+    && TERMINAL_PHASES.includes(status.value.phase)
+    && status.value.startedAt !== prevStartedAt.value
+  if (terminoNuestraCorrida) {
+    watchingRun.value = false
+    polling.value = false
+    await refreshVersion()
+    return
+  }
+
+  if (watchingRun.value || isUpdating.value || reconnecting.value) {
     pollTimer = setTimeout(pollStatus, 2000)
   } else {
     polling.value = false
@@ -98,9 +119,11 @@ async function buscarActualizaciones() {
 async function confirmarActualizar() {
   actionError.value = ''
   try {
+    prevStartedAt.value = status.value.startedAt // startedAt de la corrida anterior
     await $fetch('/api/admin/sistema/update', { method: 'POST' })
     showConfirm.value = false
-    status.value = { phase: 'checking', message: 'Iniciando...' }
+    watchingRun.value = true
+    status.value = { phase: 'checking', message: 'Iniciando…' }
     startPolling()
   } catch (e: unknown) {
     actionError.value = (e as { data?: { message?: string } }).data?.message || 'No se pudo iniciar la actualización'
@@ -111,7 +134,11 @@ onMounted(async () => {
   // Si entramos con un update ya en curso, retomamos el seguimiento.
   try {
     status.value = await $fetch<UpdateStatus>('/api/admin/sistema/status')
-    if (isUpdating.value) startPolling()
+    if (isUpdating.value) {
+      prevStartedAt.value = undefined // cualquier fase terminal de esta corrida cuenta como nueva
+      watchingRun.value = true
+      startPolling()
+    }
   } catch { /* ignore */ }
 })
 
@@ -146,7 +173,7 @@ onUnmounted(() => {
           color="neutral"
           variant="subtle"
           :loading="checking"
-          :disabled="isUpdating"
+          :disabled="showProgress"
           @click="buscarActualizaciones"
         />
       </div>
@@ -161,7 +188,7 @@ onUnmounted(() => {
     />
 
     <!-- Estado de actualización disponible -->
-    <UCard v-if="!isUpdating">
+    <UCard v-if="!showProgress">
       <div
         v-if="info?.updateAvailable"
         class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
@@ -205,7 +232,7 @@ onUnmounted(() => {
       </div>
 
       <!-- Resultado del último intento -->
-      <template v-if="status.result && status.phase !== 'idle' && !isUpdating">
+      <template v-if="status.result && status.phase !== 'idle' && !showProgress">
         <USeparator class="my-4" />
         <UAlert
           v-if="status.result === 'done'"
