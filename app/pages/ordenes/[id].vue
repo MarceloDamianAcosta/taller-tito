@@ -139,6 +139,11 @@ const operarioModalEstado = ref('')
 const selectedOperarioId = ref<number | undefined>(undefined)
 const operarioModalError = ref('')
 
+// Mientras el modal de operario está abierto, el botón atrás queda trabado (TITO-120).
+const { blocked } = useBackGuard()
+watch(showOperarioModal, (open) => { blocked.value = open })
+onUnmounted(() => { blocked.value = false })
+
 const operarioOptions = computed(() =>
   (operariosData.value ?? []).map(o => ({ label: o.nombre, value: o.id }))
 )
@@ -835,7 +840,10 @@ function formatDate(iso: string | null | undefined) {
       </template>
     </UModal>
 
-    <UModal v-model:open="showOperarioModal">
+    <UModal
+      v-model:open="showOperarioModal"
+      :dismissible="false"
+    >
       <template #content>
         <div class="p-5 space-y-4">
           <h3 class="text-base font-semibold text-gray-900 dark:text-white">
