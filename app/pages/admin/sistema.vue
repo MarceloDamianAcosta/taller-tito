@@ -32,6 +32,10 @@ const actionError = ref('')
 const watchingRun = ref(false)
 const prevStartedAt = ref<string | undefined>(undefined)
 const TERMINAL_PHASES = ['done', 'rolled_back', 'failed', 'up_to_date']
+// Resultado de la corrida recién terminada EN ESTA SESIÓN. Mientras esté seteado,
+// la card muestra solo ese resultado (no el "hay update / al día"). Se limpia al
+// volver a buscar actualizaciones.
+const lastResult = ref<string | null>(null)
 
 // Fases del pipeline en orden, con etiqueta amigable.
 const STEPS = [
@@ -78,6 +82,7 @@ async function pollStatus() {
   if (terminoNuestraCorrida) {
     watchingRun.value = false
     polling.value = false
+    lastResult.value = status.value.phase
     await refreshVersion()
     return
   }
@@ -99,6 +104,7 @@ function startPolling() {
 
 async function buscarActualizaciones() {
   actionError.value = ''
+  lastResult.value = null // al volver a buscar, dejamos de mostrar el resultado anterior
   checking.value = true
   const before = info.value?.lastCheck
   try {
@@ -118,6 +124,7 @@ async function buscarActualizaciones() {
 
 async function confirmarActualizar() {
   actionError.value = ''
+  lastResult.value = null
   try {
     prevStartedAt.value = status.value.startedAt // startedAt de la corrida anterior
     await $fetch('/api/admin/sistema/update', { method: 'POST' })
@@ -187,8 +194,40 @@ onUnmounted(() => {
       :title="actionError"
     />
 
-    <!-- Estado de actualización disponible -->
-    <UCard v-if="!showProgress">
+    <!-- Resultado recién terminado (esta sesión): mostramos SOLO esto -->
+    <UCard v-if="!showProgress && lastResult">
+      <UAlert
+        v-if="lastResult === 'done'"
+        color="success"
+        variant="subtle"
+        icon="i-lucide-check"
+        :title="status.message || 'Actualización completada.'"
+      />
+      <UAlert
+        v-else-if="lastResult === 'rolled_back'"
+        color="warning"
+        variant="subtle"
+        icon="i-lucide-undo-2"
+        :title="status.message || 'Se restauró la versión anterior.'"
+      />
+      <UAlert
+        v-else-if="lastResult === 'failed'"
+        color="error"
+        variant="subtle"
+        icon="i-lucide-alert-triangle"
+        :title="status.message || 'La actualización falló.'"
+      />
+      <UAlert
+        v-else
+        color="info"
+        variant="subtle"
+        icon="i-lucide-check"
+        :title="status.message || 'Ya estabas en la última versión.'"
+      />
+    </UCard>
+
+    <!-- Estado de actualización disponible / al día -->
+    <UCard v-else-if="!showProgress">
       <div
         v-if="info?.updateAvailable"
         class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
@@ -230,32 +269,6 @@ onUnmounted(() => {
           (comprobado {{ fmtDate(info.lastCheck) }})
         </span>
       </div>
-
-      <!-- Resultado del último intento -->
-      <template v-if="status.result && status.phase !== 'idle' && !showProgress">
-        <USeparator class="my-4" />
-        <UAlert
-          v-if="status.result === 'done'"
-          color="success"
-          variant="subtle"
-          icon="i-lucide-check"
-          :title="status.message || 'Actualización completada.'"
-        />
-        <UAlert
-          v-else-if="status.result === 'rolled_back'"
-          color="warning"
-          variant="subtle"
-          icon="i-lucide-undo-2"
-          :title="status.message || 'Se restauró la versión anterior.'"
-        />
-        <UAlert
-          v-else-if="status.result === 'failed'"
-          color="error"
-          variant="subtle"
-          icon="i-lucide-alert-triangle"
-          :title="status.message || 'La actualización falló.'"
-        />
-      </template>
     </UCard>
 
     <!-- Progreso del update en curso -->
