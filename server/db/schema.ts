@@ -15,8 +15,8 @@ export const users = sqliteTable('users', {
 export const clientes = sqliteTable('clientes', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   nombre: text('nombre').notNull(),
-  telefono: text('telefono'),
-  email: text('email'),
+  telefonos: text('telefonos', { mode: 'json' }).$type<string[]>().notNull().default(sql`'[]'`),
+  emails: text('emails', { mode: 'json' }).$type<string[]>().notNull().default(sql`'[]'`),
   notas: text('notas'),
   activo: integer('activo', { mode: 'boolean' }).notNull().default(true)
 })

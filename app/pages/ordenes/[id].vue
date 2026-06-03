@@ -15,7 +15,6 @@ interface OT {
   nroOt: number
   clienteId: number
   clienteNombre: string | null
-  clienteTelefono: string | null
   descripcion: string
   queSeControla: string | null
   maquinas: { id: number, nombre: string }[]

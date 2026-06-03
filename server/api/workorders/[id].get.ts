@@ -14,7 +14,6 @@ export default defineEventHandler(async (event) => {
       nroOt: ordenTrabajo.nroOt,
       clienteId: ordenTrabajo.clienteId,
       clienteNombre: clientes.nombre,
-      clienteTelefono: clientes.telefono,
       descripcion: ordenTrabajo.descripcion,
       queSeControla: ordenTrabajo.queSeControla,
       fechaIngreso: ordenTrabajo.fechaIngreso,
