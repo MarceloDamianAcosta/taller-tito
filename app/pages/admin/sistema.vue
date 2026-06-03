@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'admin', title: 'Sistema' })
 
-interface AppVersion { sha: string, builtAt: string }
+interface AppVersion { version: string, sha: string, builtAt: string }
 interface VersionResponse {
   current: AppVersion
   updateAvailable: boolean
@@ -63,6 +63,11 @@ const currentStepIndex = computed(() => STEPS.findIndex(s => s.key === status.va
 function shortSha(sha?: string) {
   if (!sha || sha === 'dev') return sha || '—'
   return sha.slice(0, 7)
+}
+
+function versionLabel(version?: string) {
+  if (!version || version === 'dev') return version || '—'
+  return `v${version}`
 }
 
 function fmtDate(iso?: string | null) {
@@ -181,11 +186,14 @@ onUnmounted(() => {
           <p class="text-sm text-gray-500 dark:text-gray-400">
             Versión instalada
           </p>
-          <p class="text-lg font-mono font-semibold text-gray-900 dark:text-white">
-            {{ shortSha(info?.current.sha) }}
+          <p class="text-lg font-semibold text-gray-900 dark:text-white">
+            {{ versionLabel(info?.current.version) }}
           </p>
           <p class="text-xs text-gray-400">
             Compilada: {{ fmtDate(info?.current.builtAt) }}
+          </p>
+          <p class="text-xs text-gray-400 font-mono">
+            Commit: {{ shortSha(info?.current.sha) }}
           </p>
         </div>
         <UButton

@@ -30,10 +30,13 @@ COPY --from=build /app/.output ./
 COPY --from=build /app/server/db/migrations ./server/db/migrations
 
 # Versión horneada en la imagen: el endpoint /api/admin/sistema lee version.json
-# para mostrar el SHA/fecha. GIT_SHA/BUILD_TIME los pasa docker compose como build-args.
+# para mostrar versión/fecha/commit. El rótulo legible (ej. "0.4") sale del archivo
+# VERSION del repo (se sube un escalón por release); GIT_SHA/BUILD_TIME los pasa
+# docker compose como build-args.
 ARG GIT_SHA=dev
 ARG BUILD_TIME=
-RUN printf '{"sha":"%s","builtAt":"%s"}\n' "$GIT_SHA" "$BUILD_TIME" > /app/version.json
+COPY VERSION ./VERSION
+RUN printf '{"version":"%s","sha":"%s","builtAt":"%s"}\n' "$(cat /app/VERSION)" "$GIT_SHA" "$BUILD_TIME" > /app/version.json
 ENV NUXT_APP_SHA=$GIT_SHA
 
 ENV NODE_ENV=production
