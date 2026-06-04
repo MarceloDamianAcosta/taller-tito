@@ -24,6 +24,16 @@ chmod +x "$HERE"/taller-updater.sh "$HERE"/check-updates.sh
 git config --global --add safe.directory "$APP_DIR" 2>/dev/null || true
 mkdir -p "$APP_DIR/control" "$APP_DIR/backups"
 
+# Como root, los services de systemd corren como root sobre un repo que suele ser de otro
+# usuario (ej. tito) → git aborta por "dubious ownership". --system (/etc/gitconfig) lo
+# resuelve para cualquier usuario. Y dejamos control/ y backups/ con el dueño del repo para
+# que tanto el pipeline (root) como un run manual del dueño puedan escribir el backup.
+if [ "$(id -u)" -eq 0 ]; then
+  git config --system --add safe.directory "$APP_DIR" 2>/dev/null || true
+  OWNER="$(stat -c %U "$APP_DIR" 2>/dev/null || echo root)"
+  chown "$OWNER":"$OWNER" "$APP_DIR/control" "$APP_DIR/backups" 2>/dev/null || true
+fi
+
 if [ "$(id -u)" -eq 0 ]; then
   # ── Modo SISTEMA (producción / Docker del sistema) ──────────────────────────
   ensure_curl ""
