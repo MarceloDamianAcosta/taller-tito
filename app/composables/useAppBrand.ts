@@ -11,7 +11,6 @@ interface BrandConfig {
   colorParte2TextoDark: string
   colorParte2EscalaLight: string[]
   colorParte2EscalaDark: string[]
-  colorTerciario: string
   logoPath: string | null
 }
 

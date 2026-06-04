@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { buildBrandCss, NEUTRAL_FAMILIES } from '~/plugins/brand'
+import { buildBrandCss } from '~/plugins/brand'
 
 definePageMeta({ middleware: 'admin', title: 'Configuración' })
 
@@ -16,7 +16,6 @@ interface BrandConfig {
   colorParte2TextoDark: string
   colorParte2EscalaLight: string[]
   colorParte2EscalaDark: string[]
-  colorTerciario: string
   logoPath: string | null
 }
 
@@ -29,11 +28,12 @@ const form = reactive({
   nombreParte2: brand.value?.nombreParte2 ?? 'Schmidt',
   colorPrimarioLight: brand.value?.colorPrimarioLight ?? '#00A155',
   colorPrimarioDark: brand.value?.colorPrimarioDark ?? '#00A155',
+  colorFondoLight: brand.value?.colorFondoLight ?? '#f9fafb',
+  colorFondoDark: brand.value?.colorFondoDark ?? '#020617',
   colorParte2LightAuto: (brand.value?.colorParte2TextoLight ?? 'auto') === 'auto',
   colorParte2LightHex: brand.value?.colorParte2TextoLight && brand.value.colorParte2TextoLight !== 'auto' ? brand.value.colorParte2TextoLight : '#0f172a',
   colorParte2DarkAuto: (brand.value?.colorParte2TextoDark ?? 'auto') === 'auto',
-  colorParte2DarkHex: brand.value?.colorParte2TextoDark && brand.value.colorParte2TextoDark !== 'auto' ? brand.value.colorParte2TextoDark : '#f8fafc',
-  colorTerciario: brand.value?.colorTerciario ?? 'slate'
+  colorParte2DarkHex: brand.value?.colorParte2TextoDark && brand.value.colorParte2TextoDark !== 'auto' ? brand.value.colorParte2TextoDark : '#f8fafc'
 })
 
 const saving = ref(false)
@@ -103,15 +103,17 @@ const presetsPrimario = [
   { label: 'Gris', hex: '#475569' }
 ]
 
-// "Color terciario" = neutro de toda la app (fondo de página, sidebar, navbar y cards).
-// Acotado a las familias de neutro que sirven en light y dark. sampleLight/sampleDark son
-// solo para el swatch de la UI (escalón claro y oscuro de cada familia).
-const presetsTerciario = [
-  { label: 'Pizarra', key: 'slate', sampleLight: '#e2e8f0', sampleDark: '#0f172a' },
-  { label: 'Gris', key: 'gray', sampleLight: '#e5e7eb', sampleDark: '#111827' },
-  { label: 'Grafito', key: 'zinc', sampleLight: '#e4e4e7', sampleDark: '#18181b' },
-  { label: 'Neutro', key: 'neutral', sampleLight: '#e5e5e5', sampleDark: '#171717' },
-  { label: 'Arena', key: 'stone', sampleLight: '#e7e5e4', sampleDark: '#1c1917' }
+const presetsFondoLight = [
+  { label: 'Gris claro', hex: '#f9fafb' },
+  { label: 'Blanco', hex: '#ffffff' },
+  { label: 'Beige', hex: '#fafaf9' },
+  { label: 'Azul claro', hex: '#eff6ff' }
+]
+
+const presetsFondoDark = [
+  { label: 'Slate', hex: '#020617' },
+  { label: 'Negro', hex: '#0a0a0a' },
+  { label: 'Azul noche', hex: '#0f172a' }
 ]
 
 function relLuma(hex: string): number {
@@ -132,13 +134,8 @@ function contrast(a: string, b: string): number {
   return (light + 0.05) / (dark + 0.05)
 }
 
-// El fondo ya no se elige a mano: deriva del color terciario (escalón 200 en light,
-// 950 en dark de la familia elegida). Se usa en la vista previa, el contraste y el payload.
-const fondoLightEff = computed(() => (NEUTRAL_FAMILIES[form.colorTerciario] ?? NEUTRAL_FAMILIES.slate!)[2]!)
-const fondoDarkEff = computed(() => (NEUTRAL_FAMILIES[form.colorTerciario] ?? NEUTRAL_FAMILIES.slate!)[10]!)
-
-const contrasteLight = computed(() => contrast(form.colorPrimarioLight, fondoLightEff.value))
-const contrasteDark = computed(() => contrast(form.colorPrimarioDark, fondoDarkEff.value))
+const contrasteLight = computed(() => contrast(form.colorPrimarioLight, form.colorFondoLight))
+const contrasteDark = computed(() => contrast(form.colorPrimarioDark, form.colorFondoDark))
 const contrasteLightOk = computed(() => contrasteLight.value >= 3)
 const contrasteDarkOk = computed(() => contrasteDark.value >= 3)
 
@@ -147,12 +144,14 @@ const parte2DarkPreview = computed(() => form.colorParte2DarkAuto ? '#f8fafc' : 
 
 function copiarLightADark() {
   form.colorPrimarioDark = form.colorPrimarioLight
+  form.colorFondoDark = form.colorFondoLight
   form.colorParte2DarkAuto = form.colorParte2LightAuto
   form.colorParte2DarkHex = form.colorParte2LightHex
 }
 
 function copiarDarkALight() {
   form.colorPrimarioLight = form.colorPrimarioDark
+  form.colorFondoLight = form.colorFondoDark
   form.colorParte2LightAuto = form.colorParte2DarkAuto
   form.colorParte2LightHex = form.colorParte2DarkHex
 }
@@ -185,12 +184,10 @@ async function guardar() {
         nombreParte2: form.nombreParte2.trim(),
         colorPrimarioLight: form.colorPrimarioLight,
         colorPrimarioDark: form.colorPrimarioDark,
-        // Fondo derivado del color terciario (la API aún lo persiste como columna legacy).
-        colorFondoLight: fondoLightEff.value,
-        colorFondoDark: fondoDarkEff.value,
+        colorFondoLight: form.colorFondoLight,
+        colorFondoDark: form.colorFondoDark,
         colorParte2TextoLight: form.colorParte2LightAuto ? 'auto' : form.colorParte2LightHex,
-        colorParte2TextoDark: form.colorParte2DarkAuto ? 'auto' : form.colorParte2DarkHex,
-        colorTerciario: form.colorTerciario
+        colorParte2TextoDark: form.colorParte2DarkAuto ? 'auto' : form.colorParte2DarkHex
       }
     })
     brand.value = res
@@ -240,7 +237,7 @@ async function guardar() {
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div
           class="rounded-lg p-6 border border-default"
-          :style="{ background: fondoLightEff }"
+          :style="{ background: form.colorFondoLight }"
         >
           <div class="flex items-center gap-2 mb-3">
             <UIcon
@@ -271,7 +268,7 @@ async function guardar() {
         </div>
         <div
           class="rounded-lg p-6"
-          :style="{ background: fondoDarkEff }"
+          :style="{ background: form.colorFondoDark }"
         >
           <div class="flex items-center gap-2 mb-3">
             <UIcon
@@ -473,6 +470,39 @@ async function guardar() {
 
           <div>
             <p class="text-sm font-medium mb-2">
+              Fondo
+            </p>
+            <div class="flex items-center gap-3">
+              <input
+                v-model="form.colorFondoLight"
+                type="color"
+                class="h-10 w-16 rounded border border-default cursor-pointer"
+              >
+              <UInput
+                v-model="form.colorFondoLight"
+                placeholder="#f9fafb"
+                class="font-mono flex-1"
+              />
+            </div>
+            <div class="flex flex-wrap gap-2 mt-2">
+              <button
+                v-for="p in presetsFondoLight"
+                :key="'fl-' + p.hex"
+                type="button"
+                class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-default hover:bg-elevated text-xs"
+                @click="form.colorFondoLight = p.hex"
+              >
+                <span
+                  class="inline-block w-3 h-3 rounded border border-default"
+                  :style="{ background: p.hex }"
+                />
+                {{ p.label }}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-sm font-medium mb-2">
               Color "{{ form.nombreParte2 }}" (parte 2)
             </p>
             <UCheckbox
@@ -555,6 +585,39 @@ async function guardar() {
 
           <div>
             <p class="text-sm font-medium mb-2">
+              Fondo
+            </p>
+            <div class="flex items-center gap-3">
+              <input
+                v-model="form.colorFondoDark"
+                type="color"
+                class="h-10 w-16 rounded border border-default cursor-pointer"
+              >
+              <UInput
+                v-model="form.colorFondoDark"
+                placeholder="#020617"
+                class="font-mono flex-1"
+              />
+            </div>
+            <div class="flex flex-wrap gap-2 mt-2">
+              <button
+                v-for="p in presetsFondoDark"
+                :key="'fd-' + p.hex"
+                type="button"
+                class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-default hover:bg-elevated text-xs"
+                @click="form.colorFondoDark = p.hex"
+              >
+                <span
+                  class="inline-block w-3 h-3 rounded"
+                  :style="{ background: p.hex }"
+                />
+                {{ p.label }}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-sm font-medium mb-2">
               Color "{{ form.nombreParte2 }}" (parte 2)
             </p>
             <UCheckbox
@@ -580,42 +643,6 @@ async function guardar() {
         </div>
       </UCard>
     </div>
-
-    <UCard>
-      <template #header>
-        <h2 class="font-semibold">
-          Color terciario (fondo, menú y paneles)
-        </h2>
-        <p class="text-sm text-muted">
-          El tono neutro de toda la app: el fondo de la página, el menú lateral, la barra
-          superior y las tarjetas. En modo claro el fondo queda un gris suave (no blanco puro)
-          para no cansar la vista y las tarjetas resaltan en blanco; en oscuro, el tono
-          profundo que ya conocés. Una sola elección sirve para ambos modos.
-        </p>
-      </template>
-      <div class="flex flex-wrap gap-2">
-        <button
-          v-for="p in presetsTerciario"
-          :key="p.key"
-          type="button"
-          class="flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors"
-          :class="form.colorTerciario === p.key ? 'border-primary ring-2 ring-primary/30' : 'border-default hover:bg-elevated'"
-          @click="form.colorTerciario = p.key"
-        >
-          <span class="flex shrink-0">
-            <span
-              class="inline-block w-4 h-6 rounded-l border border-default"
-              :style="{ background: p.sampleLight }"
-            />
-            <span
-              class="inline-block w-4 h-6 rounded-r border border-l-0 border-default"
-              :style="{ background: p.sampleDark }"
-            />
-          </span>
-          <span class="text-sm font-medium">{{ p.label }}</span>
-        </button>
-      </div>
-    </UCard>
 
     <div class="flex justify-end gap-2 sticky bottom-2 bg-default/80 backdrop-blur p-2 rounded-lg">
       <UButton
