@@ -40,8 +40,8 @@ const form = reactive({
   colorPrimarioDark: brand.value?.colorPrimarioDark ?? '#00A155',
   colorSecundarioLight: hexOr(brand.value?.colorParte2TextoLight, '#f9fafb'),
   colorSecundarioDark: hexOr(brand.value?.colorParte2TextoDark, '#020617'),
-  colorTerciarioLight: brand.value?.colorTerciarioLight ?? '#64748b',
-  colorTerciarioDark: brand.value?.colorTerciarioDark ?? '#64748b'
+  colorTerciarioLight: brand.value?.colorTerciarioLight ?? '#cbd5e1',
+  colorTerciarioDark: brand.value?.colorTerciarioDark ?? '#1e293b'
 })
 
 const saving = ref(false)
@@ -125,14 +125,22 @@ const presetsSecundarioDark = [
   { label: 'Azul noche', hex: '#0f172a' }
 ]
 
-// Terciario = menú/navbar/tarjetas. Picker libre; presets de neutros útiles. La escala 50–950
-// se genera del hex elegido (en light se usa el extremo claro, en dark el oscuro).
-const presetsTerciario = [
-  { label: 'Pizarra', hex: '#64748b' },
-  { label: 'Gris', hex: '#6b7280' },
-  { label: 'Grafito', hex: '#71717a' },
-  { label: 'Piedra', hex: '#78716c' },
-  { label: 'Azulado', hex: '#475569' }
+// Terciario = menú/navbar/tarjetas. El menú toma EXACTAMENTE el color elegido. Picker libre;
+// los presets sugieren superficies apropiadas (claras para light, oscuras para dark) para que
+// el texto siga legible, pero podés elegir cualquier color.
+const presetsTerciarioLight = [
+  { label: 'Blanco', hex: '#ffffff' },
+  { label: 'Gris claro', hex: '#e2e8f0' },
+  { label: 'Pizarra', hex: '#cbd5e1' },
+  { label: 'Crema', hex: '#f5f5f4' },
+  { label: 'Celeste', hex: '#dbeafe' }
+]
+
+const presetsTerciarioDark = [
+  { label: 'Slate', hex: '#1e293b' },
+  { label: 'Azul noche', hex: '#0f172a' },
+  { label: 'Negro', hex: '#18181b' },
+  { label: 'Piedra', hex: '#292524' }
 ]
 
 function relLuma(hex: string): number {
@@ -158,12 +166,6 @@ const contrasteLight = computed(() => contrast(form.colorPrimarioLight, form.col
 const contrasteDark = computed(() => contrast(form.colorPrimarioDark, form.colorSecundarioDark))
 const contrasteLightOk = computed(() => contrasteLight.value >= 3)
 const contrasteDarkOk = computed(() => contrasteDark.value >= 3)
-
-// El menú/tarjetas reales toman un escalón claro del terciario en light (≈ neutral-200) y uno
-// oscuro en dark (≈ neutral-900). En la vista previa lo aproximamos con color-mix para que la
-// muestra se parezca a lo que se ve de verdad (no el hex crudo).
-const menuLightPreview = computed(() => `color-mix(in srgb, ${form.colorTerciarioLight} 35%, white)`)
-const menuDarkPreview = computed(() => `color-mix(in srgb, ${form.colorTerciarioDark} 80%, black)`)
 
 function copiarLightADark() {
   form.colorPrimarioDark = form.colorPrimarioLight
@@ -266,7 +268,7 @@ async function guardar() {
         >
           <div
             class="px-4 py-2 flex items-center gap-2"
-            :style="{ background: menuLightPreview, color: '#334155' }"
+            :style="{ background: form.colorTerciarioLight, color: form.colorPrimarioLight }"
           >
             <UIcon name="i-lucide-sun" />
             <span class="text-sm font-medium">Menú (terciario)</span>
@@ -296,7 +298,7 @@ async function guardar() {
         >
           <div
             class="px-4 py-2 flex items-center gap-2"
-            :style="{ background: menuDarkPreview, color: '#e2e8f0' }"
+            :style="{ background: form.colorTerciarioDark, color: form.colorPrimarioDark }"
           >
             <UIcon name="i-lucide-moon" />
             <span class="text-sm font-medium">Menú (terciario)</span>
@@ -536,13 +538,13 @@ async function guardar() {
               >
               <UInput
                 v-model="form.colorTerciarioLight"
-                placeholder="#64748b"
+                placeholder="#cbd5e1"
                 class="font-mono flex-1"
               />
             </div>
             <div class="flex flex-wrap gap-2 mt-2">
               <button
-                v-for="p in presetsTerciario"
+                v-for="p in presetsTerciarioLight"
                 :key="'tl-' + p.hex"
                 type="button"
                 class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-default hover:bg-elevated text-xs"
@@ -659,13 +661,13 @@ async function guardar() {
               >
               <UInput
                 v-model="form.colorTerciarioDark"
-                placeholder="#64748b"
+                placeholder="#1e293b"
                 class="font-mono flex-1"
               />
             </div>
             <div class="flex flex-wrap gap-2 mt-2">
               <button
-                v-for="p in presetsTerciario"
+                v-for="p in presetsTerciarioDark"
                 :key="'td-' + p.hex"
                 type="button"
                 class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-default hover:bg-elevated text-xs"

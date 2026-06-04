@@ -11,6 +11,8 @@ interface BrandConfig {
   colorParte2TextoDark: string
   colorParte2EscalaLight: string[]
   colorParte2EscalaDark: string[]
+  colorTerciarioLight: string
+  colorTerciarioDark: string
   colorTerciarioEscalaLight: string[]
   colorTerciarioEscalaDark: string[]
   logoPath: string | null
@@ -27,6 +29,7 @@ function buildVarsBlock(
   escalaPrimario: string[],
   escalaParte2: string[],
   escalaNeutral: string[],
+  terciarioHex: string,
   secundarioTexto: string,
   modeIsDark: boolean
 ): string {
@@ -39,19 +42,19 @@ function buildVarsBlock(
   // El secundario es UN color que pinta el fondo de la página (--brand-fondo) y la "parte 2"
   // del nombre del logo (--brand-parte2). Mismo valor para ambos (decisión del modelo de 3 colores).
   const secundario = secundarioTexto === 'auto' ? (modeIsDark ? SECUNDARIO_AUTO_DARK : SECUNDARIO_AUTO_LIGHT) : secundarioTexto
-  // El terciario (neutro) pinta menú/navbar/tarjetas/bordes. En LIGHT, Nuxt UI fija --ui-bg:#fff
-  // (no deriva del neutro), así que lo override-amos a un escalón VISIBLE del terciario (200, no
-  // 50: el 50 tiene 97% de luz y queda casi blanco para cualquier color). Subimos el borde a 300
-  // para que no se funda con la superficie. En DARK --ui-bg ya deriva de --ui-color-neutral-900.
-  const modeOverrides = modeIsDark
-    ? ''
-    : '--ui-bg:var(--ui-color-neutral-300);--ui-bg-muted:var(--ui-color-neutral-200);--ui-border:var(--ui-color-neutral-400);'
-  return `${brandVars}${uiPrimaryVars}${brandParte2Vars}${uiSecondaryVars}${brandNeutralVars}${uiNeutralVars}--brand-fondo:${secundario};--brand-parte2:${secundario};${modeOverrides}`
+  // El terciario pinta menú/navbar/tarjetas/bordes con EXACTAMENTE el color elegido (no un
+  // escalón derivado): --ui-bg = el hex tal cual, en ambos modos. La escala (--ui-color-neutral-*)
+  // sigue alimentando borde/texto/elevated. En light bajamos el borde a un escalón de la escala
+  // para que tenga estructura; en dark Nuxt UI ya provee esos tonos.
+  const surface = modeIsDark
+    ? `--ui-bg:${terciarioHex};`
+    : `--ui-bg:${terciarioHex};--ui-bg-muted:var(--ui-color-neutral-200);--ui-border:var(--ui-color-neutral-400);`
+  return `${brandVars}${uiPrimaryVars}${brandParte2Vars}${uiSecondaryVars}${brandNeutralVars}${uiNeutralVars}--brand-fondo:${secundario};--brand-parte2:${secundario};${surface}`
 }
 
 export function buildBrandCss(b: BrandConfig): string {
-  const lightBlock = buildVarsBlock(b.colorPrimarioEscalaLight, b.colorParte2EscalaLight, b.colorTerciarioEscalaLight, b.colorParte2TextoLight, false)
-  const darkBlock = buildVarsBlock(b.colorPrimarioEscalaDark, b.colorParte2EscalaDark, b.colorTerciarioEscalaDark, b.colorParte2TextoDark, true)
+  const lightBlock = buildVarsBlock(b.colorPrimarioEscalaLight, b.colorParte2EscalaLight, b.colorTerciarioEscalaLight, b.colorTerciarioLight, b.colorParte2TextoLight, false)
+  const darkBlock = buildVarsBlock(b.colorPrimarioEscalaDark, b.colorParte2EscalaDark, b.colorTerciarioEscalaDark, b.colorTerciarioDark, b.colorParte2TextoDark, true)
   // Especificidad elevada (`html:root` / `html.dark:root`) para ganarle a los
   // valores de fábrica de main.css (`:root` / `html.dark`), que cargan después.
   // Sin esto, --brand-fondo/--brand-parte2 del usuario quedan pisados por el default.

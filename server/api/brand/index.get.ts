@@ -31,10 +31,10 @@ export default defineEventHandler(() => {
       colorParte2TextoDark: 'auto',
       colorParte2EscalaLight: SLATE_SCALE,
       colorParte2EscalaDark: SLATE_SCALE,
-      colorTerciarioLight: '#64748b',
-      colorTerciarioDark: '#64748b',
-      colorTerciarioEscalaLight: SLATE_SCALE,
-      colorTerciarioEscalaDark: SLATE_SCALE,
+      colorTerciarioLight: '#cbd5e1',
+      colorTerciarioDark: '#1e293b',
+      colorTerciarioEscalaLight: terciarioScale('#cbd5e1'),
+      colorTerciarioEscalaDark: terciarioScale('#1e293b'),
       logoPath: null as string | null
     }
   }

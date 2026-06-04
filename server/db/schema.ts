@@ -135,8 +135,8 @@ export const brandConfig = sqliteTable('brand_config', {
   colorParte2TextoLight: text('color_parte2_texto').notNull().default('auto'),
   colorParte2TextoDark: text('color_parte2_texto_dark').notNull().default('auto'),
   colorTerciario: text('color_terciario').notNull().default('slate'),
-  colorTerciarioLight: text('color_terciario_light').notNull().default('#64748b'),
-  colorTerciarioDark: text('color_terciario_dark').notNull().default('#64748b'),
+  colorTerciarioLight: text('color_terciario_light').notNull().default('#cbd5e1'),
+  colorTerciarioDark: text('color_terciario_dark').notNull().default('#1e293b'),
   logoPath: text('logo_path'),
   updatedAt: text('updated_at').notNull().default(sql`(datetime('now'))`)
 })

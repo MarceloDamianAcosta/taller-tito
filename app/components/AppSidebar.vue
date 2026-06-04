@@ -50,7 +50,7 @@ async function logout() {
           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
           :class="isActive(item.to)
             ? 'bg-primary/10 text-primary font-semibold'
-            : 'text-primary hover:bg-elevated'"
+            : 'text-primary hover:bg-primary/5'"
           @click="onNavClick?.()"
         >
           <UIcon
