@@ -40,9 +40,12 @@ function buildVarsBlock(
   // del nombre del logo (--brand-parte2). Mismo valor para ambos (decisión del modelo de 3 colores).
   const secundario = secundarioTexto === 'auto' ? (modeIsDark ? SECUNDARIO_AUTO_DARK : SECUNDARIO_AUTO_LIGHT) : secundarioTexto
   // El terciario (neutro) pinta menú/navbar/tarjetas/bordes. En LIGHT, Nuxt UI fija --ui-bg:#fff
-  // (no deriva del neutro), así que lo override-amos al escalón claro del terciario para que las
-  // superficies tomen el color. En DARK --ui-bg ya deriva de --ui-color-neutral-900, no se toca.
-  const modeOverrides = modeIsDark ? '' : '--ui-bg:var(--ui-color-neutral-50);'
+  // (no deriva del neutro), así que lo override-amos a un escalón VISIBLE del terciario (200, no
+  // 50: el 50 tiene 97% de luz y queda casi blanco para cualquier color). Subimos el borde a 300
+  // para que no se funda con la superficie. En DARK --ui-bg ya deriva de --ui-color-neutral-900.
+  const modeOverrides = modeIsDark
+    ? ''
+    : '--ui-bg:var(--ui-color-neutral-200);--ui-bg-muted:var(--ui-color-neutral-100);--ui-border:var(--ui-color-neutral-300);'
   return `${brandVars}${uiPrimaryVars}${brandParte2Vars}${uiSecondaryVars}${brandNeutralVars}${uiNeutralVars}--brand-fondo:${secundario};--brand-parte2:${secundario};${modeOverrides}`
 }
 

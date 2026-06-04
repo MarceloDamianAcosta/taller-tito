@@ -159,6 +159,12 @@ const contrasteDark = computed(() => contrast(form.colorPrimarioDark, form.color
 const contrasteLightOk = computed(() => contrasteLight.value >= 3)
 const contrasteDarkOk = computed(() => contrasteDark.value >= 3)
 
+// El menú/tarjetas reales toman un escalón claro del terciario en light (≈ neutral-200) y uno
+// oscuro en dark (≈ neutral-900). En la vista previa lo aproximamos con color-mix para que la
+// muestra se parezca a lo que se ve de verdad (no el hex crudo).
+const menuLightPreview = computed(() => `color-mix(in srgb, ${form.colorTerciarioLight} 35%, white)`)
+const menuDarkPreview = computed(() => `color-mix(in srgb, ${form.colorTerciarioDark} 80%, black)`)
+
 function copiarLightADark() {
   form.colorPrimarioDark = form.colorPrimarioLight
   form.colorSecundarioDark = form.colorSecundarioLight
@@ -260,13 +266,10 @@ async function guardar() {
         >
           <div
             class="px-4 py-2 flex items-center gap-2"
-            :style="{ background: form.colorTerciarioLight }"
+            :style="{ background: menuLightPreview, color: '#334155' }"
           >
-            <UIcon
-              name="i-lucide-sun"
-              class="text-white/90"
-            />
-            <span class="text-sm font-medium text-white/90">Menú (terciario)</span>
+            <UIcon name="i-lucide-sun" />
+            <span class="text-sm font-medium">Menú (terciario)</span>
           </div>
           <div class="p-6">
             <div class="flex items-center justify-center gap-2">
@@ -293,13 +296,10 @@ async function guardar() {
         >
           <div
             class="px-4 py-2 flex items-center gap-2"
-            :style="{ background: form.colorTerciarioDark }"
+            :style="{ background: menuDarkPreview, color: '#e2e8f0' }"
           >
-            <UIcon
-              name="i-lucide-moon"
-              class="text-white/90"
-            />
-            <span class="text-sm font-medium text-white/90">Menú (terciario)</span>
+            <UIcon name="i-lucide-moon" />
+            <span class="text-sm font-medium">Menú (terciario)</span>
           </div>
           <div class="p-6">
             <div class="flex items-center justify-center gap-2">
