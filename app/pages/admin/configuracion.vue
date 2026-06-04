@@ -16,6 +16,7 @@ interface BrandConfig {
   colorParte2TextoDark: string
   colorParte2EscalaLight: string[]
   colorParte2EscalaDark: string[]
+  colorTerciario: string
   logoPath: string | null
 }
 
@@ -33,7 +34,8 @@ const form = reactive({
   colorParte2LightAuto: (brand.value?.colorParte2TextoLight ?? 'auto') === 'auto',
   colorParte2LightHex: brand.value?.colorParte2TextoLight && brand.value.colorParte2TextoLight !== 'auto' ? brand.value.colorParte2TextoLight : '#0f172a',
   colorParte2DarkAuto: (brand.value?.colorParte2TextoDark ?? 'auto') === 'auto',
-  colorParte2DarkHex: brand.value?.colorParte2TextoDark && brand.value.colorParte2TextoDark !== 'auto' ? brand.value.colorParte2TextoDark : '#f8fafc'
+  colorParte2DarkHex: brand.value?.colorParte2TextoDark && brand.value.colorParte2TextoDark !== 'auto' ? brand.value.colorParte2TextoDark : '#f8fafc',
+  colorTerciario: brand.value?.colorTerciario ?? 'slate'
 })
 
 const saving = ref(false)
@@ -116,6 +118,17 @@ const presetsFondoDark = [
   { label: 'Azul noche', hex: '#0f172a' }
 ]
 
+// "Color terciario" = neutro de superficie (sidebar, navbar y cards). Acotado a las
+// familias de neutro que sirven en light y dark. sampleLight/sampleDark son solo
+// para el swatch de la UI (escalón claro y oscuro de cada familia).
+const presetsTerciario = [
+  { label: 'Pizarra', key: 'slate', sampleLight: '#e2e8f0', sampleDark: '#0f172a' },
+  { label: 'Gris', key: 'gray', sampleLight: '#e5e7eb', sampleDark: '#111827' },
+  { label: 'Grafito', key: 'zinc', sampleLight: '#e4e4e7', sampleDark: '#18181b' },
+  { label: 'Neutro', key: 'neutral', sampleLight: '#e5e5e5', sampleDark: '#171717' },
+  { label: 'Arena', key: 'stone', sampleLight: '#e7e5e4', sampleDark: '#1c1917' }
+]
+
 function relLuma(hex: string): number {
   const m = hex.replace('#', '')
   const full = m.length === 3 ? m.split('').map(c => c + c).join('') : m
@@ -187,7 +200,8 @@ async function guardar() {
         colorFondoLight: form.colorFondoLight,
         colorFondoDark: form.colorFondoDark,
         colorParte2TextoLight: form.colorParte2LightAuto ? 'auto' : form.colorParte2LightHex,
-        colorParte2TextoDark: form.colorParte2DarkAuto ? 'auto' : form.colorParte2DarkHex
+        colorParte2TextoDark: form.colorParte2DarkAuto ? 'auto' : form.colorParte2DarkHex,
+        colorTerciario: form.colorTerciario
       }
     })
     brand.value = res
@@ -643,6 +657,41 @@ async function guardar() {
         </div>
       </UCard>
     </div>
+
+    <UCard>
+      <template #header>
+        <h2 class="font-semibold">
+          Color terciario (menú y paneles)
+        </h2>
+        <p class="text-sm text-muted">
+          El tono neutro del menú lateral, la barra superior y las tarjetas. En modo claro
+          queda un blanco suave (no puro) para no cansar la vista; en oscuro, el tono que ya
+          conocés. Una sola elección sirve para ambos modos.
+        </p>
+      </template>
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="p in presetsTerciario"
+          :key="p.key"
+          type="button"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors"
+          :class="form.colorTerciario === p.key ? 'border-primary ring-2 ring-primary/30' : 'border-default hover:bg-elevated'"
+          @click="form.colorTerciario = p.key"
+        >
+          <span class="flex shrink-0">
+            <span
+              class="inline-block w-4 h-6 rounded-l border border-default"
+              :style="{ background: p.sampleLight }"
+            />
+            <span
+              class="inline-block w-4 h-6 rounded-r border border-l-0 border-default"
+              :style="{ background: p.sampleDark }"
+            />
+          </span>
+          <span class="text-sm font-medium">{{ p.label }}</span>
+        </button>
+      </div>
+    </UCard>
 
     <div class="flex justify-end gap-2 sticky bottom-2 bg-default/80 backdrop-blur p-2 rounded-lg">
       <UButton

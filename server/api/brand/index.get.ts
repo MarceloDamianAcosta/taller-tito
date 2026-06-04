@@ -26,6 +26,7 @@ export default defineEventHandler(() => {
       colorParte2TextoDark: 'auto',
       colorParte2EscalaLight: SLATE_SCALE,
       colorParte2EscalaDark: SLATE_SCALE,
+      colorTerciario: 'slate',
       logoPath: null as string | null
     }
   }
@@ -42,6 +43,7 @@ export default defineEventHandler(() => {
     colorParte2TextoDark: row.colorParte2TextoDark,
     colorParte2EscalaLight: parte2Scale(row.colorParte2TextoLight),
     colorParte2EscalaDark: parte2Scale(row.colorParte2TextoDark),
+    colorTerciario: row.colorTerciario,
     logoPath: row.logoPath ? `/api/branding/${row.logoPath}` : null
   }
 })

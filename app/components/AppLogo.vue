@@ -21,7 +21,7 @@ const logoPath = computed(() => brand.value?.logoPath ?? null)
       class="h-16 w-auto max-w-full object-contain"
     >
     <span class="text-2xl font-bold leading-tight">
-      <span style="color: var(--ui-color-primary-600)">{{ parte1 }}</span>
+      <span style="color: var(--ui-color-primary-500)">{{ parte1 }}</span>
       <span style="color: var(--brand-parte2)"> {{ parte2 }}</span>
     </span>
   </div>
@@ -37,7 +37,7 @@ const logoPath = computed(() => brand.value?.logoPath ?? null)
       class="h-8 w-auto max-w-[45%] object-contain shrink-0"
     >
     <span class="min-w-0 truncate text-lg font-bold leading-tight">
-      <span style="color: var(--ui-color-primary-600)">{{ parte1 }}</span>
+      <span style="color: var(--ui-color-primary-500)">{{ parte1 }}</span>
       <span style="color: var(--brand-parte2)"> {{ parte2 }}</span>
     </span>
   </div>

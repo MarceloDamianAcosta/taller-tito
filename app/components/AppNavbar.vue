@@ -5,7 +5,7 @@ defineProps<{
 </script>
 
 <template>
-  <header class="lg:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center justify-between px-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+  <header class="lg:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center justify-between px-4 bg-default border-b border-default">
     <NuxtLink to="/">
       <AppLogo />
     </NuxtLink>

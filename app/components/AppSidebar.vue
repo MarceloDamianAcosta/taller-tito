@@ -30,8 +30,8 @@ async function logout() {
 </script>
 
 <template>
-  <nav class="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">
-    <div class="px-4 py-5 border-b border-gray-200 dark:border-gray-800">
+  <nav class="flex flex-col h-full bg-default border-r border-default">
+    <div class="px-4 py-5 border-b border-default">
       <NuxtLink
         to="/"
         @click="onNavClick?.()"
@@ -50,7 +50,7 @@ async function logout() {
           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
           :class="isActive(item.to)
             ? 'bg-primary/10 text-primary'
-            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'"
+            : 'text-default hover:bg-elevated'"
           @click="onNavClick?.()"
         >
           <UIcon
@@ -62,16 +62,16 @@ async function logout() {
       </li>
     </ul>
 
-    <div class="px-4 py-4 border-t border-gray-200 dark:border-gray-800 space-y-3">
+    <div class="px-4 py-4 border-t border-default space-y-3">
       <div
         v-if="user"
         class="flex items-center gap-2 px-1"
       >
         <UIcon
           name="i-lucide-circle-user"
-          class="size-5 text-gray-500 shrink-0"
+          class="size-5 text-dimmed shrink-0"
         />
-        <span class="flex-1 text-sm text-gray-700 dark:text-gray-300 truncate">{{ user.name || user.username }}</span>
+        <span class="flex-1 text-sm text-default truncate">{{ user.name || user.username }}</span>
         <UColorModeButton />
       </div>
       <UButton
