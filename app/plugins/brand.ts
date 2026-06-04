@@ -20,7 +20,7 @@ const SCALE_KEYS = ['50', '100', '200', '300', '400', '500', '600', '700', '800'
 // Familias de neutro ("color terciario") acotadas: escalas Tailwind 50→950.
 // Una sola escala sirve para light y dark (Nuxt UI usa el escalón claro u oscuro
 // según el modo). Default 'slate' = lo que la app usaba antes.
-const NEUTRAL_FAMILIES: Record<string, string[]> = {
+export const NEUTRAL_FAMILIES: Record<string, string[]> = {
   slate: ['#f8fafc', '#f1f5f9', '#e2e8f0', '#cbd5e1', '#94a3b8', '#64748b', '#475569', '#334155', '#1e293b', '#0f172a', '#020617'],
   gray: ['#f9fafb', '#f3f4f6', '#e5e7eb', '#d1d5db', '#9ca3af', '#6b7280', '#4b5563', '#374151', '#1f2937', '#111827', '#030712'],
   zinc: ['#fafafa', '#f4f4f5', '#e4e4e7', '#d4d4d8', '#a1a1aa', '#71717a', '#52525b', '#3f3f46', '#27272a', '#18181b', '#09090b'],
@@ -32,7 +32,6 @@ function buildVarsBlock(
   escalaPrimario: string[],
   escalaParte2: string[],
   escalaNeutral: string[],
-  fondo: string,
   parte2Texto: string,
   modeIsDark: boolean
 ): string {
@@ -43,19 +42,23 @@ function buildVarsBlock(
   const brandNeutralVars = escalaNeutral.map((hex, i) => `--brand-neutral-${SCALE_KEYS[i]}:${hex};`).join('')
   const uiNeutralVars = escalaNeutral.map((hex, i) => `--ui-color-neutral-${SCALE_KEYS[i]}:${hex};`).join('')
   const parte2 = parte2Texto === 'auto' ? (modeIsDark ? '#f8fafc' : '#0f172a') : parte2Texto
-  // En light: superficie off-white (escalón 50), nunca blanco puro → evita el "fogonazo"
-  // del primario chillón sobre fondo blanco. En dark: forzar que el primario/secundario
-  // usen el color elegido (escalón 500) en vez del 400 que Nuxt UI usa por defecto.
+  // El fondo de la página deriva del "color terciario" (neutro elegido): en light un gris
+  // claro perceptible (escalón 100, nunca blanco puro → fin del "fogonazo" con el primario
+  // chillón); en dark el tono profundo (escalón 950). Las cards/sidebar quedan en --ui-bg
+  // (blanco en light, neutral-900 en dark) y "flotan" sobre el fondo → jerarquía real.
+  const brandFondo = modeIsDark ? 'var(--ui-color-neutral-950)' : 'var(--ui-color-neutral-100)'
+  // En dark forzamos que primario/secundario usen el color elegido (escalón 500) en vez del
+  // 400 que Nuxt UI toma por defecto. En light no hace falta override de superficie.
   const modeOverrides = modeIsDark
     ? '--ui-primary:var(--ui-color-primary-500);--ui-secondary:var(--ui-color-secondary-500);'
-    : '--ui-bg:var(--ui-color-neutral-50);'
-  return `${brandVars}${uiPrimaryVars}${brandParte2Vars}${uiSecondaryVars}${brandNeutralVars}${uiNeutralVars}--brand-fondo:${fondo};--brand-parte2:${parte2};${modeOverrides}`
+    : ''
+  return `${brandVars}${uiPrimaryVars}${brandParte2Vars}${uiSecondaryVars}${brandNeutralVars}${uiNeutralVars}--brand-fondo:${brandFondo};--brand-parte2:${parte2};${modeOverrides}`
 }
 
 export function buildBrandCss(b: BrandConfig): string {
   const escalaNeutral = NEUTRAL_FAMILIES[b.colorTerciario] ?? NEUTRAL_FAMILIES.slate!
-  const lightBlock = buildVarsBlock(b.colorPrimarioEscalaLight, b.colorParte2EscalaLight, escalaNeutral, b.colorFondoLight, b.colorParte2TextoLight, false)
-  const darkBlock = buildVarsBlock(b.colorPrimarioEscalaDark, b.colorParte2EscalaDark, escalaNeutral, b.colorFondoDark, b.colorParte2TextoDark, true)
+  const lightBlock = buildVarsBlock(b.colorPrimarioEscalaLight, b.colorParte2EscalaLight, escalaNeutral, b.colorParte2TextoLight, false)
+  const darkBlock = buildVarsBlock(b.colorPrimarioEscalaDark, b.colorParte2EscalaDark, escalaNeutral, b.colorParte2TextoDark, true)
   // Especificidad elevada (`html:root` / `html.dark:root`) para ganarle a los
   // valores de fábrica de main.css (`:root` / `html.dark`), que cargan después.
   // Sin esto, --brand-fondo/--brand-parte2 del usuario quedan pisados por el default.
