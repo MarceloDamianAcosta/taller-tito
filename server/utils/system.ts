@@ -12,6 +12,7 @@ const VERSION_FILE = join(process.cwd(), 'version.json')
 export const ACTIVE_PHASES = ['checking', 'backing_up', 'pulling', 'building', 'restarting', 'health_check'] as const
 
 export interface AppVersion {
+  version: string
   sha: string
   builtAt: string
 }
@@ -44,9 +45,10 @@ export async function requireAdmin(event: H3Event) {
 
 export function readVersion(): AppVersion {
   try {
-    return JSON.parse(readFileSync(VERSION_FILE, 'utf8')) as AppVersion
+    const parsed = JSON.parse(readFileSync(VERSION_FILE, 'utf8')) as Partial<AppVersion>
+    return { version: parsed.version || 'dev', sha: parsed.sha || 'dev', builtAt: parsed.builtAt || '' }
   } catch {
-    return { sha: 'dev', builtAt: '' }
+    return { version: 'dev', sha: 'dev', builtAt: '' }
   }
 }
 

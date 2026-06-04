@@ -15,8 +15,8 @@ export const users = sqliteTable('users', {
 export const clientes = sqliteTable('clientes', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   nombre: text('nombre').notNull(),
-  telefono: text('telefono'),
-  email: text('email'),
+  telefonos: text('telefonos', { mode: 'json' }).$type<string[]>().notNull().default(sql`'[]'`),
+  emails: text('emails', { mode: 'json' }).$type<string[]>().notNull().default(sql`'[]'`),
   notas: text('notas'),
   activo: integer('activo', { mode: 'boolean' }).notNull().default(true)
 })
@@ -134,6 +134,9 @@ export const brandConfig = sqliteTable('brand_config', {
   colorFondoDark: text('color_fondo_oscuro').notNull().default('#020617'),
   colorParte2TextoLight: text('color_parte2_texto').notNull().default('auto'),
   colorParte2TextoDark: text('color_parte2_texto_dark').notNull().default('auto'),
+  colorTerciario: text('color_terciario').notNull().default('slate'),
+  colorTerciarioLight: text('color_terciario_light').notNull().default('#cbd5e1'),
+  colorTerciarioDark: text('color_terciario_dark').notNull().default('#1e293b'),
   logoPath: text('logo_path'),
   updatedAt: text('updated_at').notNull().default(sql`(datetime('now'))`)
 })

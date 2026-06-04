@@ -68,7 +68,7 @@
     {
       "idx": 9,
       "version": "6",
-      "when": 1748505600000,
+      "when": 1779550000000,
       "tag": "0009_add_que_se_controla_ot",
       "breakpoints": true
     },
@@ -98,6 +98,27 @@
       "version": "6",
       "when": 1780100003000,
       "tag": "0013_drop_materiales",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1780100004000,
+      "tag": "0014_cliente_multi_contacto",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "6",
+      "when": 1780100005000,
+      "tag": "0015_brand_color_terciario",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1780100006000,
+      "tag": "0016_brand_color_terciario_hex",
       "breakpoints": true
     }
   ]

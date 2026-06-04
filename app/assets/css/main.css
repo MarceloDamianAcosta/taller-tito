@@ -27,6 +27,18 @@
   --color-brand-parte2-800: var(--brand-parte2-800);
   --color-brand-parte2-900: var(--brand-parte2-900);
   --color-brand-parte2-950: var(--brand-parte2-950);
+
+  --color-brand-neutral-50: var(--brand-neutral-50);
+  --color-brand-neutral-100: var(--brand-neutral-100);
+  --color-brand-neutral-200: var(--brand-neutral-200);
+  --color-brand-neutral-300: var(--brand-neutral-300);
+  --color-brand-neutral-400: var(--brand-neutral-400);
+  --color-brand-neutral-500: var(--brand-neutral-500);
+  --color-brand-neutral-600: var(--brand-neutral-600);
+  --color-brand-neutral-700: var(--brand-neutral-700);
+  --color-brand-neutral-800: var(--brand-neutral-800);
+  --color-brand-neutral-900: var(--brand-neutral-900);
+  --color-brand-neutral-950: var(--brand-neutral-950);
 }
 
 :root {
@@ -54,6 +66,17 @@
   --brand-parte2-800: #1e293b;
   --brand-parte2-900: #0f172a;
   --brand-parte2-950: #020617;
+  --brand-neutral-50: #f8fafc;
+  --brand-neutral-100: #f1f5f9;
+  --brand-neutral-200: #e2e8f0;
+  --brand-neutral-300: #cbd5e1;
+  --brand-neutral-400: #94a3b8;
+  --brand-neutral-500: #64748b;
+  --brand-neutral-600: #475569;
+  --brand-neutral-700: #334155;
+  --brand-neutral-800: #1e293b;
+  --brand-neutral-900: #0f172a;
+  --brand-neutral-950: #020617;
 }
 
 html.dark {

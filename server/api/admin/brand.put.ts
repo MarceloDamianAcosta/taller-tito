@@ -49,11 +49,15 @@ export default defineEventHandler(async (event) => {
   const colorFondoDark = validateHex(body?.colorFondoDark, 'fondo oscuro')
   const colorParte2TextoLight = validateParte2(body?.colorParte2TextoLight, 'parte2 claro')
   const colorParte2TextoDark = validateParte2(body?.colorParte2TextoDark, 'parte2 oscuro')
+  const colorTerciarioLight = validateHex(body?.colorTerciarioLight, 'terciario claro')
+  const colorTerciarioDark = validateHex(body?.colorTerciarioDark, 'terciario oscuro')
 
   hexToRgb(colorPrimarioLight)
   hexToRgb(colorPrimarioDark)
   const escalaLight = generateScale(colorPrimarioLight)
   const escalaDark = generateScale(colorPrimarioDark)
+  const escalaTerciarioLight = generateScale(colorTerciarioLight)
+  const escalaTerciarioDark = generateScale(colorTerciarioDark)
 
   const updated = db.update(brandConfig).set({
     nombreParte1,
@@ -66,6 +70,8 @@ export default defineEventHandler(async (event) => {
     colorFondoDark,
     colorParte2TextoLight,
     colorParte2TextoDark,
+    colorTerciarioLight,
+    colorTerciarioDark,
     updatedAt: sql`(datetime('now'))`
   }).where(eq(brandConfig.id, 1)).run()
 
@@ -81,7 +87,9 @@ export default defineEventHandler(async (event) => {
       colorFondoLight,
       colorFondoDark,
       colorParte2TextoLight,
-      colorParte2TextoDark
+      colorParte2TextoDark,
+      colorTerciarioLight,
+      colorTerciarioDark
     }).run()
   }
 
@@ -100,6 +108,10 @@ export default defineEventHandler(async (event) => {
     colorParte2TextoDark,
     colorParte2EscalaLight: parte2Scale(colorParte2TextoLight),
     colorParte2EscalaDark: parte2Scale(colorParte2TextoDark),
+    colorTerciarioLight,
+    colorTerciarioDark,
+    colorTerciarioEscalaLight: escalaTerciarioLight,
+    colorTerciarioEscalaDark: escalaTerciarioDark,
     logoPath: current?.logoPath ? `/api/branding/${current.logoPath}` : null
   }
 })

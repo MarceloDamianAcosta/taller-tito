@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   if (!id) throw createError({ statusCode: 400, message: 'ID inválido' })
 
   const body = await readBody(event)
-  const { nombre, telefono, email, notas, activo } = body
+  const { nombre, telefonos, emails, notas, activo } = body
 
   const target = db.select().from(clientes).where(eq(clientes.id, id)).get()
   if (!target) throw createError({ statusCode: 404, message: 'Cliente no encontrado' })
@@ -20,8 +20,8 @@ export default defineEventHandler(async (event) => {
     if (!nombre.trim()) throw createError({ statusCode: 400, message: 'El nombre es obligatorio' })
     updates.nombre = nombre.trim()
   }
-  if (telefono !== undefined) updates.telefono = telefono?.trim() || null
-  if (email !== undefined) updates.email = email?.trim() || null
+  if (telefonos !== undefined) updates.telefonos = cleanList(telefonos)
+  if (emails !== undefined) updates.emails = cleanList(emails)
   if (notas !== undefined) updates.notas = notas?.trim() || null
   if (activo !== undefined) updates.activo = activo
 

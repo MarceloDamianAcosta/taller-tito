@@ -4,8 +4,8 @@ definePageMeta({ title: 'Clientes' })
 interface Cliente {
   id: number
   nombre: string
-  telefono: string | null
-  email: string | null
+  telefonos: string[]
+  emails: string[]
   notas: string | null
   activo: boolean
 }
@@ -20,11 +20,26 @@ const togglingId = ref<number | null>(null)
 
 const form = reactive({
   nombre: '',
-  telefono: '',
-  email: '',
+  telefonos: [''] as string[],
+  emails: [''] as string[],
   notas: '',
   activo: true
 })
+
+function addTelefono() {
+  form.telefonos.push('')
+}
+function removeTelefono(i: number) {
+  form.telefonos.splice(i, 1)
+  if (form.telefonos.length === 0) form.telefonos.push('')
+}
+function addEmail() {
+  form.emails.push('')
+}
+function removeEmail(i: number) {
+  form.emails.splice(i, 1)
+  if (form.emails.length === 0) form.emails.push('')
+}
 
 const { data: clientes, refresh } = await useFetch<Cliente[]>('/api/clientes', {
   query: computed(() => ({
@@ -53,8 +68,8 @@ const filteredClientes = computed(() => {
 function openCreate() {
   editingCliente.value = null
   form.nombre = ''
-  form.telefono = ''
-  form.email = ''
+  form.telefonos = ['']
+  form.emails = ['']
   form.notas = ''
   form.activo = true
   saveError.value = ''
@@ -64,8 +79,8 @@ function openCreate() {
 function openEdit(cliente: Cliente) {
   editingCliente.value = cliente
   form.nombre = cliente.nombre
-  form.telefono = cliente.telefono ?? ''
-  form.email = cliente.email ?? ''
+  form.telefonos = cliente.telefonos.length ? [...cliente.telefonos] : ['']
+  form.emails = cliente.emails.length ? [...cliente.emails] : ['']
   form.notas = cliente.notas ?? ''
   form.activo = cliente.activo
   saveError.value = ''
@@ -78,6 +93,8 @@ async function save() {
     saveError.value = 'El nombre es obligatorio'
     return
   }
+  const telefonos = form.telefonos.map(t => t.trim()).filter(Boolean)
+  const emails = form.emails.map(e => e.trim()).filter(Boolean)
   saving.value = true
   try {
     if (editingCliente.value) {
@@ -85,8 +102,8 @@ async function save() {
         method: 'PATCH',
         body: {
           nombre: form.nombre,
-          telefono: form.telefono || null,
-          email: form.email || null,
+          telefonos,
+          emails,
           notas: form.notas || null,
           activo: form.activo
         }
@@ -96,8 +113,8 @@ async function save() {
         method: 'POST',
         body: {
           nombre: form.nombre,
-          telefono: form.telefono || null,
-          email: form.email || null,
+          telefonos,
+          emails,
           notas: form.notas || null
         }
       })
@@ -190,10 +207,36 @@ async function save() {
                   {{ cliente.nombre }}
                 </td>
                 <td class="py-3 px-3 text-gray-600 dark:text-gray-400">
-                  {{ cliente.telefono ?? '—' }}
+                  <div
+                    v-if="cliente.telefonos.length"
+                    class="space-y-0.5"
+                  >
+                    <div
+                      v-for="(tel, i) in cliente.telefonos"
+                      :key="i"
+                    >
+                      {{ tel }}
+                    </div>
+                  </div>
+                  <template v-else>
+                    —
+                  </template>
                 </td>
                 <td class="py-3 px-3 text-gray-600 dark:text-gray-400">
-                  {{ cliente.email ?? '—' }}
+                  <div
+                    v-if="cliente.emails.length"
+                    class="space-y-0.5"
+                  >
+                    <div
+                      v-for="(mail, i) in cliente.emails"
+                      :key="i"
+                    >
+                      {{ mail }}
+                    </div>
+                  </div>
+                  <template v-else>
+                    —
+                  </template>
                 </td>
                 <td class="py-3 px-3">
                   <UBadge
@@ -248,24 +291,26 @@ async function save() {
                 />
               </div>
               <div
-                v-if="cliente.telefono"
+                v-for="(tel, i) in cliente.telefonos"
+                :key="`tel-${i}`"
                 class="text-sm text-gray-500 flex items-center gap-1"
               >
                 <UIcon
                   name="i-lucide-phone"
                   class="size-3.5 shrink-0"
                 />
-                {{ cliente.telefono }}
+                {{ tel }}
               </div>
               <div
-                v-if="cliente.email"
+                v-for="(mail, i) in cliente.emails"
+                :key="`mail-${i}`"
                 class="text-sm text-gray-500 flex items-center gap-1"
               >
                 <UIcon
                   name="i-lucide-mail"
                   class="size-3.5 shrink-0"
                 />
-                {{ cliente.email }}
+                {{ mail }}
               </div>
             </div>
             <div class="flex flex-col gap-1 shrink-0">
@@ -314,27 +359,77 @@ async function save() {
           </UFormField>
 
           <UFormField
-            label="Teléfono"
-            name="telefono"
+            label="Teléfonos"
+            name="telefonos"
           >
-            <UInput
-              v-model="form.telefono"
-              placeholder="+54 9 11 1234-5678"
-              type="tel"
-              class="w-full"
-            />
+            <div class="space-y-2">
+              <div
+                v-for="(_, i) in form.telefonos"
+                :key="`tel-input-${i}`"
+                class="flex items-center gap-2"
+              >
+                <UInput
+                  v-model="form.telefonos[i]"
+                  placeholder="+54 9 11 1234-5678"
+                  type="tel"
+                  class="flex-1"
+                />
+                <UButton
+                  icon="i-lucide-trash-2"
+                  color="error"
+                  variant="ghost"
+                  size="sm"
+                  :disabled="form.telefonos.length === 1 && !form.telefonos[0]"
+                  aria-label="Quitar teléfono"
+                  @click="removeTelefono(i)"
+                />
+              </div>
+              <UButton
+                label="Agregar teléfono"
+                icon="i-lucide-plus"
+                color="neutral"
+                variant="subtle"
+                size="sm"
+                @click="addTelefono"
+              />
+            </div>
           </UFormField>
 
           <UFormField
-            label="Email"
-            name="email"
+            label="Emails"
+            name="emails"
           >
-            <UInput
-              v-model="form.email"
-              placeholder="cliente@email.com"
-              type="email"
-              class="w-full"
-            />
+            <div class="space-y-2">
+              <div
+                v-for="(_, i) in form.emails"
+                :key="`mail-input-${i}`"
+                class="flex items-center gap-2"
+              >
+                <UInput
+                  v-model="form.emails[i]"
+                  placeholder="cliente@email.com"
+                  type="email"
+                  class="flex-1"
+                />
+                <UButton
+                  icon="i-lucide-trash-2"
+                  color="error"
+                  variant="ghost"
+                  size="sm"
+                  :disabled="form.emails.length === 1 && !form.emails[0]"
+                  aria-label="Quitar email"
+                  @click="removeEmail(i)"
+                />
+              </div>
+              <UButton
+                label="Agregar email"
+                icon="i-lucide-plus"
+                color="neutral"
+                variant="subtle"
+                size="sm"
+                @click="addEmail"
+              />
+            </div>
           </UFormField>
 
           <UFormField

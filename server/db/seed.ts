@@ -28,9 +28,9 @@ export async function seedIfEmpty(db: DB) {
   }
 
   const clientesIns = db.insert(clientes).values([
-    { nombre: 'Industrias Ríos S.A.', telefono: '0342-4555111', email: 'contacto@rios.com.ar', notas: 'Cliente histórico, paga al contado' },
-    { nombre: 'Talleres Bermúdez', telefono: '011-4789-2310', email: 'compras@bermudez.ar' },
-    { nombre: 'Metalúrgica López', telefono: '0341-4123456', notas: 'Pide remito original' }
+    { nombre: 'Industrias Ríos S.A.', telefonos: ['0342-4555111', '0342-4555112'], emails: ['contacto@rios.com.ar', 'pagos@rios.com.ar'], notas: 'Cliente histórico, paga al contado' },
+    { nombre: 'Talleres Bermúdez', telefonos: ['011-4789-2310'], emails: ['compras@bermudez.ar'] },
+    { nombre: 'Metalúrgica López', telefonos: ['0341-4123456'], emails: [], notas: 'Pide remito original' }
   ]).returning().all()
 
   const maquinasIns = db.insert(maquinas).values([

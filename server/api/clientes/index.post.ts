@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
   if (!session.user) throw createError({ statusCode: 401, message: 'No autenticado' })
 
-  const { nombre, telefono, email, notas, activo } = await readBody(event)
+  const { nombre, telefonos, emails, notas, activo } = await readBody(event)
 
   if (!nombre || !nombre.trim()) {
     throw createError({ statusCode: 400, message: 'El nombre es obligatorio' })
@@ -14,8 +14,8 @@ export default defineEventHandler(async (event) => {
 
   const result = db.insert(clientes).values({
     nombre: nombre.trim(),
-    telefono: telefono?.trim() || null,
-    email: email?.trim() || null,
+    telefonos: cleanList(telefonos),
+    emails: cleanList(emails),
     notas: notas?.trim() || null,
     activo: typeof activo === 'boolean' ? activo : true
   }).run()
