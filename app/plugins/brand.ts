@@ -45,7 +45,7 @@ function buildVarsBlock(
   // para que no se funda con la superficie. En DARK --ui-bg ya deriva de --ui-color-neutral-900.
   const modeOverrides = modeIsDark
     ? ''
-    : '--ui-bg:var(--ui-color-neutral-200);--ui-bg-muted:var(--ui-color-neutral-100);--ui-border:var(--ui-color-neutral-300);'
+    : '--ui-bg:var(--ui-color-neutral-300);--ui-bg-muted:var(--ui-color-neutral-200);--ui-border:var(--ui-color-neutral-400);'
   return `${brandVars}${uiPrimaryVars}${brandParte2Vars}${uiSecondaryVars}${brandNeutralVars}${uiNeutralVars}--brand-fondo:${secundario};--brand-parte2:${secundario};${modeOverrides}`
 }
 

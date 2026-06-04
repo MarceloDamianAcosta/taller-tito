@@ -49,8 +49,8 @@ async function logout() {
           :to="item.to"
           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
           :class="isActive(item.to)
-            ? 'bg-primary/10 text-primary'
-            : 'text-default hover:bg-elevated'"
+            ? 'bg-primary/10 text-primary font-semibold'
+            : 'text-primary hover:bg-elevated'"
           @click="onNavClick?.()"
         >
           <UIcon
@@ -71,7 +71,7 @@ async function logout() {
           name="i-lucide-circle-user"
           class="size-5 text-dimmed shrink-0"
         />
-        <span class="flex-1 text-sm text-default truncate">{{ user.name || user.username }}</span>
+        <span class="flex-1 text-sm text-primary font-medium truncate">{{ user.name || user.username }}</span>
         <UColorModeButton />
       </div>
       <UButton
