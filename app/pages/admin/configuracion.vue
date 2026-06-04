@@ -16,6 +16,10 @@ interface BrandConfig {
   colorParte2TextoDark: string
   colorParte2EscalaLight: string[]
   colorParte2EscalaDark: string[]
+  colorTerciarioLight: string
+  colorTerciarioDark: string
+  colorTerciarioEscalaLight: string[]
+  colorTerciarioEscalaDark: string[]
   logoPath: string | null
 }
 
@@ -23,17 +27,21 @@ const { brand } = useAppBrand()
 const { data: serverBrand, refresh } = await useFetch<BrandConfig>('/api/brand')
 if (serverBrand.value && !brand.value) brand.value = serverBrand.value
 
+// El secundario ahora es un color real (pinta el fondo + nombre parte 2). Si en datos viejos
+// venía 'auto', lo inicializamos con un fondo por defecto (claro/oscuro).
+function hexOr(value: string | undefined, fallback: string): string {
+  return value && value !== 'auto' ? value : fallback
+}
+
 const form = reactive({
   nombreParte1: brand.value?.nombreParte1 ?? 'Mecanizados',
   nombreParte2: brand.value?.nombreParte2 ?? 'Schmidt',
   colorPrimarioLight: brand.value?.colorPrimarioLight ?? '#00A155',
   colorPrimarioDark: brand.value?.colorPrimarioDark ?? '#00A155',
-  colorFondoLight: brand.value?.colorFondoLight ?? '#f9fafb',
-  colorFondoDark: brand.value?.colorFondoDark ?? '#020617',
-  colorParte2LightAuto: (brand.value?.colorParte2TextoLight ?? 'auto') === 'auto',
-  colorParte2LightHex: brand.value?.colorParte2TextoLight && brand.value.colorParte2TextoLight !== 'auto' ? brand.value.colorParte2TextoLight : '#0f172a',
-  colorParte2DarkAuto: (brand.value?.colorParte2TextoDark ?? 'auto') === 'auto',
-  colorParte2DarkHex: brand.value?.colorParte2TextoDark && brand.value.colorParte2TextoDark !== 'auto' ? brand.value.colorParte2TextoDark : '#f8fafc'
+  colorSecundarioLight: hexOr(brand.value?.colorParte2TextoLight, '#f9fafb'),
+  colorSecundarioDark: hexOr(brand.value?.colorParte2TextoDark, '#020617'),
+  colorTerciarioLight: brand.value?.colorTerciarioLight ?? '#64748b',
+  colorTerciarioDark: brand.value?.colorTerciarioDark ?? '#64748b'
 })
 
 const saving = ref(false)
@@ -103,17 +111,28 @@ const presetsPrimario = [
   { label: 'Gris', hex: '#475569' }
 ]
 
-const presetsFondoLight = [
+// Secundario = fondo de la página + nombre parte 2. Presets pensados como fondo.
+const presetsSecundarioLight = [
   { label: 'Gris claro', hex: '#f9fafb' },
   { label: 'Blanco', hex: '#ffffff' },
   { label: 'Beige', hex: '#fafaf9' },
   { label: 'Azul claro', hex: '#eff6ff' }
 ]
 
-const presetsFondoDark = [
+const presetsSecundarioDark = [
   { label: 'Slate', hex: '#020617' },
   { label: 'Negro', hex: '#0a0a0a' },
   { label: 'Azul noche', hex: '#0f172a' }
+]
+
+// Terciario = menú/navbar/tarjetas. Picker libre; presets de neutros útiles. La escala 50–950
+// se genera del hex elegido (en light se usa el extremo claro, en dark el oscuro).
+const presetsTerciario = [
+  { label: 'Pizarra', hex: '#64748b' },
+  { label: 'Gris', hex: '#6b7280' },
+  { label: 'Grafito', hex: '#71717a' },
+  { label: 'Piedra', hex: '#78716c' },
+  { label: 'Azulado', hex: '#475569' }
 ]
 
 function relLuma(hex: string): number {
@@ -134,26 +153,22 @@ function contrast(a: string, b: string): number {
   return (light + 0.05) / (dark + 0.05)
 }
 
-const contrasteLight = computed(() => contrast(form.colorPrimarioLight, form.colorFondoLight))
-const contrasteDark = computed(() => contrast(form.colorPrimarioDark, form.colorFondoDark))
+// Contraste del primario contra el secundario (que ahora es el fondo).
+const contrasteLight = computed(() => contrast(form.colorPrimarioLight, form.colorSecundarioLight))
+const contrasteDark = computed(() => contrast(form.colorPrimarioDark, form.colorSecundarioDark))
 const contrasteLightOk = computed(() => contrasteLight.value >= 3)
 const contrasteDarkOk = computed(() => contrasteDark.value >= 3)
 
-const parte2LightPreview = computed(() => form.colorParte2LightAuto ? '#0f172a' : form.colorParte2LightHex)
-const parte2DarkPreview = computed(() => form.colorParte2DarkAuto ? '#f8fafc' : form.colorParte2DarkHex)
-
 function copiarLightADark() {
   form.colorPrimarioDark = form.colorPrimarioLight
-  form.colorFondoDark = form.colorFondoLight
-  form.colorParte2DarkAuto = form.colorParte2LightAuto
-  form.colorParte2DarkHex = form.colorParte2LightHex
+  form.colorSecundarioDark = form.colorSecundarioLight
+  form.colorTerciarioDark = form.colorTerciarioLight
 }
 
 function copiarDarkALight() {
   form.colorPrimarioLight = form.colorPrimarioDark
-  form.colorFondoLight = form.colorFondoDark
-  form.colorParte2LightAuto = form.colorParte2DarkAuto
-  form.colorParte2LightHex = form.colorParte2DarkHex
+  form.colorSecundarioLight = form.colorSecundarioDark
+  form.colorTerciarioLight = form.colorTerciarioDark
 }
 
 function applyPreviewToDom(b: BrandConfig) {
@@ -184,10 +199,13 @@ async function guardar() {
         nombreParte2: form.nombreParte2.trim(),
         colorPrimarioLight: form.colorPrimarioLight,
         colorPrimarioDark: form.colorPrimarioDark,
-        colorFondoLight: form.colorFondoLight,
-        colorFondoDark: form.colorFondoDark,
-        colorParte2TextoLight: form.colorParte2LightAuto ? 'auto' : form.colorParte2LightHex,
-        colorParte2TextoDark: form.colorParte2DarkAuto ? 'auto' : form.colorParte2DarkHex
+        // El secundario pinta el nombre parte 2; también se persiste como "fondo" (legacy).
+        colorParte2TextoLight: form.colorSecundarioLight,
+        colorParte2TextoDark: form.colorSecundarioDark,
+        colorFondoLight: form.colorSecundarioLight,
+        colorFondoDark: form.colorSecundarioDark,
+        colorTerciarioLight: form.colorTerciarioLight,
+        colorTerciarioDark: form.colorTerciarioDark
       }
     })
     brand.value = res
@@ -231,70 +249,75 @@ async function guardar() {
           Vista previa
         </h2>
         <p class="text-sm text-muted">
-          Así se va a ver con los colores que elegiste. Cada panel respeta su modo.
+          Así se va a ver con los colores que elegiste. Cada panel respeta su modo: el fondo es el
+          secundario, la barra de arriba simula el menú (terciario).
         </p>
       </template>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div
-          class="rounded-lg p-6 border border-default"
-          :style="{ background: form.colorFondoLight }"
+          class="rounded-lg overflow-hidden border border-default"
+          :style="{ background: form.colorSecundarioLight }"
         >
-          <div class="flex items-center gap-2 mb-3">
+          <div
+            class="px-4 py-2 flex items-center gap-2"
+            :style="{ background: form.colorTerciarioLight }"
+          >
             <UIcon
               name="i-lucide-sun"
-              :style="{ color: parte2LightPreview }"
+              class="text-white/90"
             />
-            <span
-              class="text-sm font-medium"
-              :style="{ color: parte2LightPreview }"
-            >Modo claro</span>
+            <span class="text-sm font-medium text-white/90">Menú (terciario)</span>
           </div>
-          <div class="flex items-center justify-center gap-2">
-            <span
-              class="text-2xl font-bold"
-              :style="{ color: form.colorPrimarioLight }"
-            >{{ form.nombreParte1 }}</span>
-            <span
-              class="text-2xl font-bold"
-              :style="{ color: parte2LightPreview }"
-            >{{ form.nombreParte2 }}</span>
-          </div>
-          <div class="mt-3 flex justify-center">
-            <span
-              class="px-3 py-1 rounded text-sm font-medium text-white"
-              :style="{ background: form.colorPrimarioLight }"
-            >Botón ejemplo</span>
+          <div class="p-6">
+            <div class="flex items-center justify-center gap-2">
+              <span
+                class="text-2xl font-bold"
+                :style="{ color: form.colorPrimarioLight }"
+              >{{ form.nombreParte1 }}</span>
+              <span
+                class="text-2xl font-bold"
+                :style="{ color: form.colorSecundarioLight }"
+              >{{ form.nombreParte2 }}</span>
+            </div>
+            <div class="mt-3 flex justify-center">
+              <span
+                class="px-3 py-1 rounded text-sm font-medium text-white"
+                :style="{ background: form.colorPrimarioLight }"
+              >Botón ejemplo</span>
+            </div>
           </div>
         </div>
         <div
-          class="rounded-lg p-6"
-          :style="{ background: form.colorFondoDark }"
+          class="rounded-lg overflow-hidden"
+          :style="{ background: form.colorSecundarioDark }"
         >
-          <div class="flex items-center gap-2 mb-3">
+          <div
+            class="px-4 py-2 flex items-center gap-2"
+            :style="{ background: form.colorTerciarioDark }"
+          >
             <UIcon
               name="i-lucide-moon"
-              :style="{ color: parte2DarkPreview }"
+              class="text-white/90"
             />
-            <span
-              class="text-sm font-medium"
-              :style="{ color: parte2DarkPreview }"
-            >Modo oscuro</span>
+            <span class="text-sm font-medium text-white/90">Menú (terciario)</span>
           </div>
-          <div class="flex items-center justify-center gap-2">
-            <span
-              class="text-2xl font-bold"
-              :style="{ color: form.colorPrimarioDark }"
-            >{{ form.nombreParte1 }}</span>
-            <span
-              class="text-2xl font-bold"
-              :style="{ color: parte2DarkPreview }"
-            >{{ form.nombreParte2 }}</span>
-          </div>
-          <div class="mt-3 flex justify-center">
-            <span
-              class="px-3 py-1 rounded text-sm font-medium text-white"
-              :style="{ background: form.colorPrimarioDark }"
-            >Botón ejemplo</span>
+          <div class="p-6">
+            <div class="flex items-center justify-center gap-2">
+              <span
+                class="text-2xl font-bold"
+                :style="{ color: form.colorPrimarioDark }"
+              >{{ form.nombreParte1 }}</span>
+              <span
+                class="text-2xl font-bold"
+                :style="{ color: form.colorSecundarioDark }"
+              >{{ form.nombreParte2 }}</span>
+            </div>
+            <div class="mt-3 flex justify-center">
+              <span
+                class="px-3 py-1 rounded text-sm font-medium text-white"
+                :style="{ background: form.colorPrimarioDark }"
+              >Botón ejemplo</span>
+            </div>
           </div>
         </div>
       </div>
@@ -428,7 +451,7 @@ async function guardar() {
         <div class="space-y-5">
           <div>
             <p class="text-sm font-medium mb-2">
-              Color principal
+              Color primario (logo y botones)
             </p>
             <div class="flex items-center gap-3">
               <input
@@ -463,34 +486,34 @@ async function guardar() {
                 :class="contrasteLightOk ? 'text-success' : 'text-warning'"
               />
               <span :class="contrasteLightOk ? 'text-success' : 'text-warning'">
-                Contraste: {{ contrasteLight.toFixed(2) }}{{ !contrasteLightOk ? ' (bajo)' : '' }}
+                Contraste vs fondo: {{ contrasteLight.toFixed(2) }}{{ !contrasteLightOk ? ' (bajo)' : '' }}
               </span>
             </div>
           </div>
 
           <div>
             <p class="text-sm font-medium mb-2">
-              Fondo
+              Color secundario (fondo y nombre)
             </p>
             <div class="flex items-center gap-3">
               <input
-                v-model="form.colorFondoLight"
+                v-model="form.colorSecundarioLight"
                 type="color"
                 class="h-10 w-16 rounded border border-default cursor-pointer"
               >
               <UInput
-                v-model="form.colorFondoLight"
+                v-model="form.colorSecundarioLight"
                 placeholder="#f9fafb"
                 class="font-mono flex-1"
               />
             </div>
             <div class="flex flex-wrap gap-2 mt-2">
               <button
-                v-for="p in presetsFondoLight"
-                :key="'fl-' + p.hex"
+                v-for="p in presetsSecundarioLight"
+                :key="'sl-' + p.hex"
                 type="button"
                 class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-default hover:bg-elevated text-xs"
-                @click="form.colorFondoLight = p.hex"
+                @click="form.colorSecundarioLight = p.hex"
               >
                 <span
                   class="inline-block w-3 h-3 rounded border border-default"
@@ -503,26 +526,34 @@ async function guardar() {
 
           <div>
             <p class="text-sm font-medium mb-2">
-              Color "{{ form.nombreParte2 }}" (parte 2)
+              Color terciario (menú y tarjetas)
             </p>
-            <UCheckbox
-              v-model="form.colorParte2LightAuto"
-              label="Automático (negro)"
-            />
-            <div
-              v-if="!form.colorParte2LightAuto"
-              class="flex items-center gap-3 mt-2"
-            >
+            <div class="flex items-center gap-3">
               <input
-                v-model="form.colorParte2LightHex"
+                v-model="form.colorTerciarioLight"
                 type="color"
                 class="h-10 w-16 rounded border border-default cursor-pointer"
               >
               <UInput
-                v-model="form.colorParte2LightHex"
-                placeholder="#0f172a"
+                v-model="form.colorTerciarioLight"
+                placeholder="#64748b"
                 class="font-mono flex-1"
               />
+            </div>
+            <div class="flex flex-wrap gap-2 mt-2">
+              <button
+                v-for="p in presetsTerciario"
+                :key="'tl-' + p.hex"
+                type="button"
+                class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-default hover:bg-elevated text-xs"
+                @click="form.colorTerciarioLight = p.hex"
+              >
+                <span
+                  class="inline-block w-3 h-3 rounded border border-default"
+                  :style="{ background: p.hex }"
+                />
+                {{ p.label }}
+              </button>
             </div>
           </div>
         </div>
@@ -543,7 +574,7 @@ async function guardar() {
         <div class="space-y-5">
           <div>
             <p class="text-sm font-medium mb-2">
-              Color principal
+              Color primario (logo y botones)
             </p>
             <div class="flex items-center gap-3">
               <input
@@ -578,34 +609,34 @@ async function guardar() {
                 :class="contrasteDarkOk ? 'text-success' : 'text-warning'"
               />
               <span :class="contrasteDarkOk ? 'text-success' : 'text-warning'">
-                Contraste: {{ contrasteDark.toFixed(2) }}{{ !contrasteDarkOk ? ' (bajo)' : '' }}
+                Contraste vs fondo: {{ contrasteDark.toFixed(2) }}{{ !contrasteDarkOk ? ' (bajo)' : '' }}
               </span>
             </div>
           </div>
 
           <div>
             <p class="text-sm font-medium mb-2">
-              Fondo
+              Color secundario (fondo y nombre)
             </p>
             <div class="flex items-center gap-3">
               <input
-                v-model="form.colorFondoDark"
+                v-model="form.colorSecundarioDark"
                 type="color"
                 class="h-10 w-16 rounded border border-default cursor-pointer"
               >
               <UInput
-                v-model="form.colorFondoDark"
+                v-model="form.colorSecundarioDark"
                 placeholder="#020617"
                 class="font-mono flex-1"
               />
             </div>
             <div class="flex flex-wrap gap-2 mt-2">
               <button
-                v-for="p in presetsFondoDark"
-                :key="'fd-' + p.hex"
+                v-for="p in presetsSecundarioDark"
+                :key="'sd-' + p.hex"
                 type="button"
                 class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-default hover:bg-elevated text-xs"
-                @click="form.colorFondoDark = p.hex"
+                @click="form.colorSecundarioDark = p.hex"
               >
                 <span
                   class="inline-block w-3 h-3 rounded"
@@ -618,26 +649,34 @@ async function guardar() {
 
           <div>
             <p class="text-sm font-medium mb-2">
-              Color "{{ form.nombreParte2 }}" (parte 2)
+              Color terciario (menú y tarjetas)
             </p>
-            <UCheckbox
-              v-model="form.colorParte2DarkAuto"
-              label="Automático (blanco)"
-            />
-            <div
-              v-if="!form.colorParte2DarkAuto"
-              class="flex items-center gap-3 mt-2"
-            >
+            <div class="flex items-center gap-3">
               <input
-                v-model="form.colorParte2DarkHex"
+                v-model="form.colorTerciarioDark"
                 type="color"
                 class="h-10 w-16 rounded border border-default cursor-pointer"
               >
               <UInput
-                v-model="form.colorParte2DarkHex"
-                placeholder="#f8fafc"
+                v-model="form.colorTerciarioDark"
+                placeholder="#64748b"
                 class="font-mono flex-1"
               />
+            </div>
+            <div class="flex flex-wrap gap-2 mt-2">
+              <button
+                v-for="p in presetsTerciario"
+                :key="'td-' + p.hex"
+                type="button"
+                class="flex items-center gap-1.5 px-2 py-1 rounded-md border border-default hover:bg-elevated text-xs"
+                @click="form.colorTerciarioDark = p.hex"
+              >
+                <span
+                  class="inline-block w-3 h-3 rounded border border-default"
+                  :style="{ background: p.hex }"
+                />
+                {{ p.label }}
+              </button>
             </div>
           </div>
         </div>

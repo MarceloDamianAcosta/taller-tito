@@ -10,6 +10,11 @@ function parte2Scale(value: string): string[] {
   try { return generateScale(value) } catch { return SLATE_SCALE }
 }
 
+// Escala del terciario (neutro) desde el hex elegido; fallback a slate si es inválido.
+function terciarioScale(value: string): string[] {
+  try { return generateScale(value) } catch { return SLATE_SCALE }
+}
+
 export default defineEventHandler(() => {
   const row = db.select().from(brandConfig).get()
   if (!row) {
@@ -26,7 +31,10 @@ export default defineEventHandler(() => {
       colorParte2TextoDark: 'auto',
       colorParte2EscalaLight: SLATE_SCALE,
       colorParte2EscalaDark: SLATE_SCALE,
-      colorTerciario: 'slate',
+      colorTerciarioLight: '#64748b',
+      colorTerciarioDark: '#64748b',
+      colorTerciarioEscalaLight: SLATE_SCALE,
+      colorTerciarioEscalaDark: SLATE_SCALE,
       logoPath: null as string | null
     }
   }
@@ -43,7 +51,10 @@ export default defineEventHandler(() => {
     colorParte2TextoDark: row.colorParte2TextoDark,
     colorParte2EscalaLight: parte2Scale(row.colorParte2TextoLight),
     colorParte2EscalaDark: parte2Scale(row.colorParte2TextoDark),
-    colorTerciario: row.colorTerciario,
+    colorTerciarioLight: row.colorTerciarioLight,
+    colorTerciarioDark: row.colorTerciarioDark,
+    colorTerciarioEscalaLight: terciarioScale(row.colorTerciarioLight),
+    colorTerciarioEscalaDark: terciarioScale(row.colorTerciarioDark),
     logoPath: row.logoPath ? `/api/branding/${row.logoPath}` : null
   }
 })

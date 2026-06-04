@@ -113,6 +113,13 @@
       "when": 1780100005000,
       "tag": "0015_brand_color_terciario",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "6",
+      "when": 1780100006000,
+      "tag": "0016_brand_color_terciario_hex",
+      "breakpoints": true
     }
   ]
 }

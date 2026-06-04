@@ -34,12 +34,6 @@ function validateParte2(value: unknown, field: string): string {
   return validateHex(value, field)
 }
 
-const FAMILIAS_TERCIARIO = ['slate', 'gray', 'zinc', 'neutral', 'stone'] as const
-
-function validateTerciario(value: unknown): string {
-  return (FAMILIAS_TERCIARIO as readonly string[]).includes(value as string) ? (value as string) : 'slate'
-}
-
 export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
   if (!session.user) throw createError({ statusCode: 401, message: 'No autenticado' })
@@ -55,12 +49,15 @@ export default defineEventHandler(async (event) => {
   const colorFondoDark = validateHex(body?.colorFondoDark, 'fondo oscuro')
   const colorParte2TextoLight = validateParte2(body?.colorParte2TextoLight, 'parte2 claro')
   const colorParte2TextoDark = validateParte2(body?.colorParte2TextoDark, 'parte2 oscuro')
-  const colorTerciario = validateTerciario(body?.colorTerciario)
+  const colorTerciarioLight = validateHex(body?.colorTerciarioLight, 'terciario claro')
+  const colorTerciarioDark = validateHex(body?.colorTerciarioDark, 'terciario oscuro')
 
   hexToRgb(colorPrimarioLight)
   hexToRgb(colorPrimarioDark)
   const escalaLight = generateScale(colorPrimarioLight)
   const escalaDark = generateScale(colorPrimarioDark)
+  const escalaTerciarioLight = generateScale(colorTerciarioLight)
+  const escalaTerciarioDark = generateScale(colorTerciarioDark)
 
   const updated = db.update(brandConfig).set({
     nombreParte1,
@@ -73,7 +70,8 @@ export default defineEventHandler(async (event) => {
     colorFondoDark,
     colorParte2TextoLight,
     colorParte2TextoDark,
-    colorTerciario,
+    colorTerciarioLight,
+    colorTerciarioDark,
     updatedAt: sql`(datetime('now'))`
   }).where(eq(brandConfig.id, 1)).run()
 
@@ -90,7 +88,8 @@ export default defineEventHandler(async (event) => {
       colorFondoDark,
       colorParte2TextoLight,
       colorParte2TextoDark,
-      colorTerciario
+      colorTerciarioLight,
+      colorTerciarioDark
     }).run()
   }
 
@@ -109,7 +108,10 @@ export default defineEventHandler(async (event) => {
     colorParte2TextoDark,
     colorParte2EscalaLight: parte2Scale(colorParte2TextoLight),
     colorParte2EscalaDark: parte2Scale(colorParte2TextoDark),
-    colorTerciario,
+    colorTerciarioLight,
+    colorTerciarioDark,
+    colorTerciarioEscalaLight: escalaTerciarioLight,
+    colorTerciarioEscalaDark: escalaTerciarioDark,
     logoPath: current?.logoPath ? `/api/branding/${current.logoPath}` : null
   }
 })
