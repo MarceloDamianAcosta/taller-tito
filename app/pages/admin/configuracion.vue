@@ -132,9 +132,9 @@ function contrast(a: string, b: string): number {
   return (light + 0.05) / (dark + 0.05)
 }
 
-// El fondo ya no se elige a mano: deriva del color terciario (escalón 100 en light,
+// El fondo ya no se elige a mano: deriva del color terciario (escalón 200 en light,
 // 950 en dark de la familia elegida). Se usa en la vista previa, el contraste y el payload.
-const fondoLightEff = computed(() => (NEUTRAL_FAMILIES[form.colorTerciario] ?? NEUTRAL_FAMILIES.slate!)[1]!)
+const fondoLightEff = computed(() => (NEUTRAL_FAMILIES[form.colorTerciario] ?? NEUTRAL_FAMILIES.slate!)[2]!)
 const fondoDarkEff = computed(() => (NEUTRAL_FAMILIES[form.colorTerciario] ?? NEUTRAL_FAMILIES.slate!)[10]!)
 
 const contrasteLight = computed(() => contrast(form.colorPrimarioLight, fondoLightEff.value))

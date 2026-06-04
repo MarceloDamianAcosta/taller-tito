@@ -43,10 +43,11 @@ function buildVarsBlock(
   const uiNeutralVars = escalaNeutral.map((hex, i) => `--ui-color-neutral-${SCALE_KEYS[i]}:${hex};`).join('')
   const parte2 = parte2Texto === 'auto' ? (modeIsDark ? '#f8fafc' : '#0f172a') : parte2Texto
   // El fondo de la página deriva del "color terciario" (neutro elegido): en light un gris
-  // claro perceptible (escalón 100, nunca blanco puro → fin del "fogonazo" con el primario
-  // chillón); en dark el tono profundo (escalón 950). Las cards/sidebar quedan en --ui-bg
-  // (blanco en light, neutral-900 en dark) y "flotan" sobre el fondo → jerarquía real.
-  const brandFondo = modeIsDark ? 'var(--ui-color-neutral-950)' : 'var(--ui-color-neutral-100)'
+  // claro perceptible (escalón 200 — claramente distinto del blanco y con tinte visible
+  // entre familias; el 100 quedaba casi blanco e indistinguible); en dark el tono profundo
+  // (escalón 950). Las cards/sidebar quedan en --ui-bg (blanco en light, neutral-900 en
+  // dark) y "flotan" sobre el fondo → jerarquía real.
+  const brandFondo = modeIsDark ? 'var(--ui-color-neutral-950)' : 'var(--ui-color-neutral-200)'
   // En dark forzamos que primario/secundario usen el color elegido (escalón 500) en vez del
   // 400 que Nuxt UI toma por defecto. En light no hace falta override de superficie.
   const modeOverrides = modeIsDark
