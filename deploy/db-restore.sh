@@ -34,8 +34,17 @@ fi
 echo "→ Copiando $SRC al volume..."
 docker compose cp "$SRC" prod:/app/data/taller.db
 
-# Borrar archivos WAL/SHM si quedaron del estado previo
-docker compose run --rm --no-deps prod sh -c "rm -f /app/data/taller.db-wal /app/data/taller.db-shm" >/dev/null 2>&1 || true
+# Si el backup vino con WAL al lado (checkpoint fallido al respaldar), hay que
+# restaurarlo junto: ahí están los cambios que el .db solo no tiene. Si no,
+# borrar el WAL que haya quedado del estado previo para que no pise el restore.
+if [ -f "$SRC-wal" ]; then
+  echo "→ El backup incluye WAL; lo restauro también..."
+  docker compose cp "$SRC-wal" prod:/app/data/taller.db-wal
+else
+  docker compose run --rm --no-deps prod sh -c "rm -f /app/data/taller.db-wal" >/dev/null 2>&1 || true
+fi
+# El -shm es solo un índice en memoria compartida; SQLite lo regenera.
+docker compose run --rm --no-deps prod sh -c "rm -f /app/data/taller.db-shm" >/dev/null 2>&1 || true
 
 if [ "$WAS_RUNNING" -eq 1 ]; then
   echo "→ Reiniciando prod..."

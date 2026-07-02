@@ -17,7 +17,9 @@ cd "$APP_DIR"
 mkdir -p "$CONTROL" backups
 
 # git se queja de "dubious ownership" si el repo es de otro usuario y corremos como root.
+# --global no sirve como root sin HOME; --system (/etc/gitconfig) lo lee cualquier usuario.
 git config --global --add safe.directory "$APP_DIR" 2>/dev/null || true
+git config --system --add safe.directory "$APP_DIR" 2>/dev/null || true
 
 OLD_SHA="$(git rev-parse HEAD 2>/dev/null || echo unknown)"
 TARGET_SHA=""

@@ -9,7 +9,11 @@ APP_DIR="${APP_DIR:-/opt/taller/app}"
 CONTROL="$APP_DIR/control"
 
 cd "$APP_DIR"
+# git se queja de "dubious ownership" si el repo es de otro usuario. Corriendo como root
+# (systemd) --global no sirve (HOME no seteado) → --system (/etc/gitconfig) lo lee cualquier
+# usuario. En modo usuario (dev) --system falla y queda el --global.
 git config --global --add safe.directory "$APP_DIR" 2>/dev/null || true
+git config --system --add safe.directory "$APP_DIR" 2>/dev/null || true
 mkdir -p "$CONTROL"
 
 BRANCH="$(git rev-parse --abbrev-ref HEAD)"
