@@ -1,6 +1,6 @@
 import { db } from '../../db/index'
 import { ordenTrabajo, clientes, maquinas, otMaquinas } from '../../db/schema'
-import { eq, like, and, asc, sql, inArray } from 'drizzle-orm'
+import { eq, like, and, desc, inArray } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
 
   if (conditions.length) base = base.where(conditions.length === 1 ? conditions[0] : and(...conditions))
 
-  const rows = base.orderBy(sql`${ordenTrabajo.fechaPrometida} IS NULL ASC`, asc(ordenTrabajo.fechaPrometida)).all()
+  const rows = base.orderBy(desc(ordenTrabajo.nroOt)).all()
 
   const otIds = rows.map(r => r.nroOt)
   const maquinasPorOt = new Map<number, { id: number, nombre: string }[]>()
