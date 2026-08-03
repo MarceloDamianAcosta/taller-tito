@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
 
   const allOts = db.select({
     nroOt: ordenTrabajo.nroOt,
-    fechaEntrega: ordenTrabajo.fechaEntrega,
+    fechaFinalizacion: ordenTrabajo.fechaFinalizacion,
     fechaPrometida: ordenTrabajo.fechaPrometida,
     estado: ordenTrabajo.estado,
     clienteId: ordenTrabajo.clienteId
@@ -35,8 +35,8 @@ export default defineEventHandler(async (event) => {
     .where(and(ne(ordenTrabajo.estado, 'Anulada'), desde ? gte(ordenTrabajo.createdAt, desde) : undefined))
     .all()
 
-  const conEntrega = allOts.filter(o => o.fechaEntrega)
-  const aTiempo = conEntrega.filter(o => !o.fechaPrometida || o.fechaEntrega! <= o.fechaPrometida)
+  const conEntrega = allOts.filter(o => o.fechaFinalizacion)
+  const aTiempo = conEntrega.filter(o => !o.fechaPrometida || o.fechaFinalizacion! <= o.fechaPrometida)
   const entregasPorcentaje = conEntrega.length > 0 ? Math.round((aTiempo.length / conEntrega.length) * 100) : 0
 
   const otsConNcIds = new Set(

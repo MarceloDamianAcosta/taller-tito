@@ -1,6 +1,6 @@
 import { db } from '../../db/index'
 import { ordenTrabajo, controlCalidad, noConformidades, registroMantenimiento, clientes, maquinas, otMaquinas } from '../../db/schema'
-import { eq, ne, and, isNotNull, count, lt, sql, inArray, notInArray } from 'drizzle-orm'
+import { eq, ne, and, isNotNull, count, lt, inArray, notInArray, desc } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   const session = await getUserSession(event)
@@ -11,8 +11,8 @@ export default defineEventHandler(async (event) => {
   const otsActivas = db.select({ c: count() }).from(ordenTrabajo).where(notInArray(ordenTrabajo.estado, ['Entregado', 'Anulada'])).get()?.c ?? 0
   const otsTotal = db.select({ c: count() }).from(ordenTrabajo).where(ne(ordenTrabajo.estado, 'Anulada')).get()?.c ?? 0
 
-  const entregasRows = db.select({ eTiempo: ordenTrabajo.fechaEntrega, ePrometida: ordenTrabajo.fechaPrometida })
-    .from(ordenTrabajo).where(and(isNotNull(ordenTrabajo.fechaEntrega), ne(ordenTrabajo.estado, 'Anulada'))).all()
+  const entregasRows = db.select({ eTiempo: ordenTrabajo.fechaFinalizacion, ePrometida: ordenTrabajo.fechaPrometida })
+    .from(ordenTrabajo).where(and(isNotNull(ordenTrabajo.fechaFinalizacion), ne(ordenTrabajo.estado, 'Anulada'))).all()
   const entregasTotal = entregasRows.length
   const entregasATiempo = entregasRows.filter(r => !r.ePrometida || r.eTiempo! <= r.ePrometida).length
   const entregasPorcentaje = entregasTotal > 0 ? Math.round((entregasATiempo / entregasTotal) * 100) : 0
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
   }).from(ordenTrabajo)
     .leftJoin(clientes, eq(ordenTrabajo.clienteId, clientes.id))
     .where(notInArray(ordenTrabajo.estado, ['Entregado', 'Anulada']))
-    .orderBy(sql`${ordenTrabajo.fechaPrometida} IS NULL ASC`, ordenTrabajo.fechaPrometida)
+    .orderBy(desc(ordenTrabajo.nroOt))
     .limit(10).all()
 
   const otsEnCursoIds = otsEnCursoRaw.map(o => o.nroOt)

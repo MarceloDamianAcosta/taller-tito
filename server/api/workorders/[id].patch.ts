@@ -40,12 +40,12 @@ export default defineEventHandler(async (event) => {
     fields.motivo_anulacion = null
   }
 
-  const fechaEntrega = fields.fecha_entrega ?? existing.fechaEntrega
+  const fechaFinalizacionCheck = fields.fecha_finalizacion ?? existing.fechaFinalizacion
   const fechaPrometida = fields.fecha_prometida ?? existing.fechaPrometida
   const motivoRetraso = fields.motivo_retraso ?? existing.motivoRetraso
 
-  if (fechaEntrega && fechaPrometida && fechaEntrega > fechaPrometida && !motivoRetraso) {
-    throw createError({ statusCode: 400, message: 'Se requiere motivo de retraso cuando la fecha de entrega supera la fecha prometida' })
+  if (fechaFinalizacionCheck && fechaPrometida && fechaFinalizacionCheck > fechaPrometida && !motivoRetraso) {
+    throw createError({ statusCode: 400, message: 'Se requiere motivo de retraso cuando la fecha de finalización supera la fecha prometida' })
   }
 
   const updateData: Record<string, unknown> = {}
