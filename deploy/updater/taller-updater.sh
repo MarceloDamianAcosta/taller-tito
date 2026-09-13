@@ -10,7 +10,10 @@ CONTROL="$APP_DIR/control"
 LOCK="$CONTROL/update.lock"
 REQ="$CONTROL/update.request.json"
 LOG="$CONTROL/update.log"
-HEALTH_URL="${HEALTH_URL:-http://localhost:3000/api/health}"
+# Si Tito cambió el puerto del host con P en .env, el health-check tiene que
+# pegarle al mismo puerto (si no, cada update terminaría en rollback falso).
+P_ENV="$(grep -E '^P=' "$APP_DIR/.env" 2>/dev/null | tail -1 | cut -d= -f2-)"
+HEALTH_URL="${HEALTH_URL:-http://localhost:${P_ENV:-3000}/api/health}"
 HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-120}"
 
 cd "$APP_DIR"

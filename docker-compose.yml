@@ -15,8 +15,9 @@ services:
       - .env
     restart: unless-stopped
 
-  # ── Producción: imagen compilada, puerto 3000 ────────────────────────────────
+  # ── Producción: imagen compilada, puerto configurable con P (env, default 3000) ──
   # Para rebuildar con cambios: docker compose up --build prod
+  # Para cambiar el puerto: P=8080 docker compose up -d prod (o dejar P=8080 en .env)
   prod:
     build:
       context: .
@@ -25,7 +26,7 @@ services:
         GIT_SHA: ${GIT_SHA:-dev}
         BUILD_TIME: ${BUILD_TIME:-}
     ports:
-      - "3000:3000"
+      - "${P:-3000}:3000"
     volumes:
       - prod-data:/app/data
       - prod-uploads:/app/uploads
