@@ -391,6 +391,8 @@ const restoreStatus = ref<RestoreStatus>(restoreInfo.value?.status ?? { phase: '
 const restorePending = ref<RestorePending | null>(restoreInfo.value?.pending ?? null)
 const restoreDbFile = ref<File | null>(null)
 const restoreUploadsFile = ref<File | null>(null)
+const restoreDbInputEl = ref<HTMLInputElement | null>(null)
+const restoreUploadsInputEl = ref<HTMLInputElement | null>(null)
 const restoreUploading = ref(false)
 const restoreError = ref('')
 const showRestoreConfirm = ref(false)
@@ -1112,24 +1114,46 @@ onUnmounted(() => {
 
         <div class="space-y-3">
           <div>
-            <label class="block text-sm text-gray-500 dark:text-gray-400 mb-1">Base de datos (.db)</label>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
+              Base de datos (.db)
+            </p>
             <input
+              ref="restoreDbInputEl"
               type="file"
               accept=".db"
-              class="text-sm text-gray-700 dark:text-gray-300"
+              class="hidden"
               :disabled="showProgress || showBackupProgress || showPortProgress"
               @change="onRestoreDbChange"
             >
+            <UButton
+              :label="restoreDbFile?.name || 'Elegir archivo .db'"
+              icon="i-lucide-file-up"
+              color="neutral"
+              variant="subtle"
+              :disabled="showProgress || showBackupProgress || showPortProgress"
+              @click="restoreDbInputEl?.click()"
+            />
           </div>
           <div>
-            <label class="block text-sm text-gray-500 dark:text-gray-400 mb-1">Archivos adjuntos (opcional, .tar.gz)</label>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
+              Archivos adjuntos (opcional, .tar.gz)
+            </p>
             <input
+              ref="restoreUploadsInputEl"
               type="file"
               accept=".tar.gz,.gz"
-              class="text-sm text-gray-700 dark:text-gray-300"
+              class="hidden"
               :disabled="showProgress || showBackupProgress || showPortProgress"
               @change="onRestoreUploadsChange"
             >
+            <UButton
+              :label="restoreUploadsFile?.name || 'Elegir archivo .tar.gz (opcional)'"
+              icon="i-lucide-file-up"
+              color="neutral"
+              variant="subtle"
+              :disabled="showProgress || showBackupProgress || showPortProgress"
+              @click="restoreUploadsInputEl?.click()"
+            />
           </div>
           <UButton
             label="Subir"
