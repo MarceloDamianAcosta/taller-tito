@@ -1120,7 +1120,7 @@ onUnmounted(() => {
             <input
               ref="restoreDbInputEl"
               type="file"
-              accept=".db"
+              accept=".db,application/x-sqlite3,application/vnd.sqlite3,application/octet-stream"
               class="hidden"
               :disabled="showProgress || showBackupProgress || showPortProgress"
               @change="onRestoreDbChange"
@@ -1141,7 +1141,7 @@ onUnmounted(() => {
             <input
               ref="restoreUploadsInputEl"
               type="file"
-              accept=".tar.gz,.gz"
+              accept=".tar.gz,.gz,application/gzip,application/x-gzip"
               class="hidden"
               :disabled="showProgress || showBackupProgress || showPortProgress"
               @change="onRestoreUploadsChange"
