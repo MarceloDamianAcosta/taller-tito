@@ -68,11 +68,11 @@ log "Restore solicitado, fuente: $PENDING_DB"
 # ── Backup del estado actual antes de pisarlo ───────────────────────────────
 write_status backing_up "Respaldando el estado actual antes de restaurar..."
 BACKUP_NAME="pre-restauracion-$(date +%d-%m-%y_%H-%M)"
-yes y | ./deploy/db-backup.sh "$BACKUP_NAME" >>"$LOG" 2>&1 || log "Aviso: el backup previo no se pudo completar (sigo igual, el restore no depende de él)"
+echo y | ./deploy/db-backup.sh "$BACKUP_NAME" >>"$LOG" 2>&1 || log "Aviso: el backup previo no se pudo completar (sigo igual, el restore no depende de él)"
 
 # ── Restore ──────────────────────────────────────────────────────────────────
 write_status restoring "Restaurando la base de datos y los archivos subidos..."
-if ! yes y | ./deploy/db-restore.sh "$PENDING_DB" >>"$LOG" 2>&1; then
+if ! echo y | ./deploy/db-restore.sh "$PENDING_DB" >>"$LOG" 2>&1; then
   log "Falló el restore"
   finish failed "Falló el restore. El backup de antes de tocar nada quedó en backups/${BACKUP_NAME}.db."
   exit 0

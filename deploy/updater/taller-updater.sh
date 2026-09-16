@@ -84,7 +84,7 @@ log "Nueva versión disponible: $TARGET_SHA"
 # ── Backup de la DB antes de tocar nada ─────────────────────────────────────
 write_status backing_up "Respaldando base de datos..."
 BACKUP_NAME="pre-actualizacion-$(date +%d-%m-%y_%H-%M)"
-yes y | ./deploy/db-backup.sh "$BACKUP_NAME" >>"$LOG" 2>&1 || log "Aviso: backup no se pudo completar (¿prod no estaba corriendo?)"
+echo y | ./deploy/db-backup.sh "$BACKUP_NAME" >>"$LOG" 2>&1 || log "Aviso: backup no se pudo completar (¿prod no estaba corriendo?)"
 
 # ── Aplicar: a partir de acá los errores van a ROLLBACK, no a abort ──────────
 trap - ERR
@@ -125,7 +125,7 @@ docker compose up -d prod >>"$LOG" 2>&1 || true
 
 if [ -f "backups/${BACKUP_NAME}.db" ]; then
   log "Restaurando DB desde backups/${BACKUP_NAME}.db"
-  yes y | ./deploy/db-restore.sh "backups/${BACKUP_NAME}.db" >>"$LOG" 2>&1 || log "Aviso: restore de DB falló"
+  echo y | ./deploy/db-restore.sh "backups/${BACKUP_NAME}.db" >>"$LOG" 2>&1 || log "Aviso: restore de DB falló"
 fi
 
 if wait_for_health; then

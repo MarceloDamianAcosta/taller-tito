@@ -52,7 +52,7 @@ fi
 log "Backup manual solicitado → $NAME"
 write_status running "Respaldando base de datos y archivos..."
 
-yes y | ./deploy/db-backup.sh "$NAME" >>"$LOG" 2>&1
+echo y | ./deploy/db-backup.sh "$NAME" >>"$LOG" 2>&1
 
 log "Backup OK → backups/${NAME}.db"
 finish done "Backup completado: ${NAME}.db"
