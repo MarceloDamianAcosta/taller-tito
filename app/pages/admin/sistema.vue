@@ -290,6 +290,30 @@ const showPortConfirm = ref(false)
 const portInput = ref<number | null>(null)
 const PORT_ACTIVE_PHASES = ['applying', 'health_check', 'restarting']
 const PORT_TERMINAL_PHASES = ['done', 'rolled_back', 'failed']
+const PORT_REDIRECT_SECONDS = 25
+
+// Una vez que se pide el cambio, la propia pestaña queda apuntando al puerto
+// VIEJO: cuando el contenedor se recrea, ese puerto deja de existir del todo
+// (no es un reinicio en el mismo puerto como un update) y el polling de estado
+// nunca va a poder "terminar bien" desde acá. Por eso, en paralelo, armamos una
+// cuenta regresiva fija que redirige solo a la URL con el puerto nuevo.
+const redirectCountdown = ref<number | null>(null)
+const redirectTarget = ref('')
+let redirectTimer: ReturnType<typeof setInterval> | null = null
+
+function startRedirectCountdown(port: number) {
+  redirectTarget.value = `${window.location.protocol}//${window.location.hostname}:${port}${window.location.pathname}`
+  redirectCountdown.value = PORT_REDIRECT_SECONDS
+  if (redirectTimer) clearInterval(redirectTimer)
+  redirectTimer = setInterval(() => {
+    if (redirectCountdown.value === null) return
+    redirectCountdown.value -= 1
+    if (redirectCountdown.value <= 0) {
+      clearInterval(redirectTimer!)
+      window.location.href = redirectTarget.value
+    }
+  }, 1000)
+}
 
 const isPortChanging = computed(() => PORT_ACTIVE_PHASES.includes(portStatus.value.phase))
 const showPortProgress = computed(() => portWatching.value || isPortChanging.value)
@@ -348,11 +372,13 @@ async function confirmarPuerto() {
   portResult.value = null
   try {
     portPrevStartedAt.value = portStatus.value.startedAt
-    await $fetch('/api/admin/sistema/port', { method: 'POST', body: { port: portInput.value } })
+    const targetPort = portInput.value!
+    await $fetch('/api/admin/sistema/port', { method: 'POST', body: { port: targetPort } })
     showPortConfirm.value = false
     portWatching.value = true
     portStatus.value = { phase: 'applying', message: 'Iniciando…' }
     startPortPolling()
+    startRedirectCountdown(targetPort)
   } catch (e: unknown) {
     portError.value = (e as { data?: { message?: string } }).data?.message || 'No se pudo iniciar el cambio de puerto'
   }
@@ -521,6 +547,7 @@ onUnmounted(() => {
   if (backupPollTimer) clearTimeout(backupPollTimer)
   if (portPollTimer) clearTimeout(portPollTimer)
   if (restorePollTimer) clearTimeout(restorePollTimer)
+  if (redirectTimer) clearInterval(redirectTimer)
 })
 </script>
 
@@ -882,6 +909,22 @@ onUnmounted(() => {
         />
         <span>{{ portReconnecting ? 'Reiniciando, reconectando…' : (portStatus.message || 'Aplicando…') }}</span>
       </div>
+
+      <UAlert
+        v-if="redirectCountdown !== null"
+        color="info"
+        variant="subtle"
+        icon="i-lucide-clock"
+        class="mb-4"
+      >
+        <template #title>
+          Te vamos a redirigir en {{ redirectCountdown }}s a
+          <a
+            :href="redirectTarget"
+            class="font-mono underline"
+          >{{ redirectTarget }}</a>
+        </template>
+      </UAlert>
 
       <template v-else>
         <UAlert
