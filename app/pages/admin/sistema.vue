@@ -290,7 +290,7 @@ const showPortConfirm = ref(false)
 const portInput = ref<number | null>(null)
 const PORT_ACTIVE_PHASES = ['applying', 'health_check', 'restarting']
 const PORT_TERMINAL_PHASES = ['done', 'rolled_back', 'failed']
-const PORT_REDIRECT_SECONDS = 25
+const PORT_REDIRECT_SECONDS = 40
 
 // Una vez que se pide el cambio, la propia pestaña queda apuntando al puerto
 // VIEJO: cuando el contenedor se recrea, ese puerto deja de existir del todo
@@ -923,6 +923,9 @@ onUnmounted(() => {
             :href="redirectTarget"
             class="font-mono underline"
           >{{ redirectTarget }}</a>
+        </template>
+        <template #description>
+          Si carga en blanco o da error, esperá unos segundos más y actualizá esa página vos mismo — todavía puede estar terminando de arrancar.
         </template>
       </UAlert>
 
