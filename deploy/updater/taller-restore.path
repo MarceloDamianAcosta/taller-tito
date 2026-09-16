@@ -1,0 +1,9 @@
+[Unit]
+Description=Vigila pedidos de restaurar un backup subido desde la app del taller
+
+[Path]
+PathExists=/opt/taller/app/control/restore.request.json
+Unit=taller-restore.service
+
+[Install]
+WantedBy=multi-user.target

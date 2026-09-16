@@ -1,0 +1,9 @@
+[Unit]
+Description=Backup manual de la app del taller
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/taller/app
+ExecStart=/opt/taller/app/deploy/updater/taller-backup.sh
+TimeoutStartSec=300

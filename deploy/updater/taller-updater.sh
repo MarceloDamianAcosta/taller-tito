@@ -10,7 +10,10 @@ CONTROL="$APP_DIR/control"
 LOCK="$CONTROL/update.lock"
 REQ="$CONTROL/update.request.json"
 LOG="$CONTROL/update.log"
-HEALTH_URL="${HEALTH_URL:-http://localhost:3000/api/health}"
+# Si Tito cambió el puerto del host con P en .env, el health-check tiene que
+# pegarle al mismo puerto (si no, cada update terminaría en rollback falso).
+P_ENV="$(grep -E '^P=' "$APP_DIR/.env" 2>/dev/null | tail -1 | cut -d= -f2-)"
+HEALTH_URL="${HEALTH_URL:-http://localhost:${P_ENV:-3000}/api/health}"
 HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-120}"
 
 cd "$APP_DIR"
@@ -80,8 +83,8 @@ log "Nueva versión disponible: $TARGET_SHA"
 
 # ── Backup de la DB antes de tocar nada ─────────────────────────────────────
 write_status backing_up "Respaldando base de datos..."
-BACKUP_NAME="pre-update-$(date +%Y%m%d-%H%M)"
-yes y | ./deploy/db-backup.sh "$BACKUP_NAME" >>"$LOG" 2>&1 || log "Aviso: backup no se pudo completar (¿prod no estaba corriendo?)"
+BACKUP_NAME="pre-actualizacion-$(date +%d-%m-%y_%H-%M)"
+echo y | ./deploy/db-backup.sh "$BACKUP_NAME" >>"$LOG" 2>&1 || log "Aviso: backup no se pudo completar (¿prod no estaba corriendo?)"
 
 # ── Aplicar: a partir de acá los errores van a ROLLBACK, no a abort ──────────
 trap - ERR
@@ -122,7 +125,7 @@ docker compose up -d prod >>"$LOG" 2>&1 || true
 
 if [ -f "backups/${BACKUP_NAME}.db" ]; then
   log "Restaurando DB desde backups/${BACKUP_NAME}.db"
-  yes y | ./deploy/db-restore.sh "backups/${BACKUP_NAME}.db" >>"$LOG" 2>&1 || log "Aviso: restore de DB falló"
+  echo y | ./deploy/db-restore.sh "backups/${BACKUP_NAME}.db" >>"$LOG" 2>&1 || log "Aviso: restore de DB falló"
 fi
 
 if wait_for_health; then

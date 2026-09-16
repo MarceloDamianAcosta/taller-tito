@@ -35,8 +35,7 @@ export async function bootstrap() {
       username: 'tito',
       name: 'Tito',
       passwordHash: hash,
-      role: 'admin',
-      mustChangePassword: true
+      role: 'admin'
     }).run()
   }
 

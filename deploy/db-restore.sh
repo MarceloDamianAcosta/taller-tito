@@ -46,6 +46,18 @@ fi
 # El -shm es solo un índice en memoria compartida; SQLite lo regenera.
 docker compose run --rm --no-deps prod sh -c "rm -f /app/data/taller.db-shm" >/dev/null 2>&1 || true
 
+# Si el backup tiene su tarball de uploads asociado (mismo nombre base que el
+# .db, generado por db-backup.sh), lo restauramos también. Sin esto, los
+# archivos de biblioteca/OT quedarían apuntando a nombres que no existen.
+UPLOADS_SRC="${SRC%.db}-uploads.tar.gz"
+if [ -f "$UPLOADS_SRC" ]; then
+  echo "→ Restaurando uploads desde $UPLOADS_SRC..."
+  docker compose run --rm --no-deps -T prod sh -c "rm -rf /app/uploads/* && tar xzf - -C /app/uploads" \
+    <"$UPLOADS_SRC"
+else
+  echo "  (sin backup de uploads asociado — dejo el volume de uploads como está)"
+fi
+
 if [ "$WAS_RUNNING" -eq 1 ]; then
   echo "→ Reiniciando prod..."
   docker compose start prod

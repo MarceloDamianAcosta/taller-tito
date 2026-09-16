@@ -10,6 +10,8 @@ const VERSION_FILE = join(process.cwd(), 'version.json')
 
 // Fases que escribe taller-updater.sh mientras corre. Las terminales no.
 export const ACTIVE_PHASES = ['checking', 'backing_up', 'pulling', 'building', 'restarting', 'health_check'] as const
+// Fases activas de taller-port.sh (cambio de puerto).
+export const ACTIVE_PORT_PHASES = ['applying', 'health_check', 'restarting'] as const
 
 export interface AppVersion {
   version: string
@@ -31,6 +33,37 @@ export interface UpdateStatus {
   result?: string
   oldSha?: string
   targetSha?: string
+  startedAt?: string
+  finishedAt?: string
+  message?: string
+}
+
+export interface BackupStatus {
+  phase: string
+  result?: string
+  fileName?: string
+  startedAt?: string
+  finishedAt?: string
+  message?: string
+}
+
+export interface PortStatus {
+  phase: string
+  result?: string
+  oldPort?: number
+  targetPort?: number | null
+  startedAt?: string
+  finishedAt?: string
+  message?: string
+}
+
+// Fases activas de taller-restore.sh (restaurar un backup subido desde la app).
+export const ACTIVE_RESTORE_PHASES = ['backing_up', 'restoring', 'health_check'] as const
+
+export interface RestoreStatus {
+  phase: string
+  result?: string
+  preRestoreBackup?: string
   startedAt?: string
   finishedAt?: string
   message?: string
@@ -69,4 +102,34 @@ export function writeRequest(name: string, payload: Record<string, unknown>) {
   const tmp = `${p}.tmp`
   writeFileSync(tmp, JSON.stringify(payload))
   renameSync(tmp, p)
+}
+
+// Update, backup manual, cambio de puerto y restore tocan el mismo contenedor
+// `prod` desde el host — solo uno a la vez. Antes de disparar cualquiera de los
+// cuatro, chequear que no haya otro corriendo.
+export function anyOperationActive(): string | null {
+  const update = readControl<UpdateStatus>('status.json')
+  if (update?.phase && (ACTIVE_PHASES as readonly string[]).includes(update.phase)) {
+    return 'Hay una actualización en curso'
+  }
+  const backup = readControl<BackupStatus>('backup-status.json')
+  if (backup?.phase === 'running') {
+    return 'Hay un backup en curso'
+  }
+  const port = readControl<PortStatus>('port-status.json')
+  if (port?.phase && (ACTIVE_PORT_PHASES as readonly string[]).includes(port.phase)) {
+    return 'Hay un cambio de puerto en curso'
+  }
+  const restore = readControl<RestoreStatus>('restore-status.json')
+  if (restore?.phase && (ACTIVE_RESTORE_PHASES as readonly string[]).includes(restore.phase)) {
+    return 'Hay una restauración en curso'
+  }
+  return null
+}
+
+// P llega al proceso vía `env_file: .env` en docker-compose.yml — así el server
+// sabe en qué puerto lo está publicando el host sin tener que preguntarle.
+export function currentPort(): number {
+  const p = Number(process.env.P)
+  return Number.isInteger(p) && p > 0 ? p : 3000
 }

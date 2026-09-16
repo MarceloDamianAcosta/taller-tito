@@ -23,18 +23,22 @@ logs
 .env.*
 !.env.example
 
-# Uploads
-uploads/
+# Uploads (anclado a la raíz: sin la "/" inicial también ignoraría cualquier
+# carpeta con este nombre en cualquier parte del repo, ej. dentro de server/api/)
+/uploads/
 
 # Database
-data/
+/data/
 
 # Canal de control con el agente host (auto-update): archivos de runtime
-control/*
-!control/.gitkeep
+/control/*
+!/control/.gitkeep
 
 # Backups de DB (deploy/db-backup.sh y el agente)
-backups/
+/backups/
+
+# Backups subidos desde /admin/sistema, pendientes de restaurar (taller-restore.sh)
+/restore-uploads/
 
 # npm lockfile (using pnpm)
 package-lock.json

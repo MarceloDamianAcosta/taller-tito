@@ -1,0 +1,9 @@
+[Unit]
+Description=Restore de un backup subido desde la app del taller
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/taller/app
+ExecStart=/opt/taller/app/deploy/updater/taller-restore.sh
+TimeoutStartSec=600
