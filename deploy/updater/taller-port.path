@@ -1,0 +1,10 @@
+[Unit]
+Description=Vigila pedidos de cambio de puerto de la app del taller
+
+[Path]
+# Cuando la app crea este archivo, systemd lanza taller-port.service
+PathExists=/opt/taller/app/control/port.request.json
+Unit=taller-port.service
+
+[Install]
+WantedBy=multi-user.target

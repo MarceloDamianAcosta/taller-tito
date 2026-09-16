@@ -1,0 +1,9 @@
+[Unit]
+Description=Cambio de puerto de la app del taller
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/taller/app
+ExecStart=/opt/taller/app/deploy/updater/taller-port.sh
+TimeoutStartSec=180

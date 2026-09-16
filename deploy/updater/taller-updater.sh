@@ -83,7 +83,7 @@ log "Nueva versión disponible: $TARGET_SHA"
 
 # ── Backup de la DB antes de tocar nada ─────────────────────────────────────
 write_status backing_up "Respaldando base de datos..."
-BACKUP_NAME="pre-update-$(date +%Y%m%d-%H%M)"
+BACKUP_NAME="pre-actualizacion-$(date +%d-%m-%y_%H-%M)"
 yes y | ./deploy/db-backup.sh "$BACKUP_NAME" >>"$LOG" 2>&1 || log "Aviso: backup no se pudo completar (¿prod no estaba corriendo?)"
 
 # ── Aplicar: a partir de acá los errores van a ROLLBACK, no a abort ──────────

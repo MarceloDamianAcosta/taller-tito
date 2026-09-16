@@ -20,9 +20,9 @@ ensure_curl() {
   else echo "⚠ No pude instalar curl automáticamente; instalalo a mano."; fi
 }
 
-chmod +x "$HERE"/taller-updater.sh "$HERE"/check-updates.sh
+chmod +x "$HERE"/taller-updater.sh "$HERE"/check-updates.sh "$HERE"/taller-backup.sh "$HERE"/taller-port.sh "$HERE"/taller-restore.sh
 git config --global --add safe.directory "$APP_DIR" 2>/dev/null || true
-mkdir -p "$APP_DIR/control" "$APP_DIR/backups"
+mkdir -p "$APP_DIR/control" "$APP_DIR/backups" "$APP_DIR/restore-uploads"
 
 # Como root, los services de systemd corren como root sobre un repo que suele ser de otro
 # usuario (ej. tito) → git aborta por "dubious ownership". --system (/etc/gitconfig) lo
@@ -31,19 +31,19 @@ mkdir -p "$APP_DIR/control" "$APP_DIR/backups"
 if [ "$(id -u)" -eq 0 ]; then
   git config --system --add safe.directory "$APP_DIR" 2>/dev/null || true
   OWNER="$(stat -c %U "$APP_DIR" 2>/dev/null || echo root)"
-  chown "$OWNER":"$OWNER" "$APP_DIR/control" "$APP_DIR/backups" 2>/dev/null || true
+  chown "$OWNER":"$OWNER" "$APP_DIR/control" "$APP_DIR/backups" "$APP_DIR/restore-uploads" 2>/dev/null || true
 fi
 
 if [ "$(id -u)" -eq 0 ]; then
   # ── Modo SISTEMA (producción / Docker del sistema) ──────────────────────────
   ensure_curl ""
   echo "→ Instalando units de sistema..."
-  for unit in taller-updater check-updates; do
+  for unit in taller-updater check-updates taller-backup taller-port taller-restore; do
     cp "$HERE/$unit.service" /etc/systemd/system/
     cp "$HERE/$unit.path" /etc/systemd/system/
   done
   systemctl daemon-reload
-  systemctl enable --now taller-updater.path check-updates.path
+  systemctl enable --now taller-updater.path check-updates.path taller-backup.path taller-port.path taller-restore.path
   echo "✓ Agente (sistema) instalado y activo."
   echo "  Logs:   journalctl -u taller-updater.service -f"
   echo "  Estado: systemctl status taller-updater.path"
@@ -99,8 +99,77 @@ Unit=check-updates.service
 WantedBy=default.target
 EOF
 
+  cat > "$UNIT_DIR/taller-backup.service" <<EOF
+[Unit]
+Description=Backup manual de la app del taller (user / Docker Desktop)
+
+[Service]
+Type=oneshot
+WorkingDirectory=$APP_DIR
+ExecStart=$HERE/taller-backup.sh
+TimeoutStartSec=300
+EOF
+
+  cat > "$UNIT_DIR/taller-backup.path" <<EOF
+[Unit]
+Description=Vigila pedidos de backup manual (user)
+
+[Path]
+PathExists=$APP_DIR/control/backup.request.json
+Unit=taller-backup.service
+
+[Install]
+WantedBy=default.target
+EOF
+
+  cat > "$UNIT_DIR/taller-port.service" <<EOF
+[Unit]
+Description=Cambio de puerto de la app del taller (user / Docker Desktop)
+
+[Service]
+Type=oneshot
+WorkingDirectory=$APP_DIR
+ExecStart=$HERE/taller-port.sh
+TimeoutStartSec=180
+EOF
+
+  cat > "$UNIT_DIR/taller-port.path" <<EOF
+[Unit]
+Description=Vigila pedidos de cambio de puerto (user)
+
+[Path]
+PathExists=$APP_DIR/control/port.request.json
+Unit=taller-port.service
+
+[Install]
+WantedBy=default.target
+EOF
+
+  cat > "$UNIT_DIR/taller-restore.service" <<EOF
+[Unit]
+Description=Restore de un backup subido desde la app del taller (user / Docker Desktop)
+
+[Service]
+Type=oneshot
+WorkingDirectory=$APP_DIR
+ExecStart=$HERE/taller-restore.sh
+TimeoutStartSec=600
+EOF
+
+  cat > "$UNIT_DIR/taller-restore.path" <<EOF
+[Unit]
+Description=Vigila pedidos de restore (user)
+
+[Path]
+PathExists=$APP_DIR/control/restore.request.json
+Unit=taller-restore.service
+
+[Install]
+WantedBy=default.target
+EOF
+
   systemctl --user daemon-reload
-  systemctl --user enable --now taller-updater.path check-updates.path
+  systemctl --user enable --now taller-updater.path check-updates.path taller-backup.path taller-port.path taller-restore.path
   echo "✓ Agente (usuario) instalado y activo."
   echo "  Logs:   journalctl --user -u taller-updater.service -f"
   echo "  Estado: systemctl --user status taller-updater.path"

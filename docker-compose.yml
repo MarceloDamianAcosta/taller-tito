@@ -11,6 +11,8 @@ services:
       - dev-data:/app/data
       - dev-uploads:/app/uploads
       - ./control:/app/control
+      - ./backups:/app/backups:ro
+      - ./restore-uploads:/app/restore-uploads
     env_file:
       - .env
     restart: unless-stopped
@@ -30,9 +32,15 @@ services:
     volumes:
       - prod-data:/app/data
       - prod-uploads:/app/uploads
-      # Canal de control con el agente host (auto-update). El agente escribe/lee
-      # acá; la app escribe requests y lee status. Bind mount, no volume.
+      # Canal de control con el agente host (auto-update, backup manual, cambio de
+      # puerto). El agente escribe/lee acá; la app escribe requests y lee status.
       - ./control:/app/control
+      # Solo lectura: quien escribe backups/ es siempre db-backup.sh en el host.
+      - ./backups:/app/backups:ro
+      # Lectura-escritura: acá la app deja el .db/.tar.gz que subís para restaurar,
+      # antes de que taller-restore.sh los recoja. Lectura-escritura porque, a
+      # diferencia de backups/, quien escribe es la propia app.
+      - ./restore-uploads:/app/restore-uploads
     env_file:
       - .env
     restart: unless-stopped
